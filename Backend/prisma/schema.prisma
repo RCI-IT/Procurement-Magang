@@ -1,0 +1,18 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "mysql" // Gunakan MySQL sebagai provider
+  url      = env("DATABASE_URL") // Mengambil URL dari file .env
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Request {
+  id          Int      @id @default(autoincrement())
+  item        String
+  quantity    Int
+  requestedBy String
+  status      String   @default("Pending")
+  createdAt   DateTime @default(now())
+}
