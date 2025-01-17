@@ -1,15 +1,18 @@
 {
-    "compilerOptions": {
-      "target": "ES6",
-      "module": "commonjs",
-      "outDir": "./dist",
-      "rootDir": "./src",
-      "strict": true,
-      "esModuleInterop": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true
-    },
-    "include": ["src/**/*.ts"],
-    "exclude": ["node_modules"]
-  }
-  
+  "compilerOptions": {
+    "target": "ES2019",              // ES6 baik, tapi ES2019 mendukung fitur modern.
+    "module": "commonjs",           // Tetap gunakan CommonJS untuk Node.js.
+    "outDir": "./dist",             // Output file hasil build.
+    "rootDir": "./src",             // Direktori sumber kode.
+    "strict": true,                 // Aktifkan pemeriksaan tipe yang ketat.
+    "esModuleInterop": true,
+    "skipLibCheck": true,           // Lewati pemeriksaan tipe pada file deklarasi.
+    "forceConsistentCasingInFileNames": true, // Hindari masalah case-sensitive.
+    "moduleResolution": "node",    // Pastikan module resolution sesuai Node.js.
+    "resolveJsonModule": true,     // Izinkan impor file JSON.
+    "typeRoots": ["./node_modules/@types"], // Direktori tipe.
+    "allowSyntheticDefaultImports": true // Izinkan impor default dari modul non-ESM.
+  },
+  "include": ["src/**/*.ts"],        // Sertakan semua file TypeScript di dalam `src`.
+  "exclude": ["node_modules", "dist"] // Kecualikan `node_modules` dan folder output.
+}
