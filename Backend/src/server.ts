@@ -1,125 +1,107 @@
-import express, { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import express, { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
 
-const app = express();
 const prisma = new PrismaClient();
+const app = express();
 
 app.use(express.json());
 
-// Create a new order
-app.post("/orders", async (req: Request, res: Response) => {
+// Endpoint to create an order
+app.post('/orders', async (req: Request, res: Response) => {
   const { number, contractNumber, location, requestBy, detail } = req.body;
-
   try {
-    if (!detail || detail.length === 0) {
-      return res.status(400).json({ error: "Order detail is required" });
-    }
-
-    const order = await prisma.order.create({
+    const newOrder = await prisma.order.create({
       data: {
         number,
         contractNumber,
         location,
         requestBy,
-        detail: {
-          create: detail.map((d: any) => ({
-            materialId: d.id, // Ganti materialId dengan id sesuai dengan field yang ada di schema
-            qty: d.qty,
-            mention: d.mention,
-          })),
-        },
+        detail: { create: detail },
       },
     });
-    res.status(201).json(order);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Error creating order:", error.message);
-      res.status(500).json({ error: "Failed to create order", details: error.message });
-    } else {
-      console.error("Unexpected error:", error);
-      res.status(500).json({ error: "Unexpected error occurred" });
-    }
+    res.status(201).json(newOrder);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create order' });
   }
 });
 
-// Get all materials
-app.get("/materials", async (req: Request, res: Response) => {
+// Endpoint to fetch all orders
+app.get('/orders', async (req: Request, res: Response) => {
   try {
-    const materials = await prisma.materials.findMany({
-      include: {
-        category: true,
-        vendor: true,
-      },
+    const orders = await prisma.order.findMany({
+      include: { detail: true },
     });
-    res.json(materials);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Error fetching materials:", error.message);
-      res.status(500).json({ error: "Failed to fetch materials", details: error.message });
-    } else {
-      console.error("Unexpected error:", error);
-      res.status(500).json({ error: "Unexpected error occurred" });
-    }
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch orders' });
   }
 });
 
-// Create a new material
-app.post("/materials", async (req: Request, res: Response) => {
-  const { name, price, categoryId, vendorId, image } = req.body;
-
+// Endpoint to create a vendor
+app.post('/vendors', async (req: Request, res: Response) => {
+  const { name, address, city, phone } = req.body;
   try {
-    const material = await prisma.materials.create({
+    const newVendor = await prisma.vendors.create({
       data: {
+        name,
+        address,
+        city,
+        phone,
+      },
+    });
+    res.status(201).json(newVendor);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create vendor' });
+  }
+});
+
+// Endpoint to fetch all vendors
+app.get('/vendors', async (req: Request, res: Response) => {
+  try {
+    const vendors = await prisma.vendors.findMany();
+    res.status(200).json(vendors);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch vendors' });
+  }
+});
+
+// Endpoint to create materials
+app.post('/materials', async (req: Request, res: Response) => {
+  const { image, name, price, categoryId, vendorId } = req.body;
+  try {
+    const newMaterial = await prisma.materials.create({
+      data: {
+        image,
         name,
         price,
         categoryId,
         vendorId,
-        image,
       },
     });
-    res.status(201).json(material);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Error creating material:", error.message);
-      res.status(500).json({ error: "Failed to create material", details: error.message });
-    } else {
-      console.error("Unexpected error:", error);
-      res.status(500).json({ error: "Unexpected error occurred" });
-    }
+    res.status(201).json(newMaterial);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create material' });
   }
 });
 
-// Get all purchases
-app.get("/purchases", async (req: Request, res: Response) => {
+// Endpoint to create categories
+app.post('/categories', async (req: Request, res: Response) => {
+  const { name } = req.body;
   try {
-    const purchases = await prisma.purchases.findMany({
-      include: {
-        detail: {
-          include: {
-            material: true,
-            order: true,
-          },
-        },
-      },
+    const newCategory = await prisma.categories.create({
+      data: { name },
     });
-    res.json(purchases);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Error fetching purchases:", error.message);
-      res.status(500).json({ error: "Failed to fetch purchases", details: error.message });
-    } else {
-      console.error("Unexpected error:", error);
-      res.status(500).json({ error: "Unexpected error occurred" });
-    }
+    res.status(201).json(newCategory);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create category' });
   }
 });
 
-// Create a new purchase
-app.post("/purchases", async (req: Request, res: Response) => {
-  const { number, refrence, detail, subtotal, tax, totalPayment, payment, createBy } = req.body;
-
+// Endpoint to create purchases
+app.post('/purchases', async (req: Request, res: Response) => {
+  const { number, refrence, subtotal, tax, totalPayment, payment, createBy, detail } = req.body;
   try {
-    const purchase = await prisma.purchases.create({
+    const newPurchase = await prisma.purchases.create({
       data: {
         number,
         refrence,
@@ -128,33 +110,39 @@ app.post("/purchases", async (req: Request, res: Response) => {
         totalPayment,
         payment,
         createBy,
-        detail: {
-          create: detail.map((d: any) => ({
-            materialId: d.id, // Ganti materialId dengan id sesuai dengan field yang ada di schema
-            orderId: d.orderId,
-            codeBudget: d.codeBudget,
-            mention: d.mention,
-            qty: d.qty,
-            price: d.price,
-            totalPrice: d.totalPrice,
-          })),
-        },
+        detail: { create: detail },
       },
     });
-    res.status(201).json(purchase);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Error creating purchase:", error.message);
-      res.status(500).json({ error: "Failed to create purchase", details: error.message });
-    } else {
-      console.error("Unexpected error:", error);
-      res.status(500).json({ error: "Unexpected error occurred" });
-    }
+    res.status(201).json(newPurchase);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create purchase' });
   }
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000;
+// Endpoint to create detail purchases
+app.post('/detail-purchases', async (req: Request, res: Response) => {
+  const { purchaseId, materialId, orderId, codeBudget, mention, qty, price, totalPrice } = req.body;
+  try {
+    const newDetailPurchase = await prisma.detailPurchases.create({
+      data: {
+        purchaseId,
+        materialId,
+        orderId,
+        codeBudget,
+        mention,
+        qty,
+        price,
+        totalPrice,
+      },
+    });
+    res.status(201).json(newDetailPurchase);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create detail purchase' });
+  }
+});
+
+// Start server
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
