@@ -142,7 +142,7 @@ app.post('/detail-purchases', async (req: Request, res: Response) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000; // Pastikan PORT adalah number
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server berjalan di port ${PORT}`);
 });
