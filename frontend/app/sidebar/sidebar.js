@@ -11,7 +11,7 @@ export default function Sidebar({ setActiveContent }) {
         isMinimized ? "w-20" : "w-70"
       } transition-all duration-300 overflow-hidden`}
     >
-      {/* Sidebar Logo */}
+      
       <div className="flex items-center px-4 py-4 bg-gray-900">
         <img
           src="/logo1.png"
@@ -30,7 +30,7 @@ export default function Sidebar({ setActiveContent }) {
         )}
       </div>
 
-      {/* Sidebar Collapse Button */}
+     
       <div className="flex items-center justify-between px-4 py-3 bg-gray-900">
         {!isMinimized && <h1 className="text-lg font-bold">Procurement</h1>}
         <button
@@ -41,7 +41,7 @@ export default function Sidebar({ setActiveContent }) {
         </button>
       </div>
 
-      {/* Menu Items */}
+      
       <div className="flex-1 overflow-y-auto">
         <ul className="space-y-2 px-2 mt-4">
           {[
@@ -65,7 +65,6 @@ export default function Sidebar({ setActiveContent }) {
         </ul>
       </div>
 
-      {/* Logout Button */}
       <div className="p-4">
         <button
           onClick={() => alert("Logout clicked!")}

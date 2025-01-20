@@ -1,23 +1,26 @@
-// src/components/Material.js
 import React, { useState } from "react";
-import AddMaterialForm from "./AddMaterialForm"; // Pastikan ini diimport dengan benar
+import AddMaterialForm from "./AddMaterialForm"; 
 
 export default function Material() {
-  const [materials, setMaterials] = useState([]); // Menggunakan state kosong untuk menampung data material
+  const [materials, setMaterials] = useState([]); 
   const [searchQuery, setSearchQuery] = useState("");
-  const [rowsToShow, setRowsToShow] = useState(5);
+  const [rowsToShow, setRowsToShow] = useState(5); // Default: tampilkan 5 baris
+  const [showForm, setShowForm] = useState(false);
 
-  // Fungsi untuk menambahkan material baru
   const addMaterial = (newMaterial) => {
     const updatedMaterial = {
       id: materials.length + 1,
       ...newMaterial,
     };
     setMaterials((prevMaterials) => [...prevMaterials, updatedMaterial]);
+    setShowForm(false); // Menyembunyikan form setelah penambahan material
   };
 
   const handleRowsChange = (event) => {
-    setRowsToShow(Number(event.target.value));
+    const value = Number(event.target.value);
+    if (value > 0) { // Pastikan jumlah baris positif
+      setRowsToShow(value);
+    }
   };
 
   const handleSearchChange = (event) => {
@@ -28,11 +31,14 @@ export default function Material() {
     material.name.toLowerCase().includes(searchQuery)
   );
 
+  const handleDelete = (id) => {
+    setMaterials((prevMaterials) => prevMaterials.filter((material) => material.id !== id));
+  };
+
   return (
     <div>
       <h1 className="text-4xl font-bold mb-4">Material</h1>
 
-      {/* Input Pencarian */}
       <div className="mb-4 flex items-center">
         <label htmlFor="search-input" className="mr-2 font-medium">Cari Material:</label>
         <input
@@ -45,33 +51,38 @@ export default function Material() {
         />
       </div>
 
-      {/* Komponen Form Tambah Barang */}
-      <AddMaterialForm addMaterial={addMaterial} /> {/* Pastikan addMaterial diteruskan ke form */}
+      <button
+        onClick={() => setShowForm(!showForm)}
+        className="bg-green-500 text-white rounded px-4 py-2 mb-4"
+      >
+        {showForm ? "Batal Tambah" : "Tambah Material"}
+      </button>
 
-      {/* Dropdown untuk memilih jumlah baris */}
+      {showForm && <AddMaterialForm addMaterial={addMaterial} />}
+
       <div className="mb-4 flex items-center">
-        <label htmlFor="rows-select" className="mr-2 font-medium">Tampilkan</label>
-        <select
-          id="rows-select"
+        <label htmlFor="rows-input" className="mr-2 font-medium">Tampilkan</label>
+        <input
+          type="number"
+          id="rows-input"
           value={rowsToShow}
           onChange={handleRowsChange}
-          className="border border-gray-400 rounded px-2 py-1"
-        >
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={15}>15</option>
-        </select>
+          className="border border-gray-400 rounded px-2 py-1 w-20"
+          min="1" // Nilai minimal 1
+          placeholder="Jumlah"
+        />
       </div>
 
-      {/* Tabel Material */}
       <table className="table-auto border-collapse border border-gray-400 w-full">
         <thead>
           <tr>
             <th className="border border-gray-300 px-4 py-2">No</th>
             <th className="border border-gray-300 px-4 py-2">Nama</th>
+            <th className="border border-gray-300 px-4 py-2">Gambar</th>
             <th className="border border-gray-300 px-4 py-2">Vendor</th>
             <th className="border border-gray-300 px-4 py-2">Harga</th>
             <th className="border border-gray-300 px-4 py-2">Kategori</th>
+            <th className="border border-gray-300 px-4 py-2">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -79,9 +90,20 @@ export default function Material() {
             <tr key={material.id}>
               <td className="border border-gray-300 px-4 py-2 text-center">{index + 1}</td>
               <td className="border border-gray-300 px-4 py-2">{material.name}</td>
+              <td className="border border-gray-300 px-4 py-2">
+                <img src={material.image} alt={material.name} className="w-16 h-16 object-cover" />
+              </td>
               <td className="border border-gray-300 px-4 py-2">{material.vendor}</td>
               <td className="border border-gray-300 px-4 py-2">{material.price}</td>
               <td className="border border-gray-300 px-4 py-2">{material.category}</td>
+              <td className="border border-gray-300 px-4 py-2">
+                <button
+                  onClick={() => handleDelete(material.id)}
+                  className="bg-red-500 text-white rounded px-2 py-1"
+                >
+                  Hapus
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

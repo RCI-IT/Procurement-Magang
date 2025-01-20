@@ -1,91 +1,103 @@
-// src/components/Material.js
 import React, { useState } from "react";
-import AddMaterialForm from "./AddMaterialForm"; // Import komponen form untuk tambah material
 
-export default function Material() {
-  const [materials, setMaterials] = useState([]); // Menggunakan state kosong untuk menampung data material
-  const [searchQuery, setSearchQuery] = useState("");
-  const [rowsToShow, setRowsToShow] = useState(5);
+export default function AddMaterialForm({ addMaterial }) {
+  const [name, setName] = useState("");
+  const [vendor, setVendor] = useState("");
+  const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("");
+  const [image, setImage] = useState(null); // State untuk gambar
 
-  // Fungsi untuk menambahkan material baru
-  const addMaterial = (newMaterial) => {
-    const updatedMaterial = {
-      id: materials.length + 1,
-      ...newMaterial,
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    // Validasi input
+    if (!name || !vendor || !price || !category || !image) {
+      alert("Semua kolom harus diisi");
+      return;
+    }
+
+    const newMaterial = {
+      name,
+      vendor,
+      price,
+      category,
+      image: URL.createObjectURL(image), // Menggunakan URL.createObjectURL untuk menampilkan gambar
     };
-    setMaterials((prevMaterials) => [...prevMaterials, updatedMaterial]);
-  };
 
-  const handleRowsChange = (event) => {
-    setRowsToShow(Number(event.target.value));
+    addMaterial(newMaterial);
+    setName("");
+    setVendor("");
+    setPrice("");
+    setCategory("");
+    setImage(null); // Reset form setelah submit
   };
-
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value.toLowerCase());
-  };
-
-  const filteredMaterials = materials.filter((material) =>
-    material.name.toLowerCase().includes(searchQuery)
-  );
 
   return (
-    <div>
-      <h1 className="text-4xl font-bold mb-4">Material</h1>
-
-      {/* Input Pencarian */}
-      <div className="mb-4 flex items-center">
-        <label htmlFor="search-input" className="mr-2 font-medium">Cari Material:</label>
+    <form onSubmit={handleSubmit} className="mb-4">
+      <div className="mb-4">
+        <label htmlFor="name" className="block font-medium">Nama Material:</label>
         <input
           type="text"
-          id="search-input"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          className="border border-gray-400 rounded px-2 py-1"
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="border border-gray-400 rounded px-2 py-1 w-full"
           placeholder="Masukkan nama material"
         />
       </div>
 
-      {/* Komponen Form Tambah Barang */}
-      <AddMaterialForm addMaterial={addMaterial} /> {/* Menghubungkan dengan fungsi addMaterial */}
-
-      {/* Dropdown untuk memilih jumlah baris */}
-      <div className="mb-4 flex items-center">
-        <label htmlFor="rows-select" className="mr-2 font-medium">Tampilkan</label>
-        <select
-          id="rows-select"
-          value={rowsToShow}
-          onChange={handleRowsChange}
-          className="border border-gray-400 rounded px-2 py-1"
-        >
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={15}>15</option>
-        </select>
+      <div className="mb-4">
+        <label htmlFor="vendor" className="block font-medium">Vendor:</label>
+        <input
+          type="text"
+          id="vendor"
+          value={vendor}
+          onChange={(e) => setVendor(e.target.value)}
+          className="border border-gray-400 rounded px-2 py-1 w-full"
+          placeholder="Masukkan nama vendor"
+        />
       </div>
 
-      {/* Tabel Material */}
-      <table className="table-auto border-collapse border border-gray-400 w-full">
-        <thead>
-          <tr>
-            <th className="border border-gray-300 px-4 py-2">No</th>
-            <th className="border border-gray-300 px-4 py-2">Nama</th>
-            <th className="border border-gray-300 px-4 py-2">Vendor</th>
-            <th className="border border-gray-300 px-4 py-2">Harga</th>
-            <th className="border border-gray-300 px-4 py-2">Kategori</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredMaterials.slice(0, rowsToShow).map((material, index) => (
-            <tr key={material.id}>
-              <td className="border border-gray-300 px-4 py-2 text-center">{index + 1}</td>
-              <td className="border border-gray-300 px-4 py-2">{material.name}</td>
-              <td className="border border-gray-300 px-4 py-2">{material.vendor}</td>
-              <td className="border border-gray-300 px-4 py-2">{material.price}</td>
-              <td className="border border-gray-300 px-4 py-2">{material.category}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+      <div className="mb-4">
+        <label htmlFor="price" className="block font-medium">Harga:</label>
+        <input
+          type="number"
+          id="price"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          className="border border-gray-400 rounded px-2 py-1 w-full"
+          placeholder="Masukkan harga material"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="category" className="block font-medium">Kategori:</label>
+        <input
+          type="text"
+          id="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="border border-gray-400 rounded px-2 py-1 w-full"
+          placeholder="Masukkan kategori material"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="image" className="block font-medium">Gambar:</label>
+        <input
+          type="file"
+          id="image"
+          onChange={(e) => setImage(e.target.files[0])}
+          className="border border-gray-400 rounded px-2 py-1 w-full"
+        />
+      </div>
+
+      <button
+        type="submit"
+        className="bg-blue-500 text-white rounded px-4 py-2"
+      >
+        Tambah Material
+      </button>
+    </form>
   );
 }
