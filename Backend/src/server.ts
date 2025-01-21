@@ -23,8 +23,9 @@ const upload = multer({ storage });
 
 // Endpoint untuk membuat order
 app.post('/orders', async (req: Request, res: Response) => {
-  const { number, contractNumber, location, requestBy, detail } = req.body;
+  console.log(req.body); // Log isi body request
   try {
+    const { number, contractNumber, location, requestBy, detail } = req.body;
     const newOrder = await prisma.order.create({
       data: {
         number,
@@ -40,6 +41,7 @@ app.post('/orders', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to create order' });
   }
 });
+
 
 // Endpoint untuk mengambil semua order
 app.get('/orders', async (req: Request, res: Response) => {
