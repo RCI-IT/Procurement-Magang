@@ -9,7 +9,7 @@ export default function Sidebar({ setActiveContent }) {
         isMinimized ? "w-20" : "w-70"
       } transition-all duration-500 ease-in-out overflow-hidden`} // Durasi diperpanjang
     >
-      {/* Header */}
+      
       <div className="flex items-center px-4 py-4 bg-white-900">
         <img src="/logo1.png" alt="Logo" className="w-12 h-12 flex-shrink-0" />
         {!isMinimized && (
@@ -24,7 +24,7 @@ export default function Sidebar({ setActiveContent }) {
         )}
       </div>
 
-      {/* Title and Minimize Button */}
+     
       <div className="flex items-center justify-between px-4 py-3 bg-white-900">
         {!isMinimized && (
           <h1 className="text-lg font-bold text-blue-500">Procurement</h1>
