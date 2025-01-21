@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import Sidebar from "./sidebar/sidebar";
-import Home from "./pages/Home";
-import PermintaanLapangan from "./pages/PermintaanLapangan";
-import PurchaseOrder from "./pages/PurchaseOrder";
-import ConfirmationOrder from "./pages/ConfirmationOrder";
-import Material from "./pages/Material";
-import Setting from "./pages/Setting";
+import Sidebar from "../component/sidebar";
+import Home from "../component/Home";
+import PermintaanLapangan from "../component/PermintaanLapangan";
+import PurchaseOrder from "../component/PurchaseOrder";
+import ConfirmationOrder from "../component/ConfirmationOrder";
+import Material from "../component/Material";
+import Setting from "../component/Setting";
 
 export default function MainPage() {
   const [activeContent, setActiveContent] = useState("home");

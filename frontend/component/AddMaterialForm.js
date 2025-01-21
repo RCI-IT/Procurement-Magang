@@ -10,11 +10,13 @@ export default function AddMaterialForm({ addMaterial }) {
   const handleSubmit = (event) => {
     event.preventDefault();
 
+    // Validasi input
     if (!name || !vendor.name || !price || !category || !image) {
       alert("Semua kolom harus diisi");
       return;
     }
 
+    // Membuat data material baru
     const newMaterial = {
       name,
       vendor: {
@@ -26,7 +28,10 @@ export default function AddMaterialForm({ addMaterial }) {
       image: URL.createObjectURL(image), 
     };
 
+    // Mengirim data ke komponen induk
     addMaterial(newMaterial);
+
+    // Reset form
     setName("");
     setVendor({ id: "", name: "" });
     setPrice("");
@@ -36,6 +41,7 @@ export default function AddMaterialForm({ addMaterial }) {
 
   return (
     <form onSubmit={handleSubmit} className="mb-4">
+      {/* Input Nama Material */}
       <div className="mb-4">
         <label htmlFor="name" className="block font-medium">Nama Material:</label>
         <input
@@ -48,6 +54,7 @@ export default function AddMaterialForm({ addMaterial }) {
         />
       </div>
 
+      {/* Input Vendor */}
       <div className="mb-4">
         <label htmlFor="vendor" className="block font-medium">Vendor:</label>
         <input
@@ -60,6 +67,7 @@ export default function AddMaterialForm({ addMaterial }) {
         />
       </div>
 
+      {/* Input Harga */}
       <div className="mb-4">
         <label htmlFor="price" className="block font-medium">Harga:</label>
         <input
@@ -72,6 +80,7 @@ export default function AddMaterialForm({ addMaterial }) {
         />
       </div>
 
+      {/* Input Kategori */}
       <div className="mb-4">
         <label htmlFor="category" className="block font-medium">Kategori:</label>
         <input
@@ -84,6 +93,7 @@ export default function AddMaterialForm({ addMaterial }) {
         />
       </div>
 
+      {/* Input Gambar */}
       <div className="mb-4">
         <label htmlFor="image" className="block font-medium">Gambar:</label>
         <input
@@ -94,6 +104,7 @@ export default function AddMaterialForm({ addMaterial }) {
         />
       </div>
 
+      {/* Tombol Submit */}
       <button
         type="submit"
         className="bg-blue-500 text-white rounded px-4 py-2"

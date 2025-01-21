@@ -7,7 +7,7 @@ export default function Sidebar({ setActiveContent }) {
     <div
       className={`flex flex-col h-screen bg-white-800 text-blue ${
         isMinimized ? "w-20" : "w-70"
-      } transition-all duration-300 overflow-hidden`}
+      } transition-all duration-500 ease-in-out overflow-hidden`} // Durasi diperpanjang
     >
       {/* Header */}
       <div className="flex items-center px-4 py-4 bg-white-900">
@@ -68,7 +68,7 @@ export default function Sidebar({ setActiveContent }) {
       <div className="p-4">
         <button
           onClick={() => alert("Logout clicked!")}
-          className="flex items-center w-full px-4 py-2 text-left rounded bg-red-600 hover:bg-#da020e-700"
+          className="flex items-center w-full px-4 py-2 text-left rounded bg-red-600 hover:bg-red-700"
         >
           <span className="flex-shrink-0 font-bold">🔒</span>
           {!isMinimized && <span className="ml-4 font-bold">Logout</span>}
