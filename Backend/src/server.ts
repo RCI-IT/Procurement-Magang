@@ -9,7 +9,7 @@ const app = express();
 // Middleware untuk parsing JSON
 app.use(express.json());
 
-// Konfigurasi Multer
+// Konfigurasi Multers
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/'); // Folder tujuan penyimpanan
