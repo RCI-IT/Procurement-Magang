@@ -1,5 +1,5 @@
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -8,116 +8,94 @@ generator client {
 }
 
 model Order {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  number String @unique
+  id          Int             @id @default(autoincrement())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  number      String          @unique
   contractNumber String
-
-  detail OrderDetails[]
-
-  location String
-  requestBy String
-
-  isConfirmed Boolean @default(false)
-  isReceived Boolean @default(false)
-
-  purchase DetailPurchases[]
+  detail      OrderDetails[]
+  location    String
+  requestBy   String
+  isConfirmed Boolean         @default(false)
+  isReceived  Boolean         @default(false)
+  purchase    DetailPurchases[]
 }
 
 model OrderDetails {
-  id              String        @id @default(cuid())
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  orderId String
-  order   Order @relation(fields: [orderId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-
-  materialId String
-  material Materials @relation(fields: [materialId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-
-  qty Int
-  mention String
+  id          Int             @id @default(autoincrement())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  orderId     Int
+  order       Order           @relation(fields: [orderId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  materialId  Int
+  material    Materials       @relation(fields: [materialId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  qty         Int
+  mention     String
 }
 
 model Materials {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  image String
-  name String
-  price Int
-  categoryId String
-  category Categories @relation(fields: [categoryId], references: [id],onUpdate: Cascade, onDelete: Cascade)
-
-  vendorId String
-  vendor Vendors @relation(fields: [vendorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-
-  order OrderDetails[]
-  purchase DetailPurchases[]
+  id          Int             @id @default(autoincrement())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  image       String
+  name        String
+  price       Int
+  categoryId  Int
+  category    Categories      @relation(fields: [categoryId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  vendorId    Int
+  vendor      Vendors         @relation(fields: [vendorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  order       OrderDetails[]
+  purchase    DetailPurchases[]
 }
 
 model Categories {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name String @unique
-  material Materials[]
+  id          Int             @id @default(autoincrement())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  name        String          @unique
+  material    Materials[]
 }
 
 model Vendors {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name String
-  address String?
-  city String?
-  phone String?
-
-  material Materials[]
+  id          Int             @id @default(autoincrement())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  name        String
+  address     String?
+  city        String?
+  phone       String?
+  material    Materials[]
 }
 
 model Purchases {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  number String @unique
-  refrence String
-
-  detail DetailPurchases[]
-
-  subtotal Int
-  tax Int
-  totalPayment Int
-  payment String
-  createBy String
-  checkByFinance Boolean @default(false)
-  isAccepted Boolean @default(false)
-
+  id              Int             @id @default(autoincrement())
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  number          String          @unique
+  refrence        String
+  detail          DetailPurchases[]
+  subtotal        Int
+  tax             Int
+  totalPayment    Int
+  payment         String
+  createBy        String
+  checkByFinance  Boolean         @default(false)
+  isAccepted      Boolean         @default(false)
 }
 
 model DetailPurchases {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  purchaseId String
-  purchase Purchases @relation(fields: [purchaseId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-
-  materialId String
-  material Materials @relation(fields: [materialId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-
-  orderId String
-  order Order @relation(fields: [orderId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-
-  codeBudget String
-  mention String
-  qty Int
-  price Int
-  totalPrice Int
+  id          Int             @id @default(autoincrement())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  purchaseId  Int
+  purchase    Purchases       @relation(fields: [purchaseId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  materialId  Int
+  material    Materials       @relation(fields: [materialId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  orderId     Int
+  order       Order           @relation(fields: [orderId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  codeBudget  String
+  mention     String
+  qty         Int
+  price       Int
+  totalPrice  Int
 }
