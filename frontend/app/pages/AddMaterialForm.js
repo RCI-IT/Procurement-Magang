@@ -2,34 +2,36 @@ import React, { useState } from "react";
 
 export default function AddMaterialForm({ addMaterial }) {
   const [name, setName] = useState("");
-  const [vendor, setVendor] = useState("");
+  const [vendor, setVendor] = useState({ id: "", name: "" }); 
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
-  const [image, setImage] = useState(null); // State untuk gambar
+  const [image, setImage] = useState(null); 
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    // Validasi input
-    if (!name || !vendor || !price || !category || !image) {
+    if (!name || !vendor.name || !price || !category || !image) {
       alert("Semua kolom harus diisi");
       return;
     }
 
     const newMaterial = {
       name,
-      vendor,
+      vendor: {
+        id: vendor.id || "",  
+        name: vendor.name || ""
+      },
       price,
       category,
-      image: URL.createObjectURL(image), // Menggunakan URL.createObjectURL untuk menampilkan gambar
+      image: URL.createObjectURL(image), 
     };
 
     addMaterial(newMaterial);
     setName("");
-    setVendor("");
+    setVendor({ id: "", name: "" });
     setPrice("");
     setCategory("");
-    setImage(null); // Reset form setelah submit
+    setImage(null); 
   };
 
   return (
@@ -51,8 +53,8 @@ export default function AddMaterialForm({ addMaterial }) {
         <input
           type="text"
           id="vendor"
-          value={vendor}
-          onChange={(e) => setVendor(e.target.value)}
+          value={vendor.name} 
+          onChange={(e) => setVendor({ id: e.target.value, name: e.target.value })}
           className="border border-gray-400 rounded px-2 py-1 w-full"
           placeholder="Masukkan nama vendor"
         />
