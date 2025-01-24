@@ -169,7 +169,7 @@ app.post('/detail-purchases', async (req: Request, res: Response) => {
 });
 
 // Jalankan server
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5003;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5005;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server berjalan di port ${PORT}`);
 });

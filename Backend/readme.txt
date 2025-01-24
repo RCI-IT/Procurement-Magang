@@ -1,14 +1,13 @@
-
 {
-  "number": "ORD001",
-  "contractNumber": "CONTRACT123",
+  "number": "ORD12345",
+  "contractNumber": "CONTR123",
   "location": "Jakarta",
   "requestBy": "John Doe",
   "detail": [
     {
-      "materialId": "MATERIAL_ID",
+      "materialId": 1,
       "qty": 10,
-      "mention": "Kebutuhan Proyek"
+      "mention":"CekAngin"
     }
   ]
 }
@@ -23,8 +22,8 @@
   "image": "https://example.com/image.png",
   "name": "Besi Baja",
   "price": 50000,
-  "categoryId": "CATEGORY_ID",
-  "vendorId": "VENDOR_ID"
+  "categoryId": 1,
+  "vendorId": 1
 }
 
 {
@@ -41,8 +40,8 @@
   "createBy": "Admin",
   "detail": [
     {
-      "materialId": "MATERIAL_ID",
-      "orderId": "ORDER_ID",
+      "materialId": 1,
+      "orderId": 1,
       "codeBudget": "BUDGET001",
       "mention": "Pembelian material",
       "qty": 5,
@@ -52,9 +51,9 @@
   ]
 }
 {
-  "purchaseId": "PURCHASE_ID",
-  "materialId": "MATERIAL_ID",
-  "orderId": "ORDER_ID",
+  "purchaseId": 1,
+  "materialId": 1,
+  "orderId": 1,
   "codeBudget": "BUDGET001",
   "mention": "Pembelian material tambahan",
   "qty": 3,
