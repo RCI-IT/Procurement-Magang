@@ -19,7 +19,6 @@ export default function MaterialDetails({ material }) {
               className="flex items-center bg-green-500 text-white px-4 py-2 rounded shadow-md hover:bg-green-600"
             >
               <span className="mr-2">Hubungi</span>
-              className="object-cover max-h-72"
             </a>
           </div>
         </div>
