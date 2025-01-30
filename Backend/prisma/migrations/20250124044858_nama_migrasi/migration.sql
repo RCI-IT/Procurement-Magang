@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'USER_PURCHASE', 'USER_LAPANGAN');
+
 -- CreateTable
 CREATE TABLE "Order" (
     "id" SERIAL NOT NULL,
@@ -33,6 +36,7 @@ CREATE TABLE "Materials" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "image" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
     "price" INTEGER NOT NULL,
     "categoryId" INTEGER NOT NULL,
     "vendorId" INTEGER NOT NULL,
@@ -98,6 +102,20 @@ CREATE TABLE "DetailPurchases" (
     CONSTRAINT "DetailPurchases_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "User" (
+    "id" SERIAL NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "username" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "fullName" TEXT NOT NULL,
+    "role" "UserRole" NOT NULL DEFAULT 'USER_LAPANGAN',
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Order_number_key" ON "Order"("number");
 
@@ -106,6 +124,12 @@ CREATE UNIQUE INDEX "Categories_name_key" ON "Categories"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Purchases_number_key" ON "Purchases"("number");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- AddForeignKey
 ALTER TABLE "OrderDetails" ADD CONSTRAINT "OrderDetails_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;

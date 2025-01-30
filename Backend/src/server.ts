@@ -87,26 +87,35 @@ app.get('/vendors', async (req: Request, res: Response) => {
 });
 
 // Endpoint untuk membuat material
-app.post('/materials', upload.single('image'), async (req: Request, res: Response) => {
-  const { name, price, categoryId, vendorId } = req.body;
-  const image = req.file?.filename || 'default-image.jpg'; // Default jika file tidak diunggah
-
+app.post('/materials', upload.single('image'), async (req: Request, res: Response): Promise<void> => {
   try {
+    const { name, price, categoryId, vendorId, description } = req.body;
+    const image = req.file?.filename || 'default-image.jpg';
+
+    if (!name || !price || !categoryId || !vendorId || !description) {
+      res.status(400).json({ error: 'All fields including description are required' });
+      return;
+    }
+
     const newMaterial = await prisma.materials.create({
       data: {
         image,
         name,
-        price: parseFloat(price), // Konversi string ke number
-        categoryId: parseInt(categoryId), // Konversi ke Int
-        vendorId: parseInt(vendorId), // Konversi ke Int
+        description,
+        price: parseInt(price, 10),
+        categoryId: parseInt(categoryId, 10),
+        vendorId: parseInt(vendorId, 10),
       },
     });
-    res.status(201).json(newMaterial);
+
+    res.status(201).json(newMaterial); // Tidak perlu `return` di sini
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create material' });
   }
 });
+
+
 
 // Endpoint untuk membuat kategori
 app.post('/categories', async (req: Request, res: Response) => {
@@ -167,9 +176,90 @@ app.post('/detail-purchases', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to create detail purchase' });
   }
 });
+// Endpoint untuk membuat user baru
+app.post('/users', async (req: Request, res: Response): Promise<void> => {
+  const { username, password, email, fullName, role } = req.body;
+  
+  // Validasi input
+  if (!username || !password || !email || !fullName || !role) {
+    res.status(400).json({ error: 'All fields are required' });
+    return; // Menghentikan eksekusi lebih lanjut
+  }
+
+  try {
+    const newUser = await prisma.user.create({
+      data: {
+        username,
+        password,
+        email,
+        fullName,
+        role,
+      },
+    });
+
+    res.status(201).json(newUser); // Kirimkan respons, jangan mengembalikan apapun
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create user' });
+  }
+});
+
+// Endpoint untuk mendapatkan semua users
+app.get('/users', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const users = await prisma.user.findMany();
+    res.status(200).json(users); // Kirimkan respons, jangan mengembalikan apapun
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+// Endpoint untuk mendapatkan user berdasarkan ID
+app.get('/users/:id', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id);
+    const user = await prisma.user.findUnique({ where: { id } });
+
+    res.status(200).json(user); // Kirimkan respons, jangan mengembalikan apapun
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
+// Endpoint untuk mengupdate user
+app.put('/users/:id', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id);
+    const { fullName, email, role } = req.body;
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { fullName, email, role },
+    });
+
+    res.status(200).json(updatedUser); // Kirimkan respons, jangan mengembalikan apapun
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
+// Endpoint untuk menghapus user
+app.delete('/users/:id', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id);
+    await prisma.user.delete({ where: { id } });
+    res.status(204).send(); // Response tanpa body
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
 
 // Jalankan server
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5005;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5001;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server berjalan di port ${PORT}`);
 });
