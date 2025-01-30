@@ -115,7 +115,14 @@ export default function Material() {
                       />
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
-                      {material.vendor.name}
+                      <a
+                        href={material.vendor.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 underline"
+                      >
+                        {material.vendor.name}
+                      </a>
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
                       {material.price}

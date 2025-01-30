@@ -6,7 +6,7 @@ export default function Sidebar({ setActiveContent }) {
   return (
     <div
       className={`flex flex-col h-screen bg-gray-100 text-gray-800 shadow-lg ${
-        isMinimized ? "w-20" : "w-64"
+        isMinimized ? "w-20" : "w-70"
       } transition-all duration-300 ease-in-out`}
     >
       {/* Logo Section */}
