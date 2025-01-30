@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+// Hapus import Link dari next/link
 import AddMaterialForm from "./AddMaterialForm";
 import MaterialDetails from "./MaterialDetails";
+import DetailVendor from "./DetailVendor"; // Import DetailVendor
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
@@ -9,6 +11,7 @@ export default function Material() {
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
+  const [selectedVendor, setSelectedVendor] = useState(null); // Menambahkan state untuk vendor
 
   const addMaterial = (newMaterial) => {
     const updatedMaterial = {
@@ -39,11 +42,16 @@ export default function Material() {
   const handleBackToList = () => {
     setShowDetails(false);
     setSelectedMaterial(null);
+    setSelectedVendor(null); // Reset vendor saat kembali ke list
+  };
+
+  const handleVendorClick = (vendor) => {
+    setSelectedVendor(vendor); // Set vendor yang dipilih
   };
 
   return (
     <div className="p-6">
-      {!showDetails ? (
+      {!showDetails && !selectedVendor ? (
         <>
           <div className="mb-2">
             <h1 className="text-3xl font-bold">Material</h1>
@@ -115,14 +123,13 @@ export default function Material() {
                       />
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
-                      <a
-                        href={material.vendor.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      {/* Ketika kolom vendor diklik, set vendor yang dipilih */}
+                      <button
+                        onClick={() => handleVendorClick(material.vendor)}
                         className="text-blue-500 underline"
                       >
                         {material.vendor.name}
-                      </a>
+                      </button>
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
                       {material.price}
@@ -144,6 +151,17 @@ export default function Material() {
             </table>
           </div>
         </>
+      ) : selectedVendor ? (
+        <div className="mt-4">
+          <button
+            onClick={handleBackToList}
+            className="bg-red-500 text-white rounded px-4 py-2 mb-4"
+          >
+            Kembali
+          </button>
+          {/* Render DetailVendor tanpa berpindah halaman */}
+          <DetailVendor vendor={selectedVendor} />
+        </div>
       ) : (
         <div className="mt-4">
           <button

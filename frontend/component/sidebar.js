@@ -48,6 +48,7 @@ export default function Sidebar({ setActiveContent }) {
           {/* Menu List */}
           <ul className="space-y-1 mt-2">
             {[
+               { id: "home", label: "home", icon: "🏠" },
               { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄" },
               { id: "purchase-order", label: "Purchase Order", icon: "🛒" },
               { id: "confirmation-order", label: "Confirmation Order", icon: "✔️" },
