@@ -5,13 +5,16 @@ import materialsRoutes from './routes/materials';
 import categoriesRoutes from './routes/categories';
 import purchasesRoutes from './routes/purchases';
 import usersRoutes from './routes/users';
+import cors from 'cors';
+
+ // Menambahkan CORS untuk mengirimkan permintaan dari domain lain
 
 // Inisialisasi aplikasi Express
 const app = express();
 
 // Middleware untuk parsing JSON
 app.use(express.json());
-
+app.use(cors()); 
 // Rute-rute yang sudah didefinisikan di file routes
 app.use('/orders', ordersRoutes);
 app.use('/vendors', vendorsRoutes);
