@@ -50,14 +50,4 @@
     }
   ]
 }
-{
-  "purchaseId": 1,
-  "materialId": 1,
-  "orderId": 1,
-  "codeBudget": "BUDGET001",
-  "mention": "Pembelian material tambahan",
-  "qty": 3,
-  "price": 15000,
-  "totalPrice": 45000
-}
 
