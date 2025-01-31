@@ -7,7 +7,7 @@ export const DataProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch('http://localhost:5000/api/items');  
+      const response = await fetch('http://localhost:5001/materials');  
       const data = await response.json();
       setItems(data);
     };
