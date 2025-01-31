@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AddMaterialForm from "./AddMaterialForm";
 import MaterialDetails from "./MaterialDetails";
-import DetailVendor from "./DetailVendor"; 
+import DetailVendor from "./DetailVendor";
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
@@ -10,23 +10,34 @@ export default function Material() {
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
-  const [selectedVendor, setSelectedVendor] = useState(null); 
+  const [selectedVendor, setSelectedVendor] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Fungsi untuk mengambil data material dari backend
-  useEffect(() => {
-    const fetchMaterials = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/materials"); // Gantilah URL ini dengan URL backend Anda
-        const data = await response.json();
-        setMaterials(data); // Menyimpan data yang diterima dari API
-      } catch (error) {
-        console.error("Error fetching materials:", error);
+  const fetchMaterials = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost:5000/materials"); // Gantilah URL ini dengan URL backend Anda
+      if (!response.ok) {
+        throw new Error("Failed to fetch materials");
       }
-    };
+      const data = await response.json();
+      setMaterials(data); // Menyimpan data yang diterima dari API
+    } catch (error) {
+      setError(error.message); // Menyimpan error jika terjadi kesalahan
+      console.error("Error fetching materials:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Mengambil data hanya sekali saat komponen di-mount
+  useEffect(() => {
     fetchMaterials();
   }, []);
 
+  // Menambahkan material baru ke dalam daftar dan mengirimkannya ke backend
   const addMaterial = (newMaterial) => {
     const updatedMaterial = {
       id: materials.length + 1,
@@ -35,10 +46,10 @@ export default function Material() {
     setMaterials((prevMaterials) => [...prevMaterials, updatedMaterial]);
     setShowForm(false);
 
-    // Kirim material baru ke backend (opsional)
+    // Kirim material baru ke backend
     const saveMaterial = async () => {
       try {
-        await fetch("http://localhost:5000/api/materials", { // URL API backend
+        await fetch("http://localhost:5000/materials", { // URL API backend
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -73,7 +84,7 @@ export default function Material() {
   const handleBackToList = () => {
     setShowDetails(false);
     setSelectedMaterial(null);
-    setSelectedVendor(null); 
+    setSelectedVendor(null);
   };
 
   const handleVendorClick = (vendor) => {
@@ -82,6 +93,9 @@ export default function Material() {
 
   return (
     <div className="p-6">
+      {loading && <div className="text-center text-blue-500">Loading...</div>}
+      {error && <div className="text-center text-red-500">Error: {error}</div>}
+
       {!showDetails && !selectedVendor ? (
         <>
           <div className="mb-2">
@@ -156,7 +170,7 @@ export default function Material() {
                         onClick={() => handleVendorClick(material.vendor)}
                         className="text-blue-500 underline"
                       >
-                        {material.vendor.name}
+                        {material.vendor ? material.vendor.name : "N/A"}
                       </button>
                     </td>
                     <td className="border border-gray-300 px-4 py-2">

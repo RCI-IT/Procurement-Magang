@@ -1,8 +1,11 @@
 import express from 'express';
 import multer from 'multer';
 import { createMaterial } from '../controllers/materialController';
+import { getAllMaterials } from '../controllers/materialController';
 
 const router = express.Router();
+// Endpoint GET untuk mengambil semua material
+router.get('/', getAllMaterials);
 
 // Konfigurasi multer untuk upload gambar
 const storage = multer.diskStorage({
