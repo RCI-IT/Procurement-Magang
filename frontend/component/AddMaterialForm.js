@@ -10,13 +10,11 @@ export default function AddMaterialForm({ addMaterial }) {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    // Validasi input
     if (!name || !vendor.name || !price || !category || !image) {
       alert("Semua kolom harus diisi");
       return;
     }
 
-    
     const newMaterial = {
       name,
       vendor: {
@@ -28,10 +26,8 @@ export default function AddMaterialForm({ addMaterial }) {
       image: URL.createObjectURL(image), 
     };
 
-  
     addMaterial(newMaterial);
 
-  
     setName("");
     setVendor({ id: "", name: "" });
     setPrice("");

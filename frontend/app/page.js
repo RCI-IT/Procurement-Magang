@@ -8,6 +8,7 @@ import PurchaseOrder from "../component/PurchaseOrder";
 import ConfirmationOrder from "../component/ConfirmationOrder";
 import Material from "../component/Material";
 import Setting from "../component/Setting";
+import { DataProvider } from "../context/DataContext"; 
 
 export default function MainPage() {
   const [activeContent, setActiveContent] = useState("home");
@@ -32,9 +33,11 @@ export default function MainPage() {
   };
 
   return (
-    <div className="flex">
-      <Sidebar setActiveContent={setActiveContent} />
-      <div className="flex-1 p-6">{renderContent()}</div>
-    </div>
+    <DataProvider>
+      <div className="flex">
+        <Sidebar setActiveContent={setActiveContent} />
+        <div className="flex-1 p-6">{renderContent()}</div>
+      </div>
+    </DataProvider>
   );
 }

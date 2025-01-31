@@ -3,7 +3,6 @@ import React from "react";
 export default function MaterialDetails({ material }) {
   return (
     <div className="p-6">
-      {/* Header Vendor */}
       <div className="mb-6 bg-white shadow-md p-4 rounded-md">
         <div className="flex justify-between items-center">
           <div>
@@ -24,9 +23,7 @@ export default function MaterialDetails({ material }) {
         </div>
       </div>
 
-      {/* Detail Barang */}
       <div className="flex gap-6 items-start mb-8 bg-white shadow-md p-4 rounded-md">
-        {/* Gambar Barang */}
         <div className="bg-gray-100 border border-gray-300 rounded p-4 flex justify-center">
           <img
             src={material.image}
@@ -35,13 +32,11 @@ export default function MaterialDetails({ material }) {
           />
         </div>
 
-        {/* Informasi Barang */}
         <div className="flex-grow">
           <h3 className="text-2xl font-bold mb-2">{material.name}</h3>
           <p className="text-xl text-blue-600 font-semibold mb-4">Rp {material.price}</p>
           <p className="text-sm text-gray-500 mb-4">Kategori: <span className="text-gray-700">{material.category}</span></p>
 
-          {/* Deskripsi */}
           <h4 className="font-bold text-lg mb-2">Deskripsi</h4>
           <p className="text-gray-700 text-sm">
             Pull Handle Onassis adalah gagang pintu bergaya modern dan elegan, terbuat dari bahan premium yang tahan lama, cocok untuk berbagai jenis pintu dan meningkatkan estetika serta kenyamanan.
@@ -51,11 +46,9 @@ export default function MaterialDetails({ material }) {
         </div>
       </div>
 
-      {/* Material Lainnya */}
       <div className="bg-white shadow-md p-4 rounded-md">
         <h4 className="font-bold text-lg mb-4">Material lainnya di vendor ini</h4>
         <div className="flex justify-start gap-4">
-          {/* Contoh Produk */}
           <div className="border rounded p-4 text-center bg-white text-sm w-40 h-48 flex flex-col items-center shadow">
             <img
               src="logo1.png"
