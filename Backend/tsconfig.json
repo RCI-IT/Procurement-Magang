@@ -13,6 +13,6 @@
     "typeRoots": ["./node_modules/@types"], // Direktori tipe.
     "allowSyntheticDefaultImports": true // Izinkan impor default dari modul non-ESM.
   },
-  "include": ["src/**/*.ts", "server.ts"],        // Sertakan semua file TypeScript di dalam `src`.
+  "include": ["src/**/*.ts", "src/server.ts"],        // Sertakan semua file TypeScript di dalam `src`.
   "exclude": ["node_modules", "dist"] // Kecualikan `node_modules` dan folder output.
 }
