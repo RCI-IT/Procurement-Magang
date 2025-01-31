@@ -36,7 +36,7 @@ export default function Material() {
   useEffect(() => {
     fetchMaterials();
   }, []);
-
+//test
   // Menambahkan material baru ke dalam daftar dan mengirimkannya ke backend
   const addMaterial = (newMaterial) => {
     const updatedMaterial = {

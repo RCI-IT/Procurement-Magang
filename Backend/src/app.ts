@@ -16,7 +16,7 @@ const corsOptions = {
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: "Content-Type,Authorization",
 };
-
+//test
 app.use(cors(corsOptions)); // Menggunakan CORS untuk semua rute
 
 // Middleware untuk parsing JSON dan URL-encoded data

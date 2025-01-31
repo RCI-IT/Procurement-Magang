@@ -22,3 +22,4 @@ const upload = multer({ storage });
 router.post('/', upload.single('image'), createMaterial);
 
 export default router;
+//test

@@ -4,3 +4,4 @@ const PORT = process.env.PORT || 5000;  // Menentukan port aplikasi
 app.listen(PORT, () => {
   console.log(`Server berjalan di port ${PORT}`);
 });
+//test
