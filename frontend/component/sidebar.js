@@ -5,11 +5,10 @@ export default function Sidebar({ setActiveContent }) {
 
   return (
     <div
-      className={`flex flex-col h-screen bg-gray-100 text-gray-800 shadow-lg ${
+      className={`flex flex-col h-screen bg-gray-100 text-gray-800 shadow-lg transition-all duration-300 ease-in-out ${
         isMinimized ? "w-20" : "w-72"
       } transition-all duration-300 ease-in-out`}
     >
-      {/* Logo Section */}
       <div className="flex items-center px-4 py-4 bg-white border-b">
         <img
           src="/logo1.png"
@@ -28,11 +27,8 @@ export default function Sidebar({ setActiveContent }) {
         )}
       </div>
 
-      {/* Menu Items */}
       <div className="flex-1 overflow-y-auto">
-        {/* Procurement Section */}
         <div className="mt-4 px-4">
-          {/* Horizontal Line with Minimize Button */}
           <div className="flex items-center justify-between border-b border-gray-300 pb-2">
             {!isMinimized && (
               <h2 className="text-xs font-bold text-gray-500">PROCUREMENT</h2>
@@ -45,7 +41,6 @@ export default function Sidebar({ setActiveContent }) {
             </button>
           </div>
 
-          {/* Menu List */}
           <ul className="space-y-1 mt-2">
             {[
                { id: "home", label: "home", icon: "🏠" },
@@ -71,7 +66,6 @@ export default function Sidebar({ setActiveContent }) {
           </ul>
         </div>
 
-        {/* Settings Section */}
         <div className="mt-6 px-4">
           <div className="flex items-center justify-between border-b border-gray-300 pb-2">
             {!isMinimized && (
@@ -96,7 +90,6 @@ export default function Sidebar({ setActiveContent }) {
         </div>
       </div>
 
-      {/* Logout Section */}
       <div className="px-4 py-4 border-t">
         <button
           onClick={() => alert("Keluar clicked")}

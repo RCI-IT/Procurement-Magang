@@ -1,8 +1,7 @@
-import React, { useState } from "react";
-// Hapus import Link dari next/link
+import React, { useState, useEffect } from "react";
 import AddMaterialForm from "./AddMaterialForm";
 import MaterialDetails from "./MaterialDetails";
-import DetailVendor from "./DetailVendor"; // Import DetailVendor
+import DetailVendor from "./DetailVendor"; 
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
@@ -11,7 +10,22 @@ export default function Material() {
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
-  const [selectedVendor, setSelectedVendor] = useState(null); // Menambahkan state untuk vendor
+  const [selectedVendor, setSelectedVendor] = useState(null); 
+
+  // Fungsi untuk mengambil data material dari backend
+  useEffect(() => {
+    const fetchMaterials = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/materials"); // Gantilah URL ini dengan URL backend Anda
+        const data = await response.json();
+        setMaterials(data); // Menyimpan data yang diterima dari API
+      } catch (error) {
+        console.error("Error fetching materials:", error);
+      }
+    };
+
+    fetchMaterials();
+  }, []);
 
   const addMaterial = (newMaterial) => {
     const updatedMaterial = {
@@ -20,6 +34,23 @@ export default function Material() {
     };
     setMaterials((prevMaterials) => [...prevMaterials, updatedMaterial]);
     setShowForm(false);
+
+    // Kirim material baru ke backend (opsional)
+    const saveMaterial = async () => {
+      try {
+        await fetch("http://localhost:5000/api/materials", { // URL API backend
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newMaterial),
+        });
+      } catch (error) {
+        console.error("Error adding material:", error);
+      }
+    };
+
+    saveMaterial();
   };
 
   const handleRowsChange = (event) => {
@@ -42,11 +73,11 @@ export default function Material() {
   const handleBackToList = () => {
     setShowDetails(false);
     setSelectedMaterial(null);
-    setSelectedVendor(null); // Reset vendor saat kembali ke list
+    setSelectedVendor(null); 
   };
 
   const handleVendorClick = (vendor) => {
-    setSelectedVendor(vendor); // Set vendor yang dipilih
+    setSelectedVendor(vendor);
   };
 
   return (
@@ -73,10 +104,8 @@ export default function Material() {
             </button>
           </div>
 
-          {/* Form Tambah Material */}
           {showForm && <AddMaterialForm addMaterial={addMaterial} />}
 
-          {/* Tabel Material */}
           <div className="mt-6">
             <div className="mb-4 flex items-center">
               <label htmlFor="rowsToShow" className="mr-2 font-medium">
@@ -123,7 +152,6 @@ export default function Material() {
                       />
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
-                      {/* Ketika kolom vendor diklik, set vendor yang dipilih */}
                       <button
                         onClick={() => handleVendorClick(material.vendor)}
                         className="text-blue-500 underline"
@@ -159,7 +187,6 @@ export default function Material() {
           >
             Kembali
           </button>
-          {/* Render DetailVendor tanpa berpindah halaman */}
           <DetailVendor vendor={selectedVendor} />
         </div>
       ) : (
