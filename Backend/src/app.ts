@@ -12,7 +12,7 @@ const app = express();
 
 // Middleware untuk CORS
 const corsOptions = {
-  origin: "http://localhost:3000",  // Ganti dengan URL frontend Anda jika di luar localhost
+  origin: "*",  // Ganti dengan URL frontend Anda jika di luar localhost
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: "Content-Type,Authorization",
 };
