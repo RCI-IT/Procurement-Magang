@@ -49,7 +49,7 @@ export default function Material() {
     // Kirim material baru ke backend
     const saveMaterial = async () => {
       try {
-        await fetch("http://localhost:5000/materials", { // URL API backend
+        await fetch("http://192.168.110.204:5000/materials", { // URL API backend
           method: "POST",
           headers: {
             "Content-Type": "application/json",
