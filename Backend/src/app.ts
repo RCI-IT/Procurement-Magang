@@ -6,9 +6,11 @@ import materialsRoutes from "./routes/materials";
 import categoriesRoutes from "./routes/categories";
 import purchasesRoutes from "./routes/purchases";
 import usersRoutes from "./routes/users";
+import path from 'path';
 
-// Inisialisasi aplikasi Express
 const app = express();
+
+
 
 // Middleware untuk CORS
 const corsOptions = {
@@ -16,8 +18,13 @@ const corsOptions = {
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: "Content-Type,Authorization",
 };
+
 //test
 app.use(cors(corsOptions)); // Menggunakan CORS untuk semua rute
+// Konfigurasi untuk melayani file statis (gambar) dari folder 'uploads'
+app.use('/uploads', express.static(path.join(__dirname, '..', '..', 'uploads')));
+
+
 
 // Middleware untuk parsing JSON dan URL-encoded data
 app.use(express.json());

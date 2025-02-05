@@ -18,7 +18,7 @@ export default function Material() {
   const fetchMaterials = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/materials"); // Gantilah URL ini dengan URL backend Anda
+      const response = await fetch("http://192.168.110.204:5000/materials"); // Gantilah URL ini dengan URL backend Anda
       if (!response.ok) {
         throw new Error("Failed to fetch materials");
       }
@@ -36,7 +36,7 @@ export default function Material() {
   useEffect(() => {
     fetchMaterials();
   }, []);
-//test
+
   // Menambahkan material baru ke dalam daftar dan mengirimkannya ke backend
   const addMaterial = (newMaterial) => {
     const updatedMaterial = {
@@ -159,11 +159,12 @@ export default function Material() {
                       {material.name}
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
-                      <img
-                        src={material.image}
-                        alt={material.name}
-                        className="w-16 h-16 object-cover"
-                      />
+                    <img
+                      src={`http://192.168.110.204:5000/uploads/${material.image}`}
+                      alt={material.image}
+                      className="w-16 h-16 object-cover"
+                    />
+
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
                       <button
