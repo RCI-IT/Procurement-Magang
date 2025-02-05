@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+
 export default function AddMaterialForm({ addMaterial }) {
   const [name, setName] = useState("");
   const [vendorId, setVendorId] = useState("");
@@ -10,7 +11,7 @@ export default function AddMaterialForm({ addMaterial }) {
   const [vendors, setVendors] = useState([]);
   const [categories, setCategories] = useState([]);
 
-  // Ambil daftar vendor dan kategori dari database saat komponen dimuat
+  // Fetch vendors & categories saat komponen pertama kali dimuat
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -26,10 +27,6 @@ export default function AddMaterialForm({ addMaterial }) {
         const vendorData = await vendorRes.json();
         const categoryData = await categoryRes.json();
 
-        if (!vendorData || !categoryData) {
-          throw new Error("Data yang diterima kosong");
-        }
-
         setVendors(vendorData);
         setCategories(categoryData);
       } catch (error) {
@@ -44,31 +41,31 @@ export default function AddMaterialForm({ addMaterial }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-  
+
     const formData = new FormData();
     formData.append("name", name);
-    formData.append("vendorId", vendorId);
-    formData.append("price", price);
-    formData.append("categoryId", categoryId);
+    formData.append("vendorId", parseInt(vendorId, 10));
+    formData.append("price", parseFloat(price));
+    formData.append("categoryId", parseInt(categoryId, 10));
     formData.append("description", description);
     if (image) {
-      formData.append("image", image); // Menambahkan gambar hanya jika ada
+      formData.append("image", image);
     }
-  
+
     try {
       const response = await fetch("http://192.168.110.204:5000/materials", {
         method: "POST",
-        body: formData, // Mengirim FormData yang benar
+        body: formData,
       });
-  
+
       const result = await response.json();
       if (!response.ok) {
         throw new Error(result.error || "Gagal menambahkan material");
       }
-  
+
       addMaterial(result);
-  
-      // Reset form setelah berhasil tambah data
+
+      // Reset form setelah sukses
       setName("");
       setVendorId("");
       setPrice("");
@@ -77,12 +74,11 @@ export default function AddMaterialForm({ addMaterial }) {
       setImage(null);
     } catch (error) {
       console.error("Error adding material:", error);
-      alert(`Terjadi kesalahan saat menambahkan material: ${error.message}`);
+      alert(`Terjadi kesalahan: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <form onSubmit={handleSubmit} className="mb-4">
@@ -104,7 +100,6 @@ export default function AddMaterialForm({ addMaterial }) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="border border-gray-400 rounded px-2 py-1 w-full"
-          placeholder="Masukkan nama material"
         />
       </div>
 
@@ -115,7 +110,6 @@ export default function AddMaterialForm({ addMaterial }) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="border border-gray-400 rounded px-2 py-1 w-full"
-          placeholder="Masukkan deskripsi material"
         />
       </div>
 
@@ -127,7 +121,6 @@ export default function AddMaterialForm({ addMaterial }) {
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           className="border border-gray-400 rounded px-2 py-1 w-full"
-          placeholder="Masukkan harga material"
         />
       </div>
 
@@ -141,9 +134,7 @@ export default function AddMaterialForm({ addMaterial }) {
         >
           <option value="">Pilih Kategori</option>
           {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
+            <option key={category.id} value={category.id}>{category.name}</option>
           ))}
         </select>
       </div>
@@ -158,9 +149,7 @@ export default function AddMaterialForm({ addMaterial }) {
         >
           <option value="">Pilih Vendor</option>
           {vendors.map((vendor) => (
-            <option key={vendor.id} value={vendor.id}>
-              {vendor.name}
-            </option>
+            <option key={vendor.id} value={vendor.id}>{vendor.name}</option>
           ))}
         </select>
       </div>

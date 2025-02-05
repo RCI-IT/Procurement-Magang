@@ -5,59 +5,59 @@ import path from 'path';
 
 const prisma = new PrismaClient();
 
-// Konfigurasi Multer untuk menangani file upload
+// Konfigurasi Multer untuk menangani upload gambar
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Folder penyimpanan gambar
+    cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    const filename = Date.now() + path.extname(file.originalname); // Membuat nama file unik
+    const filename = Date.now() + path.extname(file.originalname);
     cb(null, filename);
   }
 });
 
 const upload = multer({ storage });
 
+// ✅ Fungsi untuk membuat material baru
 export const createMaterial = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log("Received Data:", req.body); // Debugging untuk melihat data yang diterima
+    console.log("Received Data:", req.body);
 
-    const { name, description, price, category, vendorId } = req.body;
+    const { name, description, price, categoryId, vendorId } = req.body;
 
-    // Pastikan category dikonversi ke tipe Integer (jika diperlukan)
-    const categoryId = parseInt(category, 10); // Pastikan mengonversi category menjadi angka
-    const priceValue = parseInt(price, 10); // Pastikan mengonversi price menjadi angka
+    // Konversi data ke angka
+    const parsedCategoryId = parseInt(categoryId, 10);
+    const parsedPrice = parseFloat(price);
+    const parsedVendorId = parseInt(vendorId, 10);
 
-    if (isNaN(priceValue)) {
-      res.status(400).json({ error: 'Invalid category or price' });
+    if (isNaN(parsedCategoryId) || isNaN(parsedPrice) || isNaN(parsedVendorId)) {
+      res.status(400).json({ error: "Invalid categoryId, price, or vendorId" });
       return;
     }
 
-    const image = req.file?.filename || "default-image.jpg"; // Gunakan default jika tidak ada gambar
+    const image = req.file?.filename || "default-image.jpg";
 
-    // Menyimpan material baru ke database menggunakan Prisma
     const newMaterial = await prisma.materials.create({
       data: {
         image,
         name,
         description,
-        price: priceValue,
-        categoryId,  // Gunakan categoryId yang sudah dikonversi
-        vendorId, // Gunakan vendorId
+        price: parsedPrice,
+        categoryId: parsedCategoryId,
+        vendorId: parsedVendorId,
       },
     });
 
-    res.status(201).json(newMaterial); // Kirimkan material baru dalam response
+    res.status(201).json(newMaterial);
   } catch (error) {
     console.error("Error in createMaterial:", error);
-    res.status(500).json({ error: 'Failed to create material' });
+    res.status(500).json({ error: "Failed to create material" });
   }
 };
 
-// Rute untuk mengambil semua material
+// ✅ Fungsi untuk mendapatkan semua material
 export const getAllMaterials = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Query ke database untuk mengambil semua material
     const materials = await prisma.materials.findMany();
 
     if (materials.length === 0) {
@@ -65,7 +65,6 @@ export const getAllMaterials = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    // Kirimkan hasil dalam format JSON
     res.status(200).json(materials);
   } catch (error) {
     console.error('Error fetching materials:', error);
