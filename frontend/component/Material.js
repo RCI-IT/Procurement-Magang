@@ -45,39 +45,41 @@ export default function Material() {
       console.error("Error fetching vendors:", error);
     }
   };
-// Fetch Categories
-const fetchCategories = async () => {
-  try {
-    const response = await fetch("http://192.168.110.204:5000/categories");
-    if (!response.ok) {
-      throw new Error("Failed to fetch categories");
+
+  // Fetch Categories
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("http://192.168.110.204:5000/categories");
+      if (!response.ok) {
+        throw new Error("Failed to fetch categories");
+      }
+      const data = await response.json();
+      setCategories(data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
     }
-    const data = await response.json();
-    setCategories(data);
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-  }
-};
+  };
 
-useEffect(() => {
-  fetchMaterials();
-  fetchVendors();
-  fetchCategories(); // Add this line to fetch categories
-}, []);
-
+  useEffect(() => {
+    fetchMaterials();
+    fetchVendors();
+    fetchCategories();
+  }, []);
 
   const handleVendorClick = (vendorId) => {
     const vendor = vendors.find((v) => v.id === vendorId);
     if (vendor) {
-      setSelectedVendor(vendor);
+      setSelectedVendor(vendor); // Menyimpan vendor yang dipilih
     }
   };
-  const [categories, setCategories] = useState([]); // Add this line
+
+  const [categories, setCategories] = useState([]);
+
   const getCategoryName = (categoryId) => {
     const category = categories.find((c) => c.id === categoryId);
     return category ? category.name : "Unknown Category";
   };
-  
+
   return (
     <div className="p-6">
       {loading && <div className="text-center text-blue-500">Loading...</div>}
@@ -101,24 +103,22 @@ useEffect(() => {
               {showForm ? "Batal Tambah" : "+ Material"}
             </button>
           </div>
-<div>
-<div className="mb-4 flex items-center">
-  <label htmlFor="rowsToShow" className="mr-2 font-medium">
-    Tampilkan
-  </label>
-  <select
-    id="rowsToShow"
-    value={rowsToShow}
-    onChange={(e) => setRowsToShow(Number(e.target.value))}
-    className="border border-gray-300 rounded px-2 py-1"
-  >
-    <option value={5}>5</option>
-    <option value={10}>10</option>
-    <option value={20}>20</option>
-  </select>
-</div>
+          <div className="mb-4 flex items-center">
+            <label htmlFor="rowsToShow" className="mr-2 font-medium">
+              Tampilkan
+            </label>
+            <select
+              id="rowsToShow"
+              value={rowsToShow}
+              onChange={(e) => setRowsToShow(Number(e.target.value))}
+              className="border border-gray-300 rounded px-2 py-1"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+            </select>
+          </div>
 
-</div>
           {showForm && <AddMaterialForm addMaterial={fetchMaterials} />}
 
           <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
