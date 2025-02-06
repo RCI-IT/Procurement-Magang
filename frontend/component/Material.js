@@ -10,19 +10,22 @@ export default function Material() {
   const [rowsToShow, setRowsToShow] = useState(5);
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [showVendorDetails, setShowVendorDetails] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch Materials
+  useEffect(() => {
+    fetchMaterials();
+    fetchVendors();
+  }, []);
+
   const fetchMaterials = async () => {
     setLoading(true);
     try {
       const response = await fetch("http://192.168.110.204:5000/materials");
-      if (!response.ok) {
-        throw new Error("Failed to fetch materials");
-      }
+      if (!response.ok) throw new Error("Failed to fetch materials");
       const data = await response.json();
       setMaterials(data);
     } catch (error) {
@@ -32,13 +35,10 @@ export default function Material() {
     }
   };
 
-  // Fetch Vendors
   const fetchVendors = async () => {
     try {
       const response = await fetch("http://192.168.110.204:5000/vendors");
-      if (!response.ok) {
-        throw new Error("Failed to fetch vendors");
-      }
+      if (!response.ok) throw new Error("Failed to fetch vendors");
       const data = await response.json();
       setVendors(data);
     } catch (error) {
@@ -46,19 +46,18 @@ export default function Material() {
     }
   };
 
-  useEffect(() => {
-    fetchMaterials();
-    fetchVendors();
-  }, []);
+  const handleVendorClick = (vendorId) => {
+    const vendor = vendors.find((v) => v.id === vendorId);
+    setSelectedVendor(vendor);
+    setShowVendorDetails(true);
+    setShowDetails(false);
+  };
 
   const handleMaterialClick = (materialId) => {
     const material = materials.find((m) => m.id === materialId);
-    if (material) {
-      setSelectedMaterial(material); // Menyimpan material yang dipilih
-      const vendor = vendors.find((v) => v.id === material.vendorId);
-      setSelectedVendor(vendor); // Menyimpan vendor yang dipilih
-      setShowDetails(true); // Menampilkan detail material
-    }
+    setSelectedMaterial(material);
+    setShowDetails(true);
+    setShowVendorDetails(false);
   };
 
   return (
@@ -66,10 +65,10 @@ export default function Material() {
       {loading && <div className="text-center text-blue-500">Loading...</div>}
       {error && <div className="text-center text-red-500">Error: {error}</div>}
 
-      {!showDetails ? (
+      {!showDetails && !showVendorDetails ? (
         <>
           <h1 className="text-3xl font-bold mb-4">Material</h1>
-          <div className="mb-4 flex justify-end space-x-2">
+          <div className="mb-4 flex justify-between space-x-2">
             <input
               type="text"
               placeholder="Cari Material"
@@ -110,64 +109,69 @@ export default function Material() {
                 <th className="border px-4 py-2">Gambar</th>
                 <th className="border px-4 py-2">Vendor</th>
                 <th className="border px-4 py-2">Harga</th>
-                <th className="border px-4 py-2">Kategori</th>
                 <th className="border px-4 py-2">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {materials.slice(0, rowsToShow).map((material, index) => {
-                const vendor = vendors.find((v) => v.id === material.vendorId);
-                return (
-                  <tr key={material.id}>
-                    <td className="border px-4 py-2 text-center">{index + 1}</td>
-                    <td className="border px-4 py-2">{material.name}</td>
-                    <td className="border px-4 py-2">
-                      <img
-                        src={`http://192.168.110.204:5000/uploads/${material.image}`}
-                        alt={material.image}
-                        className="w-16 h-16 object-cover"
-                      />
-                    </td>
-                    <td className="border px-4 py-2">
-                      <button
-                        onClick={() => handleMaterialClick(material.id)}
-                        className="text-blue-500 underline"
-                      >
-                        {vendor ? vendor.name : "Tidak Ada Vendor"}
-                      </button>
-                    </td>
-                    <td className="border px-4 py-2">{material.price}</td>
-                    <td className="border px-4 py-2">{material.category}</td>
-                    <td className="border px-4 py-2 text-center">
-                      <button
-                        onClick={() => handleMaterialClick(material.id)}
-                        className="bg-blue-500 text-white rounded px-2 py-1"
-                      >
-                        Lihat
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {materials
+                .filter((material) => material.name.toLowerCase().includes(searchQuery))
+                .slice(0, rowsToShow)
+                .map((material, index) => {
+                  const vendor = vendors.find((v) => v.id === material.vendorId);
+                  return (
+                    <tr key={material.id}>
+                      <td className="border px-4 py-2 text-center">{index + 1}</td>
+                      <td className="border px-4 py-2">{material.name}</td>
+                      <td className="border px-4 py-2">
+                        <img
+                          src={`http://192.168.110.204:5000/uploads/${material.image}`}
+                          alt={material.image}
+                          className="w-16 h-16 object-cover"
+                        />
+                      </td>
+                      <td className="border px-4 py-2">
+                        <button
+                          onClick={() => handleVendorClick(material.vendorId)}
+                          className="text-blue-500 underline"
+                        >
+                          {vendor ? vendor.name : "Tidak Ada Vendor"}
+                        </button>
+                      </td>
+                      <td className="border px-4 py-2">{material.price}</td>
+                      <td className="border px-4 py-2 text-center">
+                        <button
+                          onClick={() => handleMaterialClick(material.id)}
+                          className="bg-blue-500 text-white rounded px-2 py-1"
+                        >
+                          Lihat
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         </>
-      ) : selectedMaterial && selectedVendor ? (
-        <div className="mt-4">
+      ) : showVendorDetails ? (
+        <>
           <button
-            onClick={() => {
-              setShowDetails(false);
-              setSelectedMaterial(null);
-              setSelectedVendor(null);
-            }}
+            onClick={() => setShowVendorDetails(false)}
             className="bg-red-500 text-white rounded px-4 py-2 mb-4"
           >
             Kembali
           </button>
-          <MaterialDetails material={selectedMaterial} vendor={selectedVendor} />
-        </div>
+          <DetailVendor vendor={selectedVendor} onBack={() => setShowVendorDetails(false)} />
+        </>
       ) : (
-        <div className="text-center text-red-500">Data material atau vendor tidak ditemukan</div>
+        <>
+          <button
+            onClick={() => setShowDetails(false)}
+            className="bg-red-500 text-white rounded px-4 py-2 mb-4"
+          >
+            Kembali
+          </button>
+          <MaterialDetails material={selectedMaterial} onBack={() => setShowDetails(false)} />
+        </>
       )}
     </div>
   );
