@@ -5,6 +5,7 @@ import DetailVendor from "./DetailVendor";
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
+  const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [rowsToShow, setRowsToShow] = useState(5);
   const [showForm, setShowForm] = useState(false);
@@ -14,83 +15,69 @@ export default function Material() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fungsi untuk mengambil data material dari backend
+  // Fetch Materials
   const fetchMaterials = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://192.168.110.204:5000/materials"); // Gantilah URL ini dengan URL backend Anda
+      const response = await fetch("http://192.168.110.204:5000/materials");
       if (!response.ok) {
         throw new Error("Failed to fetch materials");
       }
       const data = await response.json();
-      setMaterials(data); // Menyimpan data yang diterima dari API
+      setMaterials(data);
     } catch (error) {
-      setError(error.message); // Menyimpan error jika terjadi kesalahan
-      console.error("Error fetching materials:", error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Mengambil data hanya sekali saat komponen di-mount
-  useEffect(() => {
-    fetchMaterials();
-  }, []);
-
-  // Menambahkan material baru ke dalam daftar dan mengirimkannya ke backend
-  const addMaterial = (newMaterial) => {
-    const updatedMaterial = {
-      id: materials.length + 1,
-      ...newMaterial,
-    };
-    setMaterials((prevMaterials) => [...prevMaterials, updatedMaterial]);
-    setShowForm(false);
-
-    // Kirim material baru ke backend
-    const saveMaterial = async () => {
-      try {
-        await fetch("http://192.168.110.204:5000/materials", { // URL API backend
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newMaterial),
-        });
-      } catch (error) {
-        console.error("Error adding material:", error);
+  // Fetch Vendors
+  const fetchVendors = async () => {
+    try {
+      const response = await fetch("http://192.168.110.204:5000/vendors");
+      if (!response.ok) {
+        throw new Error("Failed to fetch vendors");
       }
-    };
-
-    saveMaterial();
+      const data = await response.json();
+      setVendors(data);
+    } catch (error) {
+      console.error("Error fetching vendors:", error);
+    }
   };
+// Fetch Categories
+const fetchCategories = async () => {
+  try {
+    const response = await fetch("http://192.168.110.204:5000/categories");
+    if (!response.ok) {
+      throw new Error("Failed to fetch categories");
+    }
+    const data = await response.json();
+    setCategories(data);
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+};
 
-  const handleRowsChange = (event) => {
-    setRowsToShow(Number(event.target.value));
+useEffect(() => {
+  fetchMaterials();
+  fetchVendors();
+  fetchCategories(); // Add this line to fetch categories
+}, []);
+
+
+  const handleVendorClick = (vendorId) => {
+    const vendor = vendors.find((v) => v.id === vendorId);
+    if (vendor) {
+      setSelectedVendor(vendor);
+    }
   };
-
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value.toLowerCase());
+  const [categories, setCategories] = useState([]); // Add this line
+  const getCategoryName = (categoryId) => {
+    const category = categories.find((c) => c.id === categoryId);
+    return category ? category.name : "Unknown Category";
   };
-
-  const filteredMaterials = materials.filter((material) =>
-    material.name.toLowerCase().includes(searchQuery)
-  );
-
-  const handleView = (material) => {
-    setSelectedMaterial(material);
-    setShowDetails(true);
-  };
-
-  const handleBackToList = () => {
-    setShowDetails(false);
-    setSelectedMaterial(null);
-    setSelectedVendor(null);
-  };
-
-  const handleVendorClick = (vendor) => {
-    setSelectedVendor(vendor);
-  };
-
+  
   return (
     <div className="p-6">
       {loading && <div className="text-center text-blue-500">Loading...</div>}
@@ -98,16 +85,13 @@ export default function Material() {
 
       {!showDetails && !selectedVendor ? (
         <>
-          <div className="mb-2">
-            <h1 className="text-3xl font-bold">Material</h1>
-          </div>
-
+          <h1 className="text-3xl font-bold mb-4">Material</h1>
           <div className="mb-4 flex justify-end space-x-2">
             <input
               type="text"
               placeholder="Cari Material"
               value={searchQuery}
-              onChange={handleSearchChange}
+              onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
               className="border border-gray-300 rounded px-2 py-1"
             />
             <button
@@ -117,87 +101,83 @@ export default function Material() {
               {showForm ? "Batal Tambah" : "+ Material"}
             </button>
           </div>
+<div>
+<div className="mb-4 flex items-center">
+  <label htmlFor="rowsToShow" className="mr-2 font-medium">
+    Tampilkan
+  </label>
+  <select
+    id="rowsToShow"
+    value={rowsToShow}
+    onChange={(e) => setRowsToShow(Number(e.target.value))}
+    className="border border-gray-300 rounded px-2 py-1"
+  >
+    <option value={5}>5</option>
+    <option value={10}>10</option>
+    <option value={20}>20</option>
+  </select>
+</div>
 
-          {showForm && <AddMaterialForm addMaterial={addMaterial} />}
+</div>
+          {showForm && <AddMaterialForm addMaterial={fetchMaterials} />}
 
-          <div className="mt-6">
-            <div className="mb-4 flex items-center">
-              <label htmlFor="rowsToShow" className="mr-2 font-medium">
-                Tampilkan
-              </label>
-              <select
-                id="rowsToShow"
-                value={rowsToShow}
-                onChange={handleRowsChange}
-                className="border border-gray-300 rounded px-2 py-1"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-              </select>
-            </div>
-
-            <table className="table-auto border-collapse border border-gray-300 w-full">
-              <thead className="bg-blue-500 text-white">
-                <tr>
-                  <th className="border border-gray-300 px-4 py-2">No</th>
-                  <th className="border border-gray-300 px-4 py-2">Nama</th>
-                  <th className="border border-gray-300 px-4 py-2">Gambar</th>
-                  <th className="border border-gray-300 px-4 py-2">Vendor</th>
-                  <th className="border border-gray-300 px-4 py-2">Harga</th>
-                  <th className="border border-gray-300 px-4 py-2">Kategori</th>
-                  <th className="border border-gray-300 px-4 py-2">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredMaterials.slice(0, rowsToShow).map((material, index) => (
+          <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
+            <thead className="bg-blue-500 text-white">
+              <tr>
+                <th className="border px-4 py-2">No</th>
+                <th className="border px-4 py-2">Nama</th>
+                <th className="border px-4 py-2">Gambar</th>
+                <th className="border px-4 py-2">Vendor</th>
+                <th className="border px-4 py-2">Harga</th>
+                <th className="border px-4 py-2">Kategori</th>
+                <th className="border px-4 py-2">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {materials.slice(0, rowsToShow).map((material, index) => {
+                const vendor = vendors.find((v) => v.id === material.vendorId);
+                return (
                   <tr key={material.id}>
-                    <td className="border border-gray-300 px-4 py-2 text-center">
-                      {index + 1}
+                    <td className="border px-4 py-2 text-center">{index + 1}</td>
+                    <td className="border px-4 py-2">{material.name}</td>
+                    <td className="border px-4 py-2">
+                      <img
+                        src={`http://192.168.110.204:5000/uploads/${material.image}`}
+                        alt={material.image}
+                        className="w-16 h-16 object-cover"
+                      />
                     </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {material.name}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                    <img
-                      src={`http://192.168.110.204:5000/uploads/${material.image}`}
-                      alt={material.image}
-                      className="w-16 h-16 object-cover"
-                    />
-
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
+                    <td className="border px-4 py-2">
                       <button
-                        onClick={() => handleVendorClick(material.vendor)}
+                        onClick={() => handleVendorClick(material.vendorId)}
                         className="text-blue-500 underline"
                       >
-                        {material.vendor ? material.vendor.name : "N/A"}
+                        {vendor ? vendor.name : "Tidak Ada Vendor"}
                       </button>
                     </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {material.price}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {material.category}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2 text-center">
+                    <td className="border px-4 py-2">{material.price}</td>
+                    <td className="border px-4 py-2">{getCategoryName(material.categoryId)}</td>
+                    <td className="border px-4 py-2 text-center">
                       <button
-                        onClick={() => handleView(material)}
+                        onClick={() => {
+                          setSelectedMaterial(material);
+                          setShowDetails(true);
+                        }}
                         className="bg-blue-500 text-white rounded px-2 py-1"
                       >
                         Lihat
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                );
+              })}
+            </tbody>
+          </table>
         </>
       ) : selectedVendor ? (
         <div className="mt-4">
           <button
-            onClick={handleBackToList}
+            onClick={() => setSelectedVendor(null)}
             className="bg-red-500 text-white rounded px-4 py-2 mb-4"
           >
             Kembali
@@ -207,7 +187,10 @@ export default function Material() {
       ) : (
         <div className="mt-4">
           <button
-            onClick={handleBackToList}
+            onClick={() => {
+              setShowDetails(false);
+              setSelectedMaterial(null);
+            }}
             className="bg-red-500 text-white rounded px-4 py-2 mb-4"
           >
             Kembali
