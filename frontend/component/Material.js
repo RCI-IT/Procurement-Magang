@@ -46,38 +46,19 @@ export default function Material() {
     }
   };
 
-  // Fetch Categories
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch("http://192.168.110.204:5000/categories");
-      if (!response.ok) {
-        throw new Error("Failed to fetch categories");
-      }
-      const data = await response.json();
-      setCategories(data);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-  };
-
   useEffect(() => {
     fetchMaterials();
     fetchVendors();
-    fetchCategories();
   }, []);
 
-  const handleVendorClick = (vendorId) => {
-    const vendor = vendors.find((v) => v.id === vendorId);
-    if (vendor) {
+  const handleMaterialClick = (materialId) => {
+    const material = materials.find((m) => m.id === materialId);
+    if (material) {
+      setSelectedMaterial(material); // Menyimpan material yang dipilih
+      const vendor = vendors.find((v) => v.id === material.vendorId);
       setSelectedVendor(vendor); // Menyimpan vendor yang dipilih
+      setShowDetails(true); // Menampilkan detail material
     }
-  };
-
-  const [categories, setCategories] = useState([]);
-
-  const getCategoryName = (categoryId) => {
-    const category = categories.find((c) => c.id === categoryId);
-    return category ? category.name : "Unknown Category";
   };
 
   return (
@@ -85,7 +66,7 @@ export default function Material() {
       {loading && <div className="text-center text-blue-500">Loading...</div>}
       {error && <div className="text-center text-red-500">Error: {error}</div>}
 
-      {!showDetails && !selectedVendor ? (
+      {!showDetails ? (
         <>
           <h1 className="text-3xl font-bold mb-4">Material</h1>
           <div className="mb-4 flex justify-end space-x-2">
@@ -149,20 +130,17 @@ export default function Material() {
                     </td>
                     <td className="border px-4 py-2">
                       <button
-                        onClick={() => handleVendorClick(material.vendorId)}
+                        onClick={() => handleMaterialClick(material.id)}
                         className="text-blue-500 underline"
                       >
                         {vendor ? vendor.name : "Tidak Ada Vendor"}
                       </button>
                     </td>
                     <td className="border px-4 py-2">{material.price}</td>
-                    <td className="border px-4 py-2">{getCategoryName(material.categoryId)}</td>
+                    <td className="border px-4 py-2">{material.category}</td>
                     <td className="border px-4 py-2 text-center">
                       <button
-                        onClick={() => {
-                          setSelectedMaterial(material);
-                          setShowDetails(true);
-                        }}
+                        onClick={() => handleMaterialClick(material.id)}
                         className="bg-blue-500 text-white rounded px-2 py-1"
                       >
                         Lihat
@@ -174,29 +152,22 @@ export default function Material() {
             </tbody>
           </table>
         </>
-      ) : selectedVendor ? (
-        <div className="mt-4">
-          <button
-            onClick={() => setSelectedVendor(null)}
-            className="bg-red-500 text-white rounded px-4 py-2 mb-4"
-          >
-            Kembali
-          </button>
-          <DetailVendor vendor={selectedVendor} />
-        </div>
-      ) : (
+      ) : selectedMaterial && selectedVendor ? (
         <div className="mt-4">
           <button
             onClick={() => {
               setShowDetails(false);
               setSelectedMaterial(null);
+              setSelectedVendor(null);
             }}
             className="bg-red-500 text-white rounded px-4 py-2 mb-4"
           >
             Kembali
           </button>
-          <MaterialDetails material={selectedMaterial} />
+          <MaterialDetails material={selectedMaterial} vendor={selectedVendor} />
         </div>
+      ) : (
+        <div className="text-center text-red-500">Data material atau vendor tidak ditemukan</div>
       )}
     </div>
   );
