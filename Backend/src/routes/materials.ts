@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import { createMaterial } from '../controllers/materialController';
 import { getAllMaterials } from '../controllers/materialController';
+import { deleteMaterial } from '../controllers/materialController';
 
 const router = express.Router();
 // Endpoint GET untuk mengambil semua material
@@ -20,6 +21,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 router.post('/', upload.single('image'), createMaterial);
+router.delete('/:id', deleteMaterial);
 
 export default router;
 //test
