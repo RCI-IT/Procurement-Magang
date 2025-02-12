@@ -117,3 +117,12 @@ enum UserRole {
   USER_PURCHASE
   USER_LAPANGAN
 }
+
+model PermintaanLapangan {
+  id        Int      @id @default(autoincrement())
+  nomor     String   @unique
+  tanggal   DateTime
+  lokasi    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
