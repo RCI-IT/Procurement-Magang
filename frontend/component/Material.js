@@ -57,47 +57,34 @@ export default function Material() {
 
   const handleMaterialClick = (materialId) => {
     const material = materials.find((m) => m.id === materialId);
+    const vendor = vendors.find((v) => v.id === material?.vendorId); // Ambil vendor yang cocok
     setSelectedMaterial(material);
+    setSelectedVendor(vendor);
     setShowDetails(true);
     setShowVendorDetails(false);
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Yakin ingin menghapus material ini?")) return;
-  
+
     try {
-      console.log("Menghapus material ID:", id);
-  
       const response = await fetch(`http://192.168.110.204:5000/materials/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
       });
-  
-      const text = await response.text(); // Coba baca sebagai teks dulu
-      console.log("Response dari server:", text);
-  
-      let result;
-      try {
-        result = JSON.parse(text); // Coba parse JSON
-      } catch (e) {
-        throw new Error("Server mengembalikan format yang tidak valid.");
-      }
-  
+
       if (!response.ok) {
-        throw new Error(result.error || "Gagal menghapus material");
+        throw new Error("Gagal menghapus material");
       }
-  
+
       setMaterials((prevMaterials) => prevMaterials.filter((material) => material.id !== id));
-      console.log("Material berhasil dihapus dari state");
     } catch (error) {
       console.error("Error deleting material:", error);
       alert("Gagal menghapus material: " + error.message);
     }
   };
-  
-  
 
   return (
     <div className="p-6">
@@ -121,21 +108,6 @@ export default function Material() {
             >
               {showForm ? "Batal Tambah" : "+ Material"}
             </button>
-          </div>
-          <div className="mb-4 flex items-center">
-            <label htmlFor="rowsToShow" className="mr-2 font-medium">
-              Tampilkan
-            </label>
-            <select
-              id="rowsToShow"
-              value={rowsToShow}
-              onChange={(e) => setRowsToShow(Number(e.target.value))}
-              className="border border-gray-300 rounded px-2 py-1"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-            </select>
           </div>
 
           {showForm && <AddMaterialForm addMaterial={fetchMaterials} />}
@@ -185,12 +157,11 @@ export default function Material() {
                           Lihat
                         </button>
                         <button
-  onClick={() => handleDelete(material.id)}
-  className="bg-red-500 text-white rounded px-2 py-1 ml-2"
->
-  Hapus
-</button>
-
+                          onClick={() => handleDelete(material.id)}
+                          className="bg-red-500 text-white rounded px-2 py-1 ml-2"
+                        >
+                          Hapus
+                        </button>
                       </td>
                     </tr>
                   );
@@ -206,7 +177,7 @@ export default function Material() {
           >
             Kembali
           </button>
-          <DetailVendor vendor={selectedVendor} onBack={() => setShowVendorDetails(false)} />
+          <DetailVendor vendor={selectedVendor} />
         </>
       ) : (
         <>
@@ -216,7 +187,7 @@ export default function Material() {
           >
             Kembali
           </button>
-          <MaterialDetails material={selectedMaterial} onBack={() => setShowDetails(false)} />
+          <MaterialDetails material={selectedMaterial} vendor={selectedVendor} />
         </>
       )}
     </div>
