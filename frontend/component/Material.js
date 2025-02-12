@@ -148,7 +148,7 @@ export default function Material() {
                           {vendor ? vendor.name : "Tidak Ada Vendor"}
                         </button>
                       </td>
-                      <td className="border px-4 py-2">{material.price}</td>
+                      <td className="border px-4 py-2">Rp.{material.price}</td>
                       <td className="border px-4 py-2 text-center">
                         <button
                           onClick={() => handleMaterialClick(material.id)}

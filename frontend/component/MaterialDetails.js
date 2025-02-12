@@ -6,19 +6,23 @@ export default function MaterialDetails({ material, vendor }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!material) return;
+    if (!vendor || !vendor.id) return;
 
     const fetchRelatedMaterials = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `http://192.168.110.204:5000/materials?vendor_id=${material.vendorId}`
-        );
+        const response = await fetch(`http://192.168.110.204:5000/materials`);
         if (!response.ok) {
           throw new Error("Failed to fetch related materials");
         }
         const data = await response.json();
-        setRelatedMaterials(data);
+        
+        // 🔥 PASTIKAN filter vendor_id di frontend
+        const filteredMaterials = data.filter(
+          (item) => item.vendorId === vendor.id && item.id !== material.id
+        );
+
+        setRelatedMaterials(filteredMaterials);
       } catch (error) {
         setError(error.message);
         console.error("Error fetching related materials:", error);
@@ -28,7 +32,7 @@ export default function MaterialDetails({ material, vendor }) {
     };
 
     fetchRelatedMaterials();
-  }, [material]);
+  }, [vendor, material]);
 
   return (
     <div className="p-6">
