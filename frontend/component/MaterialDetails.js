@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { useState, useEffect } from "react";
 
 export default function MaterialDetails({ material, vendor }) {
@@ -6,7 +7,7 @@ export default function MaterialDetails({ material, vendor }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!material) return;
+    if (!vendor || !vendor.id) return;
 
     const fetchRelatedMaterials = async () => {
       setLoading(true);
@@ -18,7 +19,13 @@ export default function MaterialDetails({ material, vendor }) {
           throw new Error("Failed to fetch related materials");
         }
         const data = await response.json();
-        setRelatedMaterials(data);
+        
+        // 🔥 PASTIKAN filter vendor_id di frontend
+        const filteredMaterials = data.filter(
+          (item) => item.vendorId === vendor.id && item.id !== material.id
+        );
+
+        setRelatedMaterials(filteredMaterials);
       } catch (error) {
         setError(error.message);
         console.error("Error fetching related materials:", error);
@@ -28,7 +35,7 @@ export default function MaterialDetails({ material, vendor }) {
     };
 
     fetchRelatedMaterials();
-  }, [material]);
+  }, [vendor, material]);
 
   return (
     <div className="p-6">
