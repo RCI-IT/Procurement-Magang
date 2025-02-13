@@ -16,8 +16,8 @@ export default function AddMaterialForm({ addMaterial }) {
     const fetchData = async () => {
       try {
         const [vendorRes, categoryRes] = await Promise.all([
-          fetch("http://192.168.110.204:5000/vendors"),
-          fetch("http://192.168.110.204:5000/categories"),
+          fetch("http://192.168.100.190:5000/vendors"),
+          fetch("http://192.168.100.190:5000/categories"),
         ]);
 
         if (!vendorRes.ok || !categoryRes.ok) {
@@ -53,7 +53,7 @@ export default function AddMaterialForm({ addMaterial }) {
     }
 
     try {
-      const response = await fetch("http://192.168.110.204:5000/materials", {
+      const response = await fetch("http://192.168.100.190:5000/materials", {
         method: "POST",
         body: formData,
       });

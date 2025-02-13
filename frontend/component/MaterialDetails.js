@@ -12,7 +12,7 @@ export default function MaterialDetails({ material, vendor }) {
       setLoading(true);
       try {
         const response = await fetch(
-          `http://192.168.110.204:5000/materials?vendor_id=${material.vendorId}`
+          `http://192.168.100.190:5000/materials?vendor_id=${material.vendorId}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch related materials");
@@ -57,7 +57,7 @@ export default function MaterialDetails({ material, vendor }) {
       <div className="flex gap-6 items-start mb-8 bg-white shadow-md p-4 rounded-md">
         <div className="bg-gray-100 border border-gray-300 rounded p-4 flex justify-center">
           <img
-            src={`http://192.168.110.204:5000/uploads/${material.image}`}
+            src={`http://192.168.100.190:5000/uploads/${material.image}`}
             alt={material.name}
             className="object-cover max-h-72"
           />
