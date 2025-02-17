@@ -58,7 +58,7 @@ export default function PermintaanLapangan({ data, setActiveContent }) {
         </thead>
         <tbody>
           {filteredData.slice(0, rowsToShow).map((item, index) => (
-            <tr key={item.id}> {/* Tambahkan key unik di sini */}
+            <tr key={item.id || index}> {/* Tambahkan key unik di sini */}
               <td className="border px-4 py-2 text-center">{index + 1}</td>
               <td className="border px-4 py-2">{item.nomor}</td>
               <td className="border px-4 py-2">{item.tanggal}</td>
