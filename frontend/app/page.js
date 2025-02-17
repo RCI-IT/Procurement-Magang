@@ -8,6 +8,7 @@ import PurchaseOrder from "../component/PurchaseOrder";
 import ConfirmationOrder from "../component/ConfirmationOrder";
 import Material from "../component/Material";
 import Setting from "../component/Setting";
+import AddPermintaanLapanganForm from "../component/AddPermintaanLapanganForm";
 import { DataProvider } from "../context/DataContext"; 
 
 export default function MainPage() {
@@ -18,7 +19,7 @@ export default function MainPage() {
       case "home":
         return <Home />;
       case "permintaan-lapangan":
-        return <PermintaanLapangan />;
+        return <PermintaanLapangan setActiveContent={setActiveContent} />;
       case "purchase-order":
         return <PurchaseOrder />;
       case "confirmation-order":
@@ -27,6 +28,8 @@ export default function MainPage() {
         return <Material />;
       case "setting":
         return <Setting />;
+      case "tambah-permintaan":
+        return <AddPermintaanLapanganForm setActiveContent={setActiveContent} />;
       default:
         return <Home />;
     }

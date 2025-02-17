@@ -1,25 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
-export default function PermintaanLapanganTable() {
+export default function PermintaanLapanganTable({ setActiveContent }) {
   const [data, setData] = useState([]);
   const [rowsToShow, setRowsToShow] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Dummy data untuk contoh
-  useEffect(() => {
-    // Fetch data here (use dummy data for now)
-    const dummyData = Array.from({ length: 30 }, (_, index) => ({
-      id: index + 1,
-      nomor: `PL/AB-ESS/LTC/${(2400000 + index).toString()}`,
-      tanggal: "18 Desember 2024",
-      lokasi: "LTC-Z1",
-    }));
-    setData(dummyData);
-  }, []);
-
   // Filter data berdasarkan pencarian
-  const filteredData = data.filter(item =>
-    item.nomor.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredData = data.filter((item) =>
+    item.nomor?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -34,7 +22,10 @@ export default function PermintaanLapanganTable() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="border border-gray-300 rounded px-4 py-2"
           />
-          <button className="bg-blue-500 text-white rounded px-4 py-2">
+          <button
+            onClick={() => setActiveContent("tambah-permintaan")}
+            className="bg-blue-500 text-white rounded px-4 py-2"
+          >
             Tambah
           </button>
         </div>
@@ -82,14 +73,6 @@ export default function PermintaanLapanganTable() {
           ))}
         </tbody>
       </table>
-
-      {/* Pagination */}
-      <div className="mt-4 flex justify-center space-x-2">
-        <button className="border border-gray-300 px-4 py-2 rounded">{"<"}</button>
-        <button className="border border-gray-300 px-4 py-2 rounded">1</button>
-        <button className="border border-gray-300 px-4 py-2 rounded">2</button>
-        <button className="border border-gray-300 px-4 py-2 rounded">{">"}</button>
-      </div>
     </div>
   );
 }
