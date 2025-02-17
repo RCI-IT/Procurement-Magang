@@ -26,7 +26,7 @@ export default function Material() {
   const fetchMaterials = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://192.168.100.190:5000/materials");
+      const response = await fetch("http://192.168.110.204:5000/materials");
       if (!response.ok) throw new Error("Failed to fetch materials");
       const data = await response.json();
       setMaterials(data);
@@ -39,7 +39,7 @@ export default function Material() {
 
   const fetchVendors = async () => {
     try {
-      const response = await fetch("http://192.168.100.190:5000/vendors");
+      const response = await fetch("http://192.168.110.204:5000/vendors");
       if (!response.ok) throw new Error("Failed to fetch vendors");
       const data = await response.json();
       setVendors(data);
@@ -68,7 +68,7 @@ export default function Material() {
     if (!window.confirm("Yakin ingin menghapus material ini?")) return;
 
     try {
-      const response = await fetch(`http://192.168.100.190:5000/materials/${id}`, {
+      const response = await fetch(`http://192.168.110.204:5000/materials/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -135,7 +135,7 @@ export default function Material() {
                       <td className="border px-4 py-2">{material.name}</td>
                       <td className="border px-4 py-2">
                         <img
-                          src={`http://192.168.100.190:5000/uploads/${material.image}`}
+                          src={`http://192.168.110.204:5000/uploads/${material.image}`}
                           alt={material.image}
                           className="w-16 h-16 object-cover"
                         />
