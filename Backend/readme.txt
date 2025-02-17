@@ -1,16 +1,18 @@
 {
-  "number": "ORD12345",
-  "contractNumber": "CONTR123",
+  "number": "ORD1211345",
+  "contractNumber": "COA11NTR123",
   "location": "Jakarta",
-  "requestBy": "John Doe",
+  "requestBy": "JDoe",
   "detail": [
     {
-      "materialId": 1,
+      "materialId": 8,
       "qty": 10,
-      "mention":"CekAngin"
+      "mention": "CekAngin"
     }
-  ]
+  ],
+  "createdAt": "2025-02-17T10:00:00Z"   // Tanggal dibuat bisa ditambahkan di sini (opsional)
 }
+
 
 {
   "name": "PT Vendor Sejahtera",
