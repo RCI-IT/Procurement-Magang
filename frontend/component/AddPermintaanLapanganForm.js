@@ -113,7 +113,7 @@ export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermi
         {/* Baris 3: Nama Barang/Jasa & Keterangan */}
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <label className="block font-medium">Nama Barang / Jasa:</label>
+            <label className="block font-medium">Nama Barang:</label>
             <input
               type="text"
               name="namaBarang"
