@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 
-export default function PermintaanLapanganTable({ setActiveContent }) {
-  const [data, setData] = useState([]);
+export default function PermintaanLapangan({ data, setActiveContent }) {
   const [rowsToShow, setRowsToShow] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -59,7 +58,7 @@ export default function PermintaanLapanganTable({ setActiveContent }) {
         </thead>
         <tbody>
           {filteredData.slice(0, rowsToShow).map((item, index) => (
-            <tr key={item.id}>
+            <tr key={item.id}> {/* Tambahkan key unik di sini */}
               <td className="border px-4 py-2 text-center">{index + 1}</td>
               <td className="border px-4 py-2">{item.nomor}</td>
               <td className="border px-4 py-2">{item.tanggal}</td>

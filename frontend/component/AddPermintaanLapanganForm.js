@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export default function AddPermintaanLapanganForm({ setActiveContent }) {
+export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermintaan }) {
   const [formData, setFormData] = useState({
     tanggal: { day: "", month: "", year: "" },
     nomor: "",
@@ -29,7 +29,13 @@ export default function AddPermintaanLapanganForm({ setActiveContent }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Data Tersimpan:", formData);
+    const newData = {
+      nomor: formData.nomor,
+      tanggal: `${formData.tanggal.day}/${formData.tanggal.month}/${formData.tanggal.year}`,
+      lokasi: formData.lokasi,
+    };
+
+    onAddPermintaan(newData); // Kirim data ke MainPage.js
     setActiveContent("permintaan-lapangan");
   };
 
@@ -38,7 +44,7 @@ export default function AddPermintaanLapanganForm({ setActiveContent }) {
       <h1 className="text-3xl font-bold mb-6">Tambah Permintaan Lapangan</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Baris 1: Tanggal & PIC Lapangan */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6">
           <div>
             <label className="block font-medium">Tanggal:</label>
             <div className="flex space-x-2">
@@ -48,7 +54,7 @@ export default function AddPermintaanLapanganForm({ setActiveContent }) {
                 placeholder="day"
                 value={formData.tanggal.day}
                 onChange={handleChange}
-                className="border border-gray-300 rounded px-2 py-1 w-1/4"
+                className="border border-gray-300 rounded px-2 py-1 w-1/3"
               />
               <input
                 type="number"
@@ -56,7 +62,7 @@ export default function AddPermintaanLapanganForm({ setActiveContent }) {
                 placeholder="month"
                 value={formData.tanggal.month}
                 onChange={handleChange}
-                className="border border-gray-300 rounded px-2 py-1 w-1/4"
+                className="border border-gray-300 rounded px-2 py-1 w-1/3"
               />
               <input
                 type="number"
@@ -81,7 +87,7 @@ export default function AddPermintaanLapanganForm({ setActiveContent }) {
         </div>
 
         {/* Baris 2: Nomor & Lokasi */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6">
           <div>
             <label className="block font-medium">Nomor:</label>
             <input
@@ -105,7 +111,7 @@ export default function AddPermintaanLapanganForm({ setActiveContent }) {
         </div>
 
         {/* Baris 3: Nama Barang/Jasa & Keterangan */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6">
           <div>
             <label className="block font-medium">Nama Barang / Jasa:</label>
             <input
@@ -144,7 +150,7 @@ export default function AddPermintaanLapanganForm({ setActiveContent }) {
         </div>
 
         {/* Baris 4: Qty & Satuan */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6">
           <div className="flex space-x-2">
             <div>
               <label className="block font-medium">Qty:</label>
