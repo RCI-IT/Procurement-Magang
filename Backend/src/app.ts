@@ -1,10 +1,9 @@
 import express from "express";
 import cors from "cors"; // Mengimpor CORS
-import ordersRoutes from "./routes/orders";
+import permintaanRoutes from "./routes/permintaan";
 import vendorsRoutes from "./routes/vendors";
 import materialsRoutes from "./routes/materials";
 import categoriesRoutes from "./routes/categories";
-import purchasesRoutes from "./routes/purchases";
 import usersRoutes from "./routes/users";
 import path from 'path';
 
@@ -31,11 +30,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Rute-rute yang sudah didefinisikan di file routes
-app.use("/orders", ordersRoutes);
+app.use("/permintaan", permintaanRoutes); // Menggunakan rute permintaan
 app.use("/vendors", vendorsRoutes);
 app.use("/materials", materialsRoutes);
 app.use("/categories", categoriesRoutes);
-app.use("/purchases", purchasesRoutes);
 app.use("/users", usersRoutes);
 
 // Middleware untuk menangani error secara global
