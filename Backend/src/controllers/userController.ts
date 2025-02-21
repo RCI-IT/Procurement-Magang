@@ -3,7 +3,6 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// Fungsi untuk membuat user baru
 export const createUser = async (req: Request, res: Response): Promise<void> => {
   const { username, password, email, fullName, role } = req.body;
 
@@ -23,8 +22,6 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ error: 'Failed to create user' });
   }
 };
-
-// Fungsi untuk mendapatkan semua users
 export const getAllUsers = async (req: Request, res: Response): Promise<void> => {
   try {
     const users = await prisma.user.findMany();
@@ -34,8 +31,6 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ error: 'Failed to fetch users' });
   }
 };
-
-// Fungsi untuk mendapatkan user berdasarkan ID
 export const getUserById = async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(req.params.id);
 
@@ -53,8 +48,6 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ error: 'Failed to fetch user' });
   }
 };
-
-// Fungsi untuk mengupdate user
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(req.params.id);
   const { fullName, email, role } = req.body;
@@ -71,8 +64,6 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ error: 'Failed to update user' });
   }
 };
-
-// Fungsi untuk menghapus user
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(req.params.id);
 
