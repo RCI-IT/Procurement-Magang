@@ -2,10 +2,9 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 
 const prisma = new PrismaClient();
-
-// Konfigurasi Multer untuk menangani upload gambar
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
@@ -15,10 +14,7 @@ const storage = multer.diskStorage({
     cb(null, filename);
   }
 });
-
 const upload = multer({ storage });
-
-// ✅ Fungsi untuk membuat material baru
 export const createMaterial = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log("Received Data:", req.body);
@@ -54,8 +50,6 @@ export const createMaterial = async (req: Request, res: Response): Promise<void>
     res.status(500).json({ error: "Failed to create material" });
   }
 };
-
-// ✅ Fungsi untuk mendapatkan semua material
 export const getAllMaterials = async (req: Request, res: Response): Promise<void> => {
   try {
     const materials = await prisma.materials.findMany();
@@ -71,8 +65,6 @@ export const getAllMaterials = async (req: Request, res: Response): Promise<void
     res.status(500).json({ error: 'Failed to fetch materials' });
   }
 };
-
-// ✅ Fungsi untuk menghapus material berdasarkan ID
 export const deleteMaterial = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -96,5 +88,57 @@ export const deleteMaterial = async (req: Request, res: Response): Promise<void>
   } catch (error) {
     console.error("Error deleting material:", error);
     res.status(500).json({ error: "Failed to delete material" });
+  }
+};
+export const editMaterial = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { name, description, price, categoryId, vendorId } = req.body;
+
+    // Konversi data ke tipe yang sesuai
+    const parsedId = parseInt(id, 10);
+    const parsedCategoryId = parseInt(categoryId, 10);
+    const parsedPrice = parseFloat(price);
+    const parsedVendorId = parseInt(vendorId, 10);
+
+    if (isNaN(parsedId) || isNaN(parsedCategoryId) || isNaN(parsedPrice) || isNaN(parsedVendorId)) {
+      res.status(400).json({ error: "Invalid ID, categoryId, price, or vendorId" });
+      return;
+    }
+
+    // Cek apakah material dengan ID tersebut ada di database
+    const material = await prisma.materials.findUnique({ where: { id: parsedId } });
+
+    if (!material) {
+      res.status(404).json({ error: "Material not found" });
+      return;
+    }
+
+    // Jika ada file gambar baru, hapus gambar lama dan simpan yang baru
+    let newImage = material.image;
+    if (req.file) {
+      if (material.image && material.image !== "default-image.jpg") {
+        fs.unlinkSync(`uploads/${material.image}`); // Hapus gambar lama
+      }
+      newImage = req.file.filename;
+    }
+
+    // Update material di database
+    const updatedMaterial = await prisma.materials.update({
+      where: { id: parsedId },
+      data: {
+        name,
+        description,
+        price: parsedPrice,
+        categoryId: parsedCategoryId,
+        vendorId: parsedVendorId,
+        image: newImage,
+      },
+    });
+
+    res.status(200).json(updatedMaterial);
+  } catch (error) {
+    console.error("Error updating material:", error);
+    res.status(500).json({ error: "Failed to update material" });
   }
 };
