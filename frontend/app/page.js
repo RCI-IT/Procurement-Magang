@@ -1,26 +1,42 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../component/sidebar";
-import Home from "../component/Home";
-import PermintaanLapangan from "../component/PermintaanLapangan";
-import PurchaseOrder from "../component/PurchaseOrder";
-import ConfirmationOrder from "../component/ConfirmationOrder";
-import Material from "../component/Material";
-import Setting from "../component/Setting";
-import AddPermintaanLapanganForm from "../component/AddPermintaanLapanganForm";
+import Home from "./Home";
+import PermintaanLapangan from "./PermintaanLapangan";
+import PurchaseOrder from "./PurchaseOrder";
+import ConfirmationOrder from "./ConfirmationOrder";
+import Material from "./Material";
+import Setting from "./Setting";
+import AddPermintaanLapanganForm from "./AddPermintaanLapanganForm";
 import { DataProvider } from "../context/DataContext";
 
 export default function MainPage() {
-  const [activeContent, setActiveContent] = useState("home");
   const [permintaanLapanganData, setPermintaanLapanganData] = useState([]);
+  const [activeContent, setActiveContent] = useState(null);
+  const [isMounted, setIsMounted] = useState(false); // Track mounting state
+  const [page, setPage] = useState(null); // Track query page
+
+  useEffect(() => {
+    setIsMounted(true); // Ensure component is mounted
+  }, []);
+
+  useEffect(() => {
+    if (isMounted) {
+      const queryPage = new URLSearchParams(window.location.search).get('page');
+      setPage(queryPage); // Get 'page' from query after component mounts
+    }
+  }, [isMounted]);
 
   const handleAddPermintaan = (newData) => {
     setPermintaanLapanganData((prevData) => [...prevData, newData]);
   };
 
+  // Function to render content based on query parameter
   const renderContent = () => {
-    switch (activeContent) {
+    if (!isMounted || !page) return null; // Wait until mounted and query is available
+
+    switch (page) {
       case "home":
         return <Home />;
       case "permintaan-lapangan":
@@ -43,7 +59,7 @@ export default function MainPage() {
   return (
     <DataProvider>
       <div className="flex">
-        <Sidebar setActiveContent={setActiveContent} />
+        <Sidebar />
         <div className="flex-1 p-6">{renderContent()}</div>
       </div>
     </DataProvider>

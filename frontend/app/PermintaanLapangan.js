@@ -1,21 +1,22 @@
-"use client"; // Pastikan komponen berjalan di client-side
+"use client"; 
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/router';
 
 export default function PermintaanLapangan({ data, setActiveContent }) {
   const [rowsToShow, setRowsToShow] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter(); // Gunakan useRouter() dengan benar
+  const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  if (!isMounted) return null; // Hindari error SSR
+  // Return null until the component is mounted to avoid SSR issues
+  if (!isMounted) return null;
 
-  // Filter data berdasarkan pencarian
+  // Filter data based on the search query
   const filteredData = data.filter((item) =>
     item.nomor?.toLowerCase().includes(searchQuery.toLowerCase())
   );

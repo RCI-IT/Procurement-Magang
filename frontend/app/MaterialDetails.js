@@ -1,4 +1,5 @@
-/* eslint-disable @next/next/no-img-element */
+"use client";
+
 import React, { useState, useEffect } from "react";
 
 export default function MaterialDetails({ material, vendor }) {
@@ -14,7 +15,7 @@ export default function MaterialDetails({ material, vendor }) {
       try {
         const response = await fetch(
           `http://192.168.110.204:5000/materials?vendor_id=${material.vendorId}`
-        );
+        );    
         if (!response.ok) {
           throw new Error("Failed to fetch related materials");
         }

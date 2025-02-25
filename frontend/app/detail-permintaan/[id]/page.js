@@ -1,5 +1,5 @@
 import Link from "next/link";
-import DetailPermintaan from '../../../component/DetailPermintaanLapangan';  
+import DetailPermintaan from '../../DetailPermintaanLapangan';  
 
 const permintaanData = [
   { id: "1", nama: "Lapangan A" },

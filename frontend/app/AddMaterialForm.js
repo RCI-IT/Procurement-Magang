@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from "react";
 
 export default function AddMaterialForm({ addMaterial }) {
@@ -10,6 +12,7 @@ export default function AddMaterialForm({ addMaterial }) {
   const [loading, setLoading] = useState(false);
   const [vendors, setVendors] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [error, setError] = useState("");
 
   // Fetch vendors & categories saat komponen pertama kali dimuat
   useEffect(() => {
@@ -17,7 +20,7 @@ export default function AddMaterialForm({ addMaterial }) {
       try {
         const [vendorRes, categoryRes] = await Promise.all([
           fetch("http://192.168.110.204:5000/vendors"),
-          fetch("http://192.168.110.204:5000/categories"),
+          fetch("http://192.168.110.204:5000/categories"),  
         ]);
 
         if (!vendorRes.ok || !categoryRes.ok) {
@@ -31,16 +34,25 @@ export default function AddMaterialForm({ addMaterial }) {
         setCategories(categoryData);
       } catch (error) {
         console.error("Error fetching data:", error);
-        alert(`Gagal memuat vendor atau kategori: ${error.message}`);
+        setError(`Gagal memuat vendor atau kategori: ${error.message}`);
       }
     };
 
     fetchData();
   }, []);
 
+  // Menangani pengiriman form
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
+    setError(""); // Reset error message
+
+    // Validasi form
+    if (!name || !vendorId || !price || !categoryId) {
+      setError("Semua field harus diisi!");
+      setLoading(false);
+      return;
+    }
 
     const formData = new FormData();
     formData.append("name", name);
@@ -74,7 +86,7 @@ export default function AddMaterialForm({ addMaterial }) {
       setImage(null);
     } catch (error) {
       console.error("Error adding material:", error);
-      alert(`Terjadi kesalahan: ${error.message}`);
+      setError(`Terjadi kesalahan: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -82,6 +94,8 @@ export default function AddMaterialForm({ addMaterial }) {
 
   return (
     <form onSubmit={handleSubmit} className="mb-4">
+      {error && <div className="text-red-500 mb-4">{error}</div>}
+
       <div className="mb-4">
         <label htmlFor="image" className="block font-medium">Gambar:</label>
         <input
