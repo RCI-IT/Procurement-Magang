@@ -1,8 +1,19 @@
-import React, { useState } from "react";
+"use client"; // Pastikan komponen berjalan di client-side
+
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function PermintaanLapangan({ data, setActiveContent }) {
   const [rowsToShow, setRowsToShow] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter(); // Gunakan useRouter() dengan benar
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null; // Hindari error SSR
 
   // Filter data berdasarkan pencarian
   const filteredData = data.filter((item) =>
@@ -16,14 +27,14 @@ export default function PermintaanLapangan({ data, setActiveContent }) {
         <div className="flex space-x-4 items-center">
           <input
             type="text"
-            placeholder="Cari"
+            placeholder="Cari nomor..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="border border-gray-300 rounded px-4 py-2"
           />
           <button
             onClick={() => setActiveContent("tambah-permintaan")}
-            className="bg-blue-500 text-white rounded px-4 py-2"
+            className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
           >
             Tambah
           </button>
@@ -46,32 +57,45 @@ export default function PermintaanLapangan({ data, setActiveContent }) {
         </select>
       </div>
 
-      <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
-        <thead className="bg-blue-500 text-white">
-          <tr>
-            <th className="border px-4 py-2">No.</th>
-            <th className="border px-4 py-2">Nomor</th>
-            <th className="border px-4 py-2">Tanggal</th>
-            <th className="border px-4 py-2">Lokasi</th>
-            <th className="border px-4 py-2">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.slice(0, rowsToShow).map((item, index) => (
-            <tr key={item.id || index}> {/* Tambahkan key unik di sini */}
-              <td className="border px-4 py-2 text-center">{index + 1}</td>
-              <td className="border px-4 py-2">{item.nomor}</td>
-              <td className="border px-4 py-2">{item.tanggal}</td>
-              <td className="border px-4 py-2">{item.lokasi}</td>
-              <td className="border px-4 py-2 text-center">
-                <button className="bg-blue-500 text-white rounded px-4 py-2">
-                  Lihat
-                </button>
-              </td>
+      <div className="overflow-x-auto">
+        <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
+          <thead className="bg-blue-500 text-white">
+            <tr>
+              <th className="border px-4 py-2">No.</th>
+              <th className="border px-4 py-2">Nomor</th>
+              <th className="border px-4 py-2">Tanggal</th>
+              <th className="border px-4 py-2">Lokasi</th>
+              <th className="border px-4 py-2">Aksi</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredData.length > 0 ? (
+              filteredData.slice(0, rowsToShow).map((item, index) => (
+                <tr key={item.nomor || `row-${index}`} className="hover:bg-gray-100">
+                  <td className="border px-4 py-2 text-center">{index + 1}</td>
+                  <td className="border px-4 py-2">{item.nomor}</td>
+                  <td className="border px-4 py-2">{item.tanggal}</td>
+                  <td className="border px-4 py-2">{item.lokasi}</td>
+                  <td className="border px-4 py-2 text-center">
+                    <button
+                      className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
+                      onClick={() => router.push(`/detail-permintaan/${item.id}`)}
+                    >
+                      Lihat
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="border px-4 py-2 text-center text-gray-500">
+                  Tidak ada data ditemukan.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
