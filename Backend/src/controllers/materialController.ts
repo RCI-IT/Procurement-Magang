@@ -142,3 +142,43 @@ export const editMaterial = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ error: "Failed to update material" });
   }
 };
+export const getMaterialById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const parsedId = parseInt(id, 10);
+
+    if (isNaN(parsedId)) {
+      res.status(400).json({ error: "Invalid material ID" });
+      return;
+    }
+
+    const material = await prisma.materials.findUnique({
+      where: { id: parsedId },
+      include: { vendor: true, category: true }, // Tambahkan relasi vendor & kategori
+    });
+
+    if (!material) {
+      res.status(404).json({ error: "Material not found" });
+      return;
+    }
+
+    // Format ulang response agar lebih rapi
+    const formattedResponse = {
+      id: material.id,
+      name: material.name,
+      description: material.description,
+      price: `Rp ${material.price.toLocaleString("id-ID")}`,
+      category: material.category ? material.category.name : "Unknown Category",
+      vendor: material.vendor ? material.vendor.name : "Unknown Vendor",
+      imageUrl: `http://192.168.110.204:5000/uploads/${material.image}`,
+      createdAt: new Date(material.createdAt).toLocaleString("id-ID"),
+      updatedAt: new Date(material.updatedAt).toLocaleString("id-ID"),
+    };
+
+    res.status(200).json(formattedResponse);
+  } catch (error) {
+    console.error("Error fetching material:", error);
+    res.status(500).json({ error: "Failed to fetch material" });
+  }
+};
+

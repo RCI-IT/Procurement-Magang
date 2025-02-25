@@ -53,3 +53,28 @@ export const deleteCategory = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to delete category' });
   }
 };
+export const getCategoryById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const parsedId = Number(id);
+
+    if (isNaN(parsedId)) {
+      res.status(400).json({ error: "Invalid category ID" });
+      return;
+    }
+
+    const category = await prisma.categories.findUnique({
+      where: { id: parsedId },
+    });
+
+    if (!category) {
+      res.status(404).json({ error: "Category not found" });
+      return;
+    }
+
+    res.status(200).json(category);
+  } catch (error) {
+    console.error("Error fetching category:", error);
+    res.status(500).json({ error: "Failed to fetch category" });
+  }
+};
