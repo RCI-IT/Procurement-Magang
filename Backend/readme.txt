@@ -1,20 +1,4 @@
 {
-  "number": "ORD1211345",
-  "contractNumber": "COA11NTR123",
-  "location": "Jakarta",
-  "requestBy": "JDoe",
-  "detail": [
-    {
-      "materialId": 8,
-      "qty": 10,
-      "mention": "CekAngin"
-    }
-  ],
-  "createdAt": "2025-02-17T10:00:00Z"   // Tanggal dibuat bisa ditambahkan di sini (opsional)
-}
-
-
-{
   "name": "PT Vendor Sejahtera",
   "address": "Jl. Merdeka No. 123",
   "city": "Jakarta",
@@ -53,3 +37,30 @@
   ]
 }
 
+{
+  "nomor": "PL-002",
+  "tanggal": "2025-02-26",
+  "lokasi": "Gudang Baru",
+  "picLapangan": "Andi Wijaya",
+  "status": "Diproses",
+  "isConfirmed": true,
+  "isReceived": false,
+  "keterangan": "Update permintaan material proyek B",
+  "detail": [
+    {
+      "id": 1,
+      "materialId": 1,
+      "qty": 20,
+      "satuan": "pcs",
+      "mention": "Update jumlah pemasangan",
+      "code": "MAT-123"
+    },
+    {
+      "materialId": 3,
+      "qty": 7,
+      "satuan": "liter",
+      "mention": "Cat tambahan",
+      "code": "MAT-789"
+    }
+  ]
+}

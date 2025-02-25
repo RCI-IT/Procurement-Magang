@@ -4,6 +4,7 @@ import { createMaterial } from '../controllers/materialController';
 import { getAllMaterials } from '../controllers/materialController';
 import { deleteMaterial } from '../controllers/materialController';
 import { editMaterial } from '../controllers/materialController';
+import { getMaterialById } from '../controllers/materialController';
 
 const router = express.Router();
 const storage = multer.diskStorage({
@@ -16,9 +17,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+router.get('/:id', getMaterialById);
 router.get('/', getAllMaterials);
 router.post('/', upload.single('image'), createMaterial);
 router.delete('/:id', deleteMaterial);
-router.put('/:id', editMaterial);
+router.put('/:id', upload.single('image'), editMaterial);
 
 export default router;
