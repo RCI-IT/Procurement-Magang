@@ -1,46 +1,33 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Sidebar from "../component/sidebar";
 import Home from "./Home";
 import PermintaanLapangan from "./PermintaanLapangan";
 import PurchaseOrder from "./PurchaseOrder";
 import ConfirmationOrder from "./ConfirmationOrder";
-import Material from "./Material";
+import Material from "./material/page";
 import Setting from "./Setting";
 import AddPermintaanLapanganForm from "./AddPermintaanLapanganForm";
-import { DataProvider } from "../context/DataContext";
+import { DataProvider, useData } from "../context/DataContext";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-export default function MainPage() {
-  const [permintaanLapanganData, setPermintaanLapanganData] = useState([]);
-  const [activeContent, setActiveContent] = useState(null);
-  const [isMounted, setIsMounted] = useState(false); // Track mounting state
-  const [page, setPage] = useState(null); // Track query page
-
-  useEffect(() => {
-    setIsMounted(true); // Ensure component is mounted
-  }, []);
-
-  useEffect(() => {
-    if (isMounted) {
-      const queryPage = new URLSearchParams(window.location.search).get('page');
-      setPage(queryPage); // Get 'page' from query after component mounts
-    }
-  }, [isMounted]);
+function MainContent() {
+  const searchParams = useSearchParams();
+  const page = searchParams.get("page");
+  const { permintaanLapanganData, setPermintaanLapanganData } = useData(); // ✅ Ambil data dari Context
 
   const handleAddPermintaan = (newData) => {
     setPermintaanLapanganData((prevData) => [...prevData, newData]);
   };
 
-  // Function to render content based on query parameter
   const renderContent = () => {
-    if (!isMounted || !page) return null; // Wait until mounted and query is available
-
     switch (page) {
       case "home":
-        return <Home />;
+        return < page />;
       case "permintaan-lapangan":
-        return <PermintaanLapangan data={permintaanLapanganData} setActiveContent={setActiveContent} />;
+        return <PermintaanLapangan data={permintaanLapanganData} />;
       case "purchase-order":
         return <PurchaseOrder />;
       case "confirmation-order":
@@ -50,17 +37,21 @@ export default function MainPage() {
       case "setting":
         return <Setting />;
       case "tambah-permintaan":
-        return <AddPermintaanLapanganForm setActiveContent={setActiveContent} onAddPermintaan={handleAddPermintaan} />;
+        return <AddPermintaanLapanganForm onAddPermintaan={handleAddPermintaan} />;
       default:
         return <Home />;
     }
   };
 
+  return <div className="flex-1 p-6">{renderContent()}</div>;
+}
+
+export default function MainPage() {
   return (
     <DataProvider>
       <div className="flex">
         <Sidebar />
-        <div className="flex-1 p-6">{renderContent()}</div>
+        <MainContent /> {/* Pisahkan Content agar Context bekerja dengan baik */}
       </div>
     </DataProvider>
   );

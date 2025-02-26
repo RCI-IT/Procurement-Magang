@@ -1,10 +1,8 @@
-'use client';
+'use client'; // ✅ Pastikan ini ada di baris pertama
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from 'next/router';  // Import useRouter from Next.js
+import { useRouter } from 'next/navigation';  // ✅ Gunakan ini hanya di App Router
 import AddMaterialForm from "./AddMaterialForm";
-import MaterialDetails from "./MaterialDetails";
-import DetailVendor from "./DetailVendor";
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
@@ -14,51 +12,47 @@ export default function Material() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const router = useRouter();  // Inisialisasi router
+  
+  // ✅ Pastikan router hanya digunakan di client
+  const router = useRouter();
+  console.log("Router Status:", router); // Debugging router
 
   useEffect(() => {
-    fetchMaterials();
-    fetchVendors();
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [materialRes, vendorRes] = await Promise.all([
+          fetch("http://192.168.110.204:5000/materials"),
+          fetch("http://192.168.110.204:5000/vendors")
+        ]);
+
+        if (!materialRes.ok || !vendorRes.ok) throw new Error("Gagal mengambil data");
+
+        const [materialData, vendorData] = await Promise.all([
+          materialRes.json(),
+          vendorRes.json()
+        ]);
+
+        setMaterials(materialData);
+        setVendors(vendorData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const fetchMaterials = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch("http://192.168.110.204:5000/materials");
-      if (!response.ok) throw new Error("Failed to fetch materials");
-      const data = await response.json();
-      setMaterials(data);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchVendors = async () => {
-    try {
-      const response = await fetch("http://192.168.110.204:5000/vendors");
-      if (!response.ok) throw new Error("Failed to fetch vendors");
-      const data = await response.json();
-      setVendors(data);
-    } catch (error) {
-      console.error("Error fetching vendors:", error);
-    }
-  };
-
   const handleVendorClick = (vendorId) => {
-    const vendor = vendors.find((v) => v.id === vendorId);
-    if (vendor) {
-      router.push(`/vendor/${vendorId}`); // Navigasi ke halaman Vendor
-    }
+    if (!vendorId) return;
+    router.push(`/vendor/${vendorId}`); // ✅ Navigasi ke halaman vendor
   };
 
   const handleMaterialClick = (materialId) => {
-    const material = materials.find((m) => m.id === materialId);
-    const vendor = vendors.find((v) => v.id === material?.vendorId); // Ambil vendor yang cocok
-    if (material) {
-      router.push(`/material/${materialId}`); // Navigasi ke halaman Material
-    }
+    if (!materialId) return;
+    router.push(`/material/${materialId}`); // ✅ Navigasi ke halaman material
   };
 
   const handleDelete = async (id) => {
@@ -67,16 +61,12 @@ export default function Material() {
     try {
       const response = await fetch(`http://192.168.110.204:5000/materials/${id}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" }
       });
 
-      if (!response.ok) {
-        throw new Error("Gagal menghapus material");
-      }
+      if (!response.ok) throw new Error("Gagal menghapus material");
 
-      setMaterials((prevMaterials) => prevMaterials.filter((material) => material.id !== id));
+      setMaterials((prev) => prev.filter((material) => material.id !== id));
     } catch (error) {
       console.error("Error deleting material:", error);
       alert("Gagal menghapus material: " + error.message);
@@ -105,7 +95,7 @@ export default function Material() {
         </button>
       </div>
 
-      {showForm && <AddMaterialForm addMaterial={fetchMaterials} />}
+      {showForm && <AddMaterialForm addMaterial={() => fetchData()} />}
 
       <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
         <thead className="bg-blue-500 text-white">
@@ -120,7 +110,7 @@ export default function Material() {
         </thead>
         <tbody>
           {materials
-            .filter((material) => material.name.toLowerCase().includes(searchQuery))
+            .filter((m) => m.name.toLowerCase().includes(searchQuery))
             .slice(0, rowsToShow)
             .map((material, index) => {
               const vendor = vendors.find((v) => v.id === material.vendorId);
