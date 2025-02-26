@@ -67,8 +67,8 @@ export default function MaterialDetails({ material, vendor }) {
           {/* 🔥 FIX GAMBAR */}
           {material.image ? (
             <img
-              src={`http://192.168.110.204:5000/uploads/${material.image}`}
-              alt={material.name}
+            src={`http://192.168.110.204:5000/uploads/${material.image}`}
+            alt={material.image}
               className="object-cover max-h-72"
             />
           ) : (

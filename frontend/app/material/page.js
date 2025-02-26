@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import AddMaterialForm from "../AddMaterialForm";
-import Sidebar from "../../component/sidebar"; // ✅ Pastikan Sidebar di-import
+import Sidebar from "../../component/sidebar";
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
@@ -26,10 +26,7 @@ export default function Material() {
 
         if (!materialRes.ok || !vendorRes.ok) throw new Error("Gagal mengambil data");
 
-        const [materialData, vendorData] = await Promise.all([
-          materialRes.json(),
-          vendorRes.json()
-        ]);
+        const [materialData, vendorData] = await Promise.all([materialRes.json(), vendorRes.json()]);
 
         setMaterials(materialData);
         setVendors(vendorData);
@@ -44,15 +41,15 @@ export default function Material() {
   }, []);
 
   const handleVendorClick = (vendorId) => {
+    console.log("Navigating to vendor page with vendorId:", vendorId); // Pastikan ID dikirim dengan benar
     if (!vendorId) return;
     router.push(`/vendor/${vendorId}`);
   };
-
+  
   const handleMaterialClick = (materialId) => {
     if (!materialId) return;
-    router.push(`/material/${materialId}`); // ✅ Pindah ke `/material/[id]`
+    router.push(`/material/${materialId}`); // Pindah ke detail material
   };
-  
 
   const handleDelete = async (id) => {
     if (!window.confirm("Yakin ingin menghapus material ini?")) return;
@@ -74,10 +71,7 @@ export default function Material() {
 
   return (
     <div className="flex h-screen">
-      {/* ✅ Sidebar selalu muncul di kiri */}
       <Sidebar />
-
-      {/* ✅ Konten utama */}
       <div className="p-6 flex-1">
         {loading && <div className="text-center text-blue-500">Loading...</div>}
         {error && <div className="text-center text-red-500">Error: {error}</div>}
@@ -131,7 +125,7 @@ export default function Material() {
                     </td>
                     <td className="border px-4 py-2">
                       <button
-                        onClick={() => handleVendorClick(material.vendorId)}
+                        onClick={() => handleVendorClick(material.vendorId)} // Memastikan vendorId benar
                         className="text-blue-500 underline"
                       >
                         {vendor ? vendor.name : "Tidak Ada Vendor"}
