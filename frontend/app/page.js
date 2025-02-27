@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Sidebar from "../component/sidebar";
 import Home from "./Home";
 import PermintaanLapangan from "./PermintaanLapangan";
@@ -11,12 +11,12 @@ import Setting from "./Setting";
 import AddPermintaanLapanganForm from "./AddPermintaanLapanganForm";
 import { DataProvider, useData } from "../context/DataContext";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
 
-function MainContent() {
+export default function MainPage() {
+  const [activeContent, setActiveContent] = useState("home");
   const searchParams = useSearchParams();
-  const page = searchParams.get("page");
-  const { permintaanLapanganData, setPermintaanLapanganData } = useData(); // ✅ Ambil data dari Context
+  const page = searchParams.get("page"); // Ambil query parameter "page"
+  const { permintaanLapanganData, setPermintaanLapanganData } = useData(); // Ambil data permintaan lapangan
 
   const handleAddPermintaan = (newData) => {
     setPermintaanLapanganData((prevData) => [...prevData, newData]);
@@ -25,9 +25,14 @@ function MainContent() {
   const renderContent = () => {
     switch (page) {
       case "home":
-        return < page />;
+        return <Home />;
       case "permintaan-lapangan":
-        return <PermintaanLapangan data={permintaanLapanganData} />;
+        return (
+          <PermintaanLapangan
+            data={permintaanLapanganData}
+            setActiveContent={setActiveContent} // Pastikan setActiveContent diteruskan ke PermintaanLapangan
+          />
+        );
       case "purchase-order":
         return <PurchaseOrder />;
       case "confirmation-order":
@@ -37,21 +42,22 @@ function MainContent() {
       case "setting":
         return <Setting />;
       case "tambah-permintaan":
-        return <AddPermintaanLapanganForm onAddPermintaan={handleAddPermintaan} />;
+        return (
+          <AddPermintaanLapanganForm
+            onAddPermintaan={handleAddPermintaan}
+            setActiveContent={setActiveContent} // Pastikan diteruskan dengan benar
+          />
+        );
       default:
         return <Home />;
     }
   };
 
-  return <div className="flex-1 p-6">{renderContent()}</div>;
-}
-
-export default function MainPage() {
   return (
     <DataProvider>
       <div className="flex">
         <Sidebar />
-        <MainContent /> {/* Pisahkan Content agar Context bekerja dengan baik */}
+        <div className="flex-1 p-6">{renderContent()}</div>
       </div>
     </DataProvider>
   );

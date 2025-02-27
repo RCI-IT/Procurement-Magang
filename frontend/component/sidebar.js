@@ -8,7 +8,7 @@ export default function Sidebar() {
   const router = useRouter();
 
   const handleNavigation = (page) => {
-    router.push(`/${page}`); // ✅ Navigasi ke /home, /permintaan-lapangan, dll.
+    router.push(`/?page=${page}`); // ✅ Gunakan query parameter "page"
   };
 
   return (
@@ -34,7 +34,7 @@ export default function Sidebar() {
 
           <ul className="space-y-1 mt-2">
             {[
-              { id: "home", label: "Home", icon: "🏠", page: "#" },
+              { id: "home", label: "Home", icon: "🏠", page: "home" },
               { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "permintaan-lapangan" },
               { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "purchase-order" },
               { id: "confirmation-order", label: "Confirmation Order", icon: "✔️", page: "confirmation-order" },

@@ -1,8 +1,10 @@
-'use client';
+"use client";
 
 import React, { useState } from "react";
 
 export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermintaan }) {
+  console.log("setActiveContent", setActiveContent); // Debugging: pastikan props diterima dengan benar
+
   const [formData, setFormData] = useState({
     tanggal: { day: "", month: "", year: "" },
     nomor: "",
@@ -43,9 +45,17 @@ export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermi
       keterangan: formData.keterangan
     };
 
-    onAddPermintaan(newData); // Kirim data ke MainPage.js
-    setActiveContent("permintaan-lapangan");
+    // Mengirim data baru ke MainPage.js
+    onAddPermintaan(newData);
+
+    // Pastikan setActiveContent dipanggil dengan benar setelah submit
+    if (setActiveContent) {
+      setActiveContent("permintaan-lapangan");
+    } else {
+      console.error("setActiveContent is not defined");
+    }
   };
+
 
   return (
     <div className="p-6 bg-gray-100 rounded-lg shadow-md">
