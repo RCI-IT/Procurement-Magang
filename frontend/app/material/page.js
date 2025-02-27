@@ -4,7 +4,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import AddMaterialForm from "../AddMaterialForm";
-import Sidebar from "../../component/sidebar";
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
@@ -81,7 +80,6 @@ export default function Material() {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
       <div className="p-6 flex-1">
         {/* Menampilkan loading atau error jika ada */}
         {loading && <div className="text-center text-blue-500">Loading...</div>}
