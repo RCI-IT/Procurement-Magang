@@ -1,11 +1,13 @@
 "use client"; 
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
+import AddPermintaanLapanganForm from "./AddPermintaanLapanganForm";
 
 export default function PermintaanLapangan({ data, setActiveContent }) {
   const [rowsToShow, setRowsToShow] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAddFormVisible, setIsAddFormVisible] = useState(false); // State untuk menampilkan form
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
 
@@ -17,9 +19,14 @@ export default function PermintaanLapangan({ data, setActiveContent }) {
   if (!isMounted) return null;
 
   // Filter data based on the search query
-  const filteredData = data.filter((item) =>
+  const filteredData = Array.isArray(data) ? data.filter((item) =>
     item.nomor?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ) : []; 
+
+  // Toggle tampilan form tambah permintaan
+  const toggleAddForm = () => {
+    setIsAddFormVisible(!isAddFormVisible); // Menyembunyikan atau menampilkan form
+  };
 
   return (
     <div className="p-6">
@@ -34,13 +41,22 @@ export default function PermintaanLapangan({ data, setActiveContent }) {
             className="border border-gray-300 rounded px-4 py-2"
           />
           <button
-            onClick={() => setActiveContent("tambah-permintaan")}
+            onClick={toggleAddForm} // Fungsi untuk toggle form
             className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
           >
-            Tambah
+            Tambah Permintaan
           </button>
         </div>
       </div>
+
+      {isAddFormVisible && ( // Menampilkan form tambah jika state isAddFormVisible true
+        <AddPermintaanLapanganForm 
+          onAddPermintaan={(newData) => { 
+            // Fungsi untuk menangani data baru
+            setActiveContent("permintaan-lapangan"); // Kembali ke halaman permintaan lapangan
+          }} 
+        />
+      )}
 
       <div className="mb-4 flex items-center">
         <label htmlFor="rowsToShow" className="mr-2 font-medium">
