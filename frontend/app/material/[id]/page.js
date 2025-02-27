@@ -85,14 +85,6 @@ export default function MaterialPage() {
 
       {/* ✅ Konten utama */}
       <div className="flex-1 p-6">
-        {/* Tombol Kembali */}
-        <button
-          onClick={() => router.push("/material")}
-          className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-gray-600 mb-4"
-        >
-          ← Kembali ke Material
-        </button>
-
         {/* Vendor Info */}
         <div className="mb-6 bg-white shadow-md p-4 rounded-md">
           <div className="flex justify-between items-center">
@@ -161,6 +153,14 @@ export default function MaterialPage() {
               );
             })}
           </div>
+          <div> 
+            <br></br>
+          <button
+          onClick={() => router.push("/material")}
+          className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-gray-600 mb-4"
+        >
+          ← Kembali ke Material
+        </button></div>
         </div>
       </div>
     </div>
