@@ -1,9 +1,8 @@
-"use client";
-
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermintaan }) {
-  console.log("setActiveContent", setActiveContent); // Debugging: pastikan props diterima dengan benar
+export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddForm }) {
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     tanggal: { day: "", month: "", year: "" },
@@ -20,7 +19,6 @@ export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermi
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     if (["day", "month", "year"].includes(name)) {
       setFormData((prevData) => ({
         ...prevData,
@@ -33,35 +31,51 @@ export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermi
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newData = {
+
+    if (!formData.nomor || !formData.tanggal.day || !formData.tanggal.month || !formData.tanggal.year) {
+      alert("Harap lengkapi semua kolom!");
+      return;
+    }
+
+    const newPermintaan = {
       nomor: formData.nomor,
-      tanggal: `${formData.tanggal.day}/${formData.tanggal.month}/${formData.tanggal.year}`,
+      tanggal: {
+        day: formData.tanggal.day,
+        month: formData.tanggal.month,
+        year: formData.tanggal.year
+      },
       lokasi: formData.lokasi,
       namaBarang: formData.namaBarang,
       spesifikasi: formData.spesifikasi,
       code: formData.code,
       qty: formData.qty,
       satuan: formData.satuan,
-      keterangan: formData.keterangan
+      keterangan: formData.keterangan,
     };
 
-    // Mengirim data baru ke MainPage.js
-    onAddPermintaan(newData);
+    const existingData = JSON.parse(localStorage.getItem('permintaanData')) || [];
+    existingData.push(newPermintaan);
+    localStorage.setItem('permintaanData', JSON.stringify(existingData));
+    router.push(`/detail-permintaan/${newPermintaan.id}`); 
 
-    // Pastikan setActiveContent dipanggil dengan benar setelah submit
-    if (setActiveContent) {
-      setActiveContent("permintaan-lapangan");
-    } else {
-      console.error("setActiveContent is not defined");
-    }
+    onAddPermintaan(newPermintaan);
+
+    toggleAddForm();
+
+    router.push("/?page=permintaan-lapangan");
   };
 
+  const months = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  ];
+
+  const years = ["2025", "2024", "2023", "2022", "2021", "2020", "2019"];
 
   return (
     <div className="p-6 bg-gray-100 rounded-lg shadow-md">
       <h1 className="text-3xl font-bold mb-6">Tambah Permintaan Lapangan</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Baris 1: Tanggal & PIC Lapangan */}
         <div className="grid grid-cols-2 gap-6">
           <div>
             <label className="block font-medium">Tanggal:</label>
@@ -69,27 +83,37 @@ export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermi
               <input
                 type="number"
                 name="day"
-                placeholder="day"
+                placeholder="Tanggal"
                 value={formData.tanggal.day}
                 onChange={handleChange}
                 className="border border-gray-300 rounded px-2 py-1 w-1/3"
               />
-              <input
-                type="number"
+              <select
                 name="month"
-                placeholder="month"
                 value={formData.tanggal.month}
                 onChange={handleChange}
                 className="border border-gray-300 rounded px-2 py-1 w-1/3"
-              />
-              <input
-                type="number"
+              >
+                <option value="">Bulan</option>
+                {months.map((month, index) => (
+                  <option key={index} value={index + 1}>
+                    {month}
+                  </option>
+                ))}
+              </select>
+              <select
                 name="year"
-                placeholder="year"
                 value={formData.tanggal.year}
                 onChange={handleChange}
                 className="border border-gray-300 rounded px-2 py-1 w-1/3"
-              />
+              >
+                <option value="">Tahun</option>
+                {years.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           <div>
@@ -104,7 +128,6 @@ export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermi
           </div>
         </div>
 
-        {/* Baris 2: Nomor & Lokasi */}
         <div className="grid grid-cols-2 gap-6">
           <div>
             <label className="block font-medium">Nomor:</label>
@@ -128,7 +151,6 @@ export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermi
           </div>
         </div>
 
-        {/* Baris 3: Nama Barang/Jasa & Keterangan */}
         <div className="grid grid-cols-2 gap-6">
           <div>
             <label className="block font-medium">Nama Barang:</label>
@@ -167,7 +189,6 @@ export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermi
           </div>
         </div>
 
-        {/* Baris 4: Qty & Satuan */}
         <div className="grid grid-cols-2 gap-6">
           <div className="flex space-x-2">
             <div>
@@ -193,7 +214,6 @@ export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermi
           </div>
         </div>
 
-        {/* Tombol Submit */}
         <div className="flex justify-end">
           <button
             type="submit"
@@ -203,6 +223,12 @@ export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermi
           </button>
         </div>
       </form>
+      <button
+        onClick={toggleAddForm}
+        className="mt-4 text-red-500 hover:text-red-700"
+      >
+        Batal
+      </button>
     </div>
   );
 }

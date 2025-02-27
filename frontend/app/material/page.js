@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useState, useEffect } from "react";
@@ -15,7 +14,6 @@ export default function Material() {
   const [error, setError] = useState(null);
   const router = useRouter();
 
-  // Mengambil data material & vendor dari backend
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -41,7 +39,6 @@ export default function Material() {
     fetchData();
   }, []);
 
-  // Fungsi untuk navigasi ke halaman vendor berdasarkan ID
   const handleVendorClick = (vendorId) => {
     if (!vendorId) {
       console.error("Vendor ID tidak tersedia!");
@@ -51,14 +48,12 @@ export default function Material() {
     router.push(`/vendor/${vendorId}`);
   };
 
-  // Fungsi untuk navigasi ke halaman detail material
   const handleMaterialClick = (materialId) => {
     if (!materialId) return;
     localStorage.setItem("selectedMaterialId", materialId);
     router.push(`/material/${materialId}`);
   };
 
-  // Fungsi untuk menghapus material
   const handleDelete = async (id) => {
     if (!window.confirm("Yakin ingin menghapus material ini?")) return;
 
@@ -70,7 +65,6 @@ export default function Material() {
 
       if (!response.ok) throw new Error("Gagal menghapus material");
 
-      // Perbarui daftar material setelah dihapus
       setMaterials((prev) => prev.filter((material) => material.id !== id));    
     } catch (error) {
       console.error("Error deleting material:", error);
@@ -81,13 +75,11 @@ export default function Material() {
   return (
     <div className="flex h-screen">
       <div className="p-6 flex-1">
-        {/* Menampilkan loading atau error jika ada */}
         {loading && <div className="text-center text-blue-500">Loading...</div>}
         {error && <div className="text-center text-red-500">Error: {error}</div>}
 
         <h1 className="text-3xl font-bold mb-4">Material</h1>
 
-        {/* Pencarian dan tombol tambah material */}
         <div className="mb-4 flex justify-between space-x-2">
           <input
             type="text"
@@ -103,11 +95,8 @@ export default function Material() {
             {showForm ? "Batal Tambah" : "+ Material"}
           </button>
         </div>
-
-        {/* Form tambah material */}
         {showForm && <AddMaterialForm addMaterial={() => fetchData()} />}
 
-        {/* Tabel daftar material */}
         <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
           <thead className="bg-blue-500 text-white">
             <tr>

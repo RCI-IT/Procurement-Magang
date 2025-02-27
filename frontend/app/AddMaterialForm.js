@@ -14,7 +14,6 @@ export default function AddMaterialForm({ addMaterial }) {
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
 
-  // Fetch vendors & categories saat komponen pertama kali dimuat
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -41,13 +40,11 @@ export default function AddMaterialForm({ addMaterial }) {
     fetchData();
   }, []);
 
-  // Menangani pengiriman form
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-    setError(""); // Reset error message
+    setError(""); 
 
-    // Validasi form
     if (!name || !vendorId || !price || !categoryId) {
       setError("Semua field harus diisi!");
       setLoading(false);
@@ -77,7 +74,6 @@ export default function AddMaterialForm({ addMaterial }) {
 
       addMaterial(result);
 
-      // Reset form setelah sukses
       setName("");
       setVendorId("");
       setPrice("");

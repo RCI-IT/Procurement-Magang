@@ -1,31 +1,39 @@
-"use client"; 
+"use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import AddPermintaanLapanganForm from "./AddPermintaanLapanganForm";
+
+// Array bulan
+const months = [
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+];
 
 export default function PermintaanLapangan({ data, setActiveContent }) {
   const [rowsToShow, setRowsToShow] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAddFormVisible, setIsAddFormVisible] = useState(false); // State untuk menampilkan form
+  const [isAddFormVisible, setIsAddFormVisible] = useState(false);
+  const [updatedData, setUpdatedData] = useState(data); 
   const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const getMonthName = (monthNumber) => {
+    return months[monthNumber - 1]; 
+  };
 
-  // Return null until the component is mounted to avoid SSR issues
-  if (!isMounted) return null;
+  const filteredData = Array.isArray(updatedData)
+    ? updatedData.filter((item) =>
+        item.nomor?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
 
-  // Filter data based on the search query
-  const filteredData = Array.isArray(data) ? data.filter((item) =>
-    item.nomor?.toLowerCase().includes(searchQuery.toLowerCase())
-  ) : []; 
-
-  // Toggle tampilan form tambah permintaan
   const toggleAddForm = () => {
-    setIsAddFormVisible(!isAddFormVisible); // Menyembunyikan atau menampilkan form
+    setIsAddFormVisible(!isAddFormVisible);
+  };
+
+  const handleAddPermintaan = (newData) => {
+    setUpdatedData((prevData) => [...prevData, newData]); 
+    setActiveContent("permintaan-lapangan"); 
   };
 
   return (
@@ -41,7 +49,7 @@ export default function PermintaanLapangan({ data, setActiveContent }) {
             className="border border-gray-300 rounded px-4 py-2"
           />
           <button
-            onClick={toggleAddForm} // Fungsi untuk toggle form
+            onClick={toggleAddForm}
             className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
           >
             Tambah Permintaan
@@ -49,12 +57,10 @@ export default function PermintaanLapangan({ data, setActiveContent }) {
         </div>
       </div>
 
-      {isAddFormVisible && ( // Menampilkan form tambah jika state isAddFormVisible true
-        <AddPermintaanLapanganForm 
-          onAddPermintaan={(newData) => { 
-            // Fungsi untuk menangani data baru
-            setActiveContent("permintaan-lapangan"); // Kembali ke halaman permintaan lapangan
-          }} 
+      {isAddFormVisible && (
+        <AddPermintaanLapanganForm
+          onAddPermintaan={handleAddPermintaan} 
+          toggleAddForm={toggleAddForm} 
         />
       )}
 
@@ -91,7 +97,9 @@ export default function PermintaanLapangan({ data, setActiveContent }) {
                 <tr key={item.nomor || `row-${index}`} className="hover:bg-gray-100">
                   <td className="border px-4 py-2 text-center">{index + 1}</td>
                   <td className="border px-4 py-2">{item.nomor}</td>
-                  <td className="border px-4 py-2">{item.tanggal}</td>
+                  <td className="border px-4 py-2">
+                    {item.tanggal.day} {getMonthName(Number(item.tanggal.month))} {item.tanggal.year}
+                  </td>
                   <td className="border px-4 py-2">{item.lokasi}</td>
                   <td className="border px-4 py-2 text-center">
                     <button

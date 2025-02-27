@@ -1,7 +1,7 @@
-'use client'; // ✅ Pastikan ini ada di baris pertama
+'use client'; 
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation';  // ✅ Gunakan ini hanya di App Router
+import { useRouter } from 'next/navigation';  
 import AddMaterialForm from "./AddMaterialForm";
 
 export default function Material() {
@@ -13,9 +13,8 @@ export default function Material() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // ✅ Pastikan router hanya digunakan di client
   const router = useRouter();
-  console.log("Router Status:", router); // Debugging router
+  console.log("Router Status:", router); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,12 +46,12 @@ export default function Material() {
 
   const handleVendorClick = (vendorId) => {
     if (!vendorId) return;
-    router.push(`/vendor/${vendorId}`); // ✅ Navigasi ke halaman vendor
+    router.push(`/vendor/${vendorId}`); 
   };
 
   const handleMaterialClick = (materialId) => {
     if (!materialId) return;
-    router.push(`/material/${materialId}`); // ✅ Navigasi ke halaman material
+    router.push(`/material/${materialId}`); // 
   };
 
   const handleDelete = async (id) => {
