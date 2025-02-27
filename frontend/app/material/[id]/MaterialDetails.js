@@ -1,4 +1,5 @@
-/* eslint-disable @next/next/no-img-element */
+"use client";
+
 import React, { useState, useEffect } from "react";
 
 export default function MaterialDetails({ material, vendor }) {
@@ -6,8 +7,11 @@ export default function MaterialDetails({ material, vendor }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  console.log("Material Data:", material);
+  console.log("Vendor Data:", vendor);
+
   useEffect(() => {
-    if (!vendor || !vendor.id) return;
+    if (!material || !material.vendorId) return;
 
     const fetchRelatedMaterials = async () => {
       setLoading(true);
@@ -15,30 +19,26 @@ export default function MaterialDetails({ material, vendor }) {
         const response = await fetch(
           `http://192.168.110.204:5000/materials?vendor_id=${material.vendorId}`
         );
-        if (!response.ok) {
-          throw new Error("Failed to fetch related materials");
-        }
+        if (!response.ok) throw new Error("Gagal mengambil data material terkait");
+
         const data = await response.json();
-        
-        // 🔥 PASTIKAN filter vendor_id di frontend
-        const filteredMaterials = data.filter(
-          (item) => item.vendorId === vendor.id && item.id !== material.id
-        );
+        const filteredMaterials = data.filter((item) => item.id !== material.id);
 
         setRelatedMaterials(filteredMaterials);
-      } catch (error) {
-        setError(error.message);
-        console.error("Error fetching related materials:", error);
+      } catch (err) {
+        setError(err.message);
+        console.error("Error fetching related materials:", err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchRelatedMaterials();
-  }, [vendor, material]);
+  }, [material]);
 
   return (
     <div className="p-6">
+      {/* ✅ Vendor Info */}
       <div className="mb-6 bg-white shadow-md p-4 rounded-md">
         <div className="flex justify-between items-center">
           <div>
@@ -61,20 +61,28 @@ export default function MaterialDetails({ material, vendor }) {
         </div>
       </div>
 
+      {/* ✅ Material Info */}
       <div className="flex gap-6 items-start mb-8 bg-white shadow-md p-4 rounded-md">
         <div className="bg-gray-100 border border-gray-300 rounded p-4 flex justify-center">
-          <img
+          {/* 🔥 FIX GAMBAR */}
+          {material.image ? (
+            <img
             src={`http://192.168.110.204:5000/uploads/${material.image}`}
-            alt={material.name}
-            className="object-cover max-h-72"
-          />
+            alt={material.image}
+              className="object-cover max-h-72"
+            />
+          ) : (
+            <p className="text-gray-500">Tidak ada gambar</p>
+          )}
         </div>
 
         <div className="flex-grow">
           <h3 className="text-2xl font-bold mb-2">{material.name}</h3>
-          <p className="text-xl text-blue-600 font-semibold mb-4">Rp {material.price}</p>
+          <p className="text-xl text-blue-600 font-semibold mb-4">
+            {material.price.startsWith("Rp") ? material.price : `Rp ${material.price}`}
+          </p>
           <p className="text-sm text-gray-500 mb-4">
-            Kategori: <span className="text-gray-700">{material.category}</span>
+            Kategori: <span className="text-gray-700">{material.category || "Tidak ada kategori"}</span>
           </p>
 
           <h4 className="font-bold text-lg mb-2">Deskripsi</h4>
@@ -82,6 +90,7 @@ export default function MaterialDetails({ material, vendor }) {
         </div>
       </div>
 
+      {/* ✅ Related Materials */}
       <div className="bg-white shadow-md p-4 rounded-md">
         <h4 className="font-bold text-lg mb-4">Material lainnya dari vendor ini</h4>
         {loading && <p className="text-center text-blue-500">Loading...</p>}
@@ -95,11 +104,16 @@ export default function MaterialDetails({ material, vendor }) {
               key={item.id}
               className="border rounded p-4 text-center bg-white text-sm w-40 h-48 flex flex-col items-center shadow"
             >
-              <img
-                src={`http://192.168.110.204:5000/uploads/${item.image}`}
-                alt={item.name}
-                className="mb-2 w-20 h-20 object-cover"
-              />
+              {/* 🔥 FIX GAMBAR RELATED MATERIAL */}
+              {item.image ? (
+                <img
+                  src={`http://192.168.110.204:5000/uploads/${item.image}`}
+                  alt={item.name}
+                  className="mb-2 w-20 h-20 object-cover"
+                />
+              ) : (
+                <p className="text-gray-500">No Image</p>
+              )}
               <p className="font-semibold text-center break-words">{item.name}</p>
               <p className="text-red-500">Rp {item.price}</p>
             </div>

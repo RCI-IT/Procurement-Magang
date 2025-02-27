@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from "react";
 
 export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermintaan }) {
@@ -33,6 +35,12 @@ export default function AddPermintaanLapanganForm({ setActiveContent, onAddPermi
       nomor: formData.nomor,
       tanggal: `${formData.tanggal.day}/${formData.tanggal.month}/${formData.tanggal.year}`,
       lokasi: formData.lokasi,
+      namaBarang: formData.namaBarang,
+      spesifikasi: formData.spesifikasi,
+      code: formData.code,
+      qty: formData.qty,
+      satuan: formData.satuan,
+      keterangan: formData.keterangan
     };
 
     onAddPermintaan(newData); // Kirim data ke MainPage.js

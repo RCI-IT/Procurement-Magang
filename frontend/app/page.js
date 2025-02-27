@@ -1,30 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import React from "react";
 import Sidebar from "../component/sidebar";
-import Home from "../component/Home";
-import PermintaanLapangan from "../component/PermintaanLapangan";
-import PurchaseOrder from "../component/PurchaseOrder";
-import ConfirmationOrder from "../component/ConfirmationOrder";
-import Material from "../component/Material";
-import Setting from "../component/Setting";
-import AddPermintaanLapanganForm from "../component/AddPermintaanLapanganForm";
-import { DataProvider } from "../context/DataContext";
+import Home from "./Home";
+import PermintaanLapangan from "./PermintaanLapangan";
+import PurchaseOrder from "./PurchaseOrder";
+import ConfirmationOrder from "./ConfirmationOrder";
+import Material from "./material/page";
+import Setting from "./Setting";
+import AddPermintaanLapanganForm from "./AddPermintaanLapanganForm";
+import { DataProvider, useData } from "../context/DataContext";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-export default function MainPage() {
-  const [activeContent, setActiveContent] = useState("home");
-  const [permintaanLapanganData, setPermintaanLapanganData] = useState([]);
+function MainContent() {
+  const searchParams = useSearchParams();
+  const page = searchParams.get("page");
+  const { permintaanLapanganData, setPermintaanLapanganData } = useData(); // ✅ Ambil data dari Context
 
   const handleAddPermintaan = (newData) => {
     setPermintaanLapanganData((prevData) => [...prevData, newData]);
   };
 
   const renderContent = () => {
-    switch (activeContent) {
+    switch (page) {
       case "home":
-        return <Home />;
+        return < page />;
       case "permintaan-lapangan":
-        return <PermintaanLapangan data={permintaanLapanganData} setActiveContent={setActiveContent} />;
+        return <PermintaanLapangan data={permintaanLapanganData} />;
       case "purchase-order":
         return <PurchaseOrder />;
       case "confirmation-order":
@@ -34,17 +37,21 @@ export default function MainPage() {
       case "setting":
         return <Setting />;
       case "tambah-permintaan":
-        return <AddPermintaanLapanganForm setActiveContent={setActiveContent} onAddPermintaan={handleAddPermintaan} />;
+        return <AddPermintaanLapanganForm onAddPermintaan={handleAddPermintaan} />;
       default:
         return <Home />;
     }
   };
 
+  return <div className="flex-1 p-6">{renderContent()}</div>;
+}
+
+export default function MainPage() {
   return (
     <DataProvider>
       <div className="flex">
-        <Sidebar setActiveContent={setActiveContent} />
-        <div className="flex-1 p-6">{renderContent()}</div>
+        <Sidebar />
+        <MainContent /> {/* Pisahkan Content agar Context bekerja dengan baik */}
       </div>
     </DataProvider>
   );
