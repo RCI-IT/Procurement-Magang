@@ -9,12 +9,13 @@ export default function Material() {
   const [materials, setMaterials] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [rowsToShow, setRowsToShow] = useState(5);
+  const [rowsToShow] = useState(5);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
 
+  // Mengambil data material & vendor dari backend
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -40,17 +41,24 @@ export default function Material() {
     fetchData();
   }, []);
 
+  // Fungsi untuk navigasi ke halaman vendor berdasarkan ID
   const handleVendorClick = (vendorId) => {
-    console.log("Navigating to vendor page with vendorId:", vendorId); // Pastikan ID dikirim dengan benar
-    if (!vendorId) return;
+    if (!vendorId) {
+      console.error("Vendor ID tidak tersedia!");
+      return;
+    }
+    console.log("Navigasi ke vendor ID:", vendorId);
     router.push(`/vendor/${vendorId}`);
   };
-  
+
+  // Fungsi untuk navigasi ke halaman detail material
   const handleMaterialClick = (materialId) => {
     if (!materialId) return;
-    router.push(`/material/${materialId}`); // Pindah ke detail material
+    localStorage.setItem("selectedMaterialId", materialId);
+    router.push(`/material/${materialId}`);
   };
 
+  // Fungsi untuk menghapus material
   const handleDelete = async (id) => {
     if (!window.confirm("Yakin ingin menghapus material ini?")) return;
 
@@ -62,6 +70,7 @@ export default function Material() {
 
       if (!response.ok) throw new Error("Gagal menghapus material");
 
+      // Perbarui daftar material setelah dihapus
       setMaterials((prev) => prev.filter((material) => material.id !== id));    
     } catch (error) {
       console.error("Error deleting material:", error);
@@ -73,10 +82,13 @@ export default function Material() {
     <div className="flex h-screen">
       <Sidebar />
       <div className="p-6 flex-1">
+        {/* Menampilkan loading atau error jika ada */}
         {loading && <div className="text-center text-blue-500">Loading...</div>}
         {error && <div className="text-center text-red-500">Error: {error}</div>}
 
         <h1 className="text-3xl font-bold mb-4">Material</h1>
+
+        {/* Pencarian dan tombol tambah material */}
         <div className="mb-4 flex justify-between space-x-2">
           <input
             type="text"
@@ -93,8 +105,10 @@ export default function Material() {
           </button>
         </div>
 
+        {/* Form tambah material */}
         {showForm && <AddMaterialForm addMaterial={() => fetchData()} />}
 
+        {/* Tabel daftar material */}
         <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
           <thead className="bg-blue-500 text-white">
             <tr>
@@ -124,12 +138,16 @@ export default function Material() {
                       />
                     </td>
                     <td className="border px-4 py-2">
-                      <button
-                        onClick={() => handleVendorClick(material.vendorId)} // Memastikan vendorId benar
-                        className="text-blue-500 underline"
-                      >
-                        {vendor ? vendor.name : "Tidak Ada Vendor"}
-                      </button>
+                      {vendor ? (
+                        <button
+                          onClick={() => handleVendorClick(material.vendorId)}
+                          className="text-blue-500 underline"
+                        >
+                          {vendor.name}
+                        </button>
+                      ) : (
+                        "Tidak Ada Vendor"
+                      )}
                     </td>
                     <td className="border px-4 py-2">Rp.{material.price}</td>
                     <td className="border px-4 py-2 text-center">

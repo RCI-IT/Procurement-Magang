@@ -66,6 +66,7 @@ export default function MaterialDetails({ material, vendor }) {
         <div className="bg-gray-100 border border-gray-300 rounded p-4 flex justify-center">
           {/* 🔥 FIX GAMBAR */}
           {material.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
             src={`http://192.168.110.204:5000/uploads/${material.image}`}
             alt={material.image}
@@ -106,6 +107,7 @@ export default function MaterialDetails({ material, vendor }) {
             >
               {/* 🔥 FIX GAMBAR RELATED MATERIAL */}
               {item.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={`http://192.168.110.204:5000/uploads/${item.image}`}
                   alt={item.name}

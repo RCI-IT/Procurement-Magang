@@ -1,30 +1,24 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';  // Pastikan menggunakan next/router
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-const DetailVendor = () => {
+export default function VendorPage() {
+  const params = useParams(); // Menggunakan useParams()
+  const vendorId = params.id; // Ambil ID dari params
   const [vendor, setVendor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
-  const { id } = router.query;  // Mendapatkan vendorId dari URL
 
-  // Menghindari masalah jika router.query.id belum terisi pada saat pertama kali render
   useEffect(() => {
-    if (!id) {
-      console.log("ID vendor belum tersedia, menunggu router...");
-      return;
-    }
-
-    const fetchVendorDetails = async () => {
-      setLoading(true);
+    const fetchVendor = async () => {
       try {
-        console.log("Fetching vendor data for id:", id);  // Pastikan ID diterima dengan benar
-        const res = await fetch(`http://192.168.110.204:5000/vendors/${id}`);
-        if (!res.ok) throw new Error('Vendor tidak ditemukan');
-        const vendorData = await res.json();
-        setVendor(vendorData);
+        const res = await fetch(`http://192.168.110.204:5000/vendors/${vendorId}`);
+        if (!res.ok) throw new Error("Gagal mengambil data vendor");
+
+        const data = await res.json();
+        setVendor(data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -32,40 +26,20 @@ const DetailVendor = () => {
       }
     };
 
-    fetchVendorDetails();
-  }, [id]);  // Pastikan useEffect dijalankan ulang ketika id berubah
+    if (vendorId) fetchVendor();
+  }, [vendorId]);
 
-  if (loading) return <div className="text-center text-blue-500">Loading...</div>;
-  if (error) return <div className="text-center text-red-500">Error: {error}</div>;
-  if (!vendor) return <div className="text-center text-gray-500">Vendor tidak ditemukan.</div>;
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p className="text-red-500">Error: {error}</p>;
 
   return (
-    <div className="p-6 bg-white shadow-md rounded-md">
-      <h1 className="text-3xl font-bold text-center mb-4">Detail Vendor</h1>
-      <div className="border p-4 rounded-md">
-        <p className="text-xl font-semibold text-gray-700 mb-2">{vendor.name}</p>
-        <p className="text-gray-600 mb-1">
-          <strong className="text-gray-800">Alamat:</strong> {vendor.address || "Tidak tersedia"}
-        </p>
-        <p className="text-gray-600 mb-1">
-          <strong className="text-gray-800">Kota :</strong> {vendor.city || "Tidak tersedia"}
-        </p>
-        <p className="text-gray-600 mb-1">
-          <strong className="text-gray-800">Telepon:</strong> {vendor.phone || "Tidak tersedia"}
-        </p>
-        {vendor.phone && (
-          <a
-            href={`https://wa.me/${vendor.phone}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 inline-block bg-green-500 text-white px-4 py-2 rounded shadow-md hover:bg-green-600"
-          >
-            Hubungi Vendor
-          </a>
-        )}
-      </div>
+    <div className="p-6">
+      <h1 className="text-3xl font-bold">{vendor?.name}</h1>
+      <p className="text-lg mt-2">Alamat: {vendor?.address || "Tidak tersedia"}</p>
+      <p className="text-lg">Kontak: {vendor?.contact || "Tidak tersedia"}</p>
+      <button onClick={() => router.back()} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
+        Kembali
+      </button>
     </div>
   );
-};
-
-export default DetailVendor;
+}
