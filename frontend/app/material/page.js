@@ -150,7 +150,10 @@ export default function Material() {
                         "Tidak Ada Vendor"
                       )}
                     </td>
-                    <td className="border px-4 py-2">Rp.{material.price}</td>
+                    <td className="border px-4 py-2">
+                      Rp {new Intl.NumberFormat('id-ID', { useGrouping: true }).format(material.price)}
+                    </td>
+
                     <td className="border px-4 py-2 text-center">
                       <button
                         onClick={() => handleMaterialClick(material.id)}

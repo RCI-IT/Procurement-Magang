@@ -1,13 +1,17 @@
-"use client";
+/* eslint-disable @next/next/no-img-element */
+'use client';
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
-import MaterialDetails from "./MaterialDetails";
+import { useParams, useRouter } from "next/navigation";
+import Sidebar from "../../../component/sidebar";
 
 export default function MaterialPage() {
-  const { id } = useParams(); // ✅ Ambil ID dari URL
+  const { id } = useParams();
+  const router = useRouter();
+  
   const [material, setMaterial] = useState(null);
   const [vendor, setVendor] = useState(null);
+  const [relatedMaterials, setRelatedMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -28,21 +32,35 @@ export default function MaterialPage() {
         if (!resMaterial.ok) throw new Error("Material tidak ditemukan");
         const materialData = await resMaterial.json();
 
-        console.log("Material Data:", materialData);
+        console.log("✅ Material Data:", materialData);
 
         let vendorData = null;
+        let relatedMaterialsData = [];
 
-        // 🔹 Fetch Vendor jika vendorId ada
         if (materialData.vendorId) {
           const resVendor = await fetch(`http://192.168.110.204:5000/vendors/${materialData.vendorId}`);
           vendorData = resVendor.ok ? await resVendor.json() : null;
+        } else if (materialData.vendor) {
+          const resVendor = await fetch(`http://192.168.110.204:5000/vendors?name=${materialData.vendor}`);
+          const vendorList = resVendor.ok ? await resVendor.json() : [];
+          vendorData = vendorList.length > 0 ? vendorList[0] : null;
+        }
+
+        // 🔹 Fetch Related Materials dari vendor yang sama
+        const resRelatedMaterials = await fetch(
+          `http://192.168.110.204:5000/materials?vendorId=${materialData.vendorId}`
+        );
+        if (resRelatedMaterials.ok) {
+          const allMaterials = await resRelatedMaterials.json();
+          relatedMaterialsData = allMaterials.filter((item) => item.id !== materialData.id);
         }
 
         setMaterial(materialData);
         setVendor(vendorData);
+        setRelatedMaterials(relatedMaterialsData);
         setError(null);
       } catch (err) {
-        console.error("Error fetching material details:", err);
+        console.error("❌ Error fetching material details:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -56,5 +74,95 @@ export default function MaterialPage() {
   if (error) return <div className="text-center text-red-500">Error: {error}</div>;
   if (!material) return <div className="text-center text-gray-500">Material tidak ditemukan.</div>;
 
-  return <MaterialDetails material={material} vendor={vendor} />;
+  const materialImage = material?.imageUrl
+    ? material.imageUrl
+    : "http://192.168.110.204:5000/uploads/default-image.jpg";
+
+  return (
+    <div className="flex h-screen">
+      {/* ✅ Sidebar */}
+      <Sidebar />
+
+      {/* ✅ Konten utama */}
+      <div className="flex-1 p-6">
+        {/* Tombol Kembali */}
+        <button
+          onClick={() => router.push("/material")}
+          className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-gray-600 mb-4"
+        >
+          ← Kembali ke Material
+        </button>
+
+        {/* Vendor Info */}
+        <div className="mb-6 bg-white shadow-md p-4 rounded-md">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-3xl font-bold">{vendor?.name || "Vendor Tidak Diketahui"}</h2>
+              <p className="text-gray-600 text-sm">{vendor?.address || "Alamat tidak tersedia"}</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <p className="text-gray-800 font-medium">{vendor?.phone || "Tidak ada kontak"}</p>
+              {vendor?.phone && (
+                <a
+                  href={`https://wa.me/${vendor.phone}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center bg-green-500 text-white px-4 py-2 rounded shadow-md hover:bg-green-600"
+                >
+                  <span className="mr-2">Hubungi</span>
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Material Info */}
+        <div className="flex gap-6 items-start mb-8 bg-white shadow-md p-4 rounded-md">
+          <div className="bg-gray-100 border border-gray-300 rounded p-4 flex justify-center">
+            <img src={materialImage} alt={material.name} className="object-cover max-h-72" />
+          </div>
+
+          <div className="flex-grow">
+            <h3 className="text-2xl font-bold mb-2">{material.name}</h3>
+            <p className="text-xl text-blue-600 font-semibold mb-4">
+              {material.price.startsWith("Rp") ? material.price : `Rp ${material.price}`}
+            </p>
+            <p className="text-sm text-gray-500 mb-4">
+              Kategori: <span className="text-gray-700">{material.category || "Tidak ada kategori"}</span>
+            </p>
+
+            <h4 className="font-bold text-lg mb-2">Deskripsi</h4>
+            <p className="text-gray-700 text-sm">{material.description || "Tidak ada deskripsi"}</p>
+          </div>
+        </div>
+
+        {/* Related Materials */}
+        <div className="bg-white shadow-md p-4 rounded-md">
+          <h4 className="font-bold text-lg mb-4">Material lainnya dari vendor ini</h4>
+          {relatedMaterials.length === 0 && (
+            <p className="text-center text-gray-500">Tidak ada material lain dari vendor ini.</p>
+          )}
+          <div className="flex justify-start gap-4">
+            {relatedMaterials.map((item) => {
+              const relatedImage = item.image
+                ? item.image.startsWith("http")
+                  ? item.image
+                  : `http://192.168.110.204:5000/uploads/${item.image}`
+                : "http://192.168.110.204:5000/uploads/default-image.jpg";
+
+              return (
+                <div key={item.id} className="border rounded p-4 text-center bg-white text-sm w-40 h-48 flex flex-col items-center shadow">
+                  <img src={relatedImage} alt={item.name} className="mb-2 w-20 h-20 object-cover" />
+                  <p className="font-semibold text-center break-words">{item.name}</p>
+                  <p className="text-red-500">
+                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.price)}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
