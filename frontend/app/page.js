@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../component/sidebar";
 import Home from "./Home";
-import PermintaanLapangan from "./PermintaanLapangan";
+import PermintaanLapangan from "./permintaan-lapangan/page";
 import PurchaseOrder from "./PurchaseOrder";
 import ConfirmationOrder from "./ConfirmationOrder";
 import Material from "./material/page";
 import Setting from "./Setting";
-import AddPermintaanLapanganForm from "./AddPermintaanLapanganForm";
+import AddPermintaanLapanganForm from "./permintaan-lapangan/AddPermintaanLapanganForm";
 import { useData } from "../context/DataContext";
 import { useSearchParams } from "next/navigation";
 
