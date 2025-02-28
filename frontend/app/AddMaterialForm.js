@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from "react";
 
@@ -14,36 +14,38 @@ export default function AddMaterialForm({ addMaterial }) {
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [vendorRes, categoryRes] = await Promise.all([
-          fetch("http://192.168.110.204:5000/vendors"),
-          fetch("http://192.168.110.204:5000/categories"),  
-        ]);
+  // Fungsi fetchData didefinisikan di sini (di dalam komponen)
+  const fetchData = async () => {
+    try {
+      const [vendorRes, categoryRes] = await Promise.all([
+        fetch("http://192.168.110.204:5000/vendors"),
+        fetch("http://192.168.110.204:5000/categories"),
+      ]);
 
-        if (!vendorRes.ok || !categoryRes.ok) {
-          throw new Error("Gagal mengambil data dari server");
-        }
-
-        const vendorData = await vendorRes.json();
-        const categoryData = await categoryRes.json();
-
-        setVendors(vendorData);
-        setCategories(categoryData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setError(`Gagal memuat vendor atau kategori: ${error.message}`);
+      if (!vendorRes.ok || !categoryRes.ok) {
+        throw new Error("Gagal mengambil data dari server");
       }
-    };
 
+      const vendorData = await vendorRes.json();
+      const categoryData = await categoryRes.json();
+
+      setVendors(vendorData);
+      setCategories(categoryData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError(`Gagal memuat vendor atau kategori: ${error.message}`);
+    }
+  };
+
+  // Panggil fetchData saat komponen pertama kali dimuat
+  useEffect(() => {
     fetchData();
   }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-    setError(""); 
+    setError("");
 
     if (!name || !vendorId || !price || !categoryId) {
       setError("Semua field harus diisi!");
@@ -74,6 +76,7 @@ export default function AddMaterialForm({ addMaterial }) {
 
       addMaterial(result);
 
+      // Reset form
       setName("");
       setVendorId("");
       setPrice("");
@@ -93,7 +96,9 @@ export default function AddMaterialForm({ addMaterial }) {
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
       <div className="mb-4">
-        <label htmlFor="image" className="block font-medium">Gambar:</label>
+        <label htmlFor="image" className="block font-medium">
+          Gambar:
+        </label>
         <input
           type="file"
           id="image"
@@ -103,7 +108,9 @@ export default function AddMaterialForm({ addMaterial }) {
       </div>
 
       <div className="mb-4">
-        <label htmlFor="name" className="block font-medium">Nama Material:</label>
+        <label htmlFor="name" className="block font-medium">
+          Nama Material:
+        </label>
         <input
           type="text"
           id="name"
@@ -114,7 +121,9 @@ export default function AddMaterialForm({ addMaterial }) {
       </div>
 
       <div className="mb-4">
-        <label htmlFor="description" className="block font-medium">Deskripsi:</label>
+        <label htmlFor="description" className="block font-medium">
+          Deskripsi:
+        </label>
         <textarea
           id="description"
           value={description}
@@ -124,7 +133,9 @@ export default function AddMaterialForm({ addMaterial }) {
       </div>
 
       <div className="mb-4">
-        <label htmlFor="price" className="block font-medium">Harga:</label>
+        <label htmlFor="price" className="block font-medium">
+          Harga:
+        </label>
         <input
           type="number"
           id="price"
@@ -135,7 +146,9 @@ export default function AddMaterialForm({ addMaterial }) {
       </div>
 
       <div className="mb-4">
-        <label htmlFor="category" className="block font-medium">Kategori:</label>
+        <label htmlFor="category" className="block font-medium">
+          Kategori:
+        </label>
         <select
           id="category"
           value={categoryId}
@@ -144,13 +157,17 @@ export default function AddMaterialForm({ addMaterial }) {
         >
           <option value="">Pilih Kategori</option>
           {categories.map((category) => (
-            <option key={category.id} value={category.id}>{category.name}</option>
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
           ))}
         </select>
       </div>
 
       <div className="mb-4">
-        <label htmlFor="vendor" className="block font-medium">Vendor:</label>
+        <label htmlFor="vendor" className="block font-medium">
+          Vendor:
+        </label>
         <select
           id="vendor"
           value={vendorId}
@@ -159,7 +176,9 @@ export default function AddMaterialForm({ addMaterial }) {
         >
           <option value="">Pilih Vendor</option>
           {vendors.map((vendor) => (
-            <option key={vendor.id} value={vendor.id}>{vendor.name}</option>
+            <option key={vendor.id} value={vendor.id}>
+              {vendor.name}
+            </option>
           ))}
         </select>
       </div>

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import AddMaterialForm from "../AddMaterialForm";
 
 export default function Material() {
@@ -14,28 +14,33 @@ export default function Material() {
   const [error, setError] = useState(null);
   const router = useRouter();
 
+  // Definisikan fetchData di sini (scope komponen) agar dapat diakses di addMaterial prop
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [materialRes, vendorRes] = await Promise.all([
+        fetch("http://192.168.110.204:5000/materials"),
+        fetch("http://192.168.110.204:5000/vendors")
+      ]);
+
+      if (!materialRes.ok || !vendorRes.ok) throw new Error("Gagal mengambil data");
+
+      const [materialData, vendorData] = await Promise.all([
+        materialRes.json(),
+        vendorRes.json()
+      ]);
+
+      setMaterials(materialData);
+      setVendors(vendorData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Panggil fetchData saat komponen pertama kali dimuat
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [materialRes, vendorRes] = await Promise.all([
-          fetch("http://192.168.110.204:5000/materials"),
-          fetch("http://192.168.110.204:5000/vendors")
-        ]);
-
-        if (!materialRes.ok || !vendorRes.ok) throw new Error("Gagal mengambil data");
-
-        const [materialData, vendorData] = await Promise.all([materialRes.json(), vendorRes.json()]);
-
-        setMaterials(materialData);
-        setVendors(vendorData);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -44,7 +49,6 @@ export default function Material() {
       console.error("Vendor ID tidak tersedia!");
       return;
     }
-    console.log("Navigasi ke vendor ID:", vendorId);
     router.push(`/vendor/${vendorId}`);
   };
 
@@ -65,7 +69,7 @@ export default function Material() {
 
       if (!response.ok) throw new Error("Gagal menghapus material");
 
-      setMaterials((prev) => prev.filter((material) => material.id !== id));    
+      setMaterials((prev) => prev.filter((material) => material.id !== id));
     } catch (error) {
       console.error("Error deleting material:", error);
       alert("Gagal menghapus material: " + error.message);
@@ -95,7 +99,8 @@ export default function Material() {
             {showForm ? "Batal Tambah" : "+ Material"}
           </button>
         </div>
-        {showForm && <AddMaterialForm addMaterial={() => fetchData()} />}
+        {/* Perbaiki prop addMaterial dengan mengoper fetchData langsung */}
+        {showForm && <AddMaterialForm addMaterial={fetchData} />}
 
         <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
           <thead className="bg-blue-500 text-white">
@@ -138,9 +143,8 @@ export default function Material() {
                       )}
                     </td>
                     <td className="border px-4 py-2">
-                      Rp {new Intl.NumberFormat('id-ID', { useGrouping: true }).format(material.price)}
+                      Rp {new Intl.NumberFormat("id-ID", { useGrouping: true }).format(material.price)}
                     </td>
-
                     <td className="border px-4 py-2 text-center">
                       <button
                         onClick={() => handleMaterialClick(material.id)}
