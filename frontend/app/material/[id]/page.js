@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useState, useEffect } from "react";
@@ -26,6 +27,7 @@ export default function MaterialPage() {
       try {
         console.log("Fetching material with ID:", id);
 
+        // 🔹 Fetch Material
         const resMaterial = await fetch(`http://192.168.110.204:5000/materials/${id}`);
         if (!resMaterial.ok) throw new Error("Material tidak ditemukan");
         const materialData = await resMaterial.json();
@@ -44,6 +46,7 @@ export default function MaterialPage() {
           vendorData = vendorList.length > 0 ? vendorList[0] : null;
         }
 
+        // 🔹 Fetch Related Materials dari vendor yang sama
         const resRelatedMaterials = await fetch(
           `http://192.168.110.204:5000/materials?vendorId=${materialData.vendorId}`
         );
@@ -77,9 +80,15 @@ export default function MaterialPage() {
 
   return (
     <div className="flex h-screen">
+      {/* ✅ Sidebar */}
       <Sidebar />
 
+      {/* ✅ Konten utama */}
       <div className="flex-1 p-6">
+        {/* Tombol Kembali */}
+        
+
+        {/* Vendor Info */}
         <div className="mb-6 bg-white shadow-md p-4 rounded-md">
           <div className="flex justify-between items-center">
             <div>
@@ -102,6 +111,7 @@ export default function MaterialPage() {
           </div>
         </div>
 
+        {/* Material Info */}
         <div className="flex gap-6 items-start mb-8 bg-white shadow-md p-4 rounded-md">
           <div className="bg-gray-100 border border-gray-300 rounded p-4 flex justify-center">
             <img src={materialImage} alt={material.name} className="object-cover max-h-72" />
@@ -120,7 +130,15 @@ export default function MaterialPage() {
             <p className="text-gray-700 text-sm">{material.description || "Tidak ada deskripsi"}</p>
           </div>
         </div>
+        <button
+  onClick={() => router.push(`/material/${id}/edit`)}
+  className="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+>
+  Edit Material
+</button>
 
+
+        {/* Related Materials */}
         <div className="bg-white shadow-md p-4 rounded-md">
           <h4 className="font-bold text-lg mb-4">Material lainnya dari vendor ini</h4>
           {relatedMaterials.length === 0 && (
