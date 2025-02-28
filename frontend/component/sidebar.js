@@ -2,14 +2,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation"; // ✅ Gunakan next/navigation
+import { useRouter } from "next/navigation"; 
 
 export default function Sidebar() {
   const [isMinimized, setIsMinimized] = useState(false);
   const router = useRouter();
 
   const handleNavigation = (page) => {
-    router.push(`/?page=${page}`); // ✅ Gunakan query parameter "page"
+    router.push(`/?page=${page}`);
   };
 
   return (

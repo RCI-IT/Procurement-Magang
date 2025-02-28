@@ -1,17 +1,18 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
 const DataContext = createContext({
-  items: [],
+  permintaanLapanganData: [],
   loading: false,
   error: null,
   refreshData: () => {},
+  setPermintaanLapanganData: () => {}, 
 });
 
 export const DataProvider = ({ children }) => {
-  const [items, setItems] = useState([]);
+  const [permintaanLapanganData, setPermintaanLapanganData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-//test
+
   const fetchData = async () => {
     setLoading(true);
     setError(null);
@@ -19,7 +20,7 @@ export const DataProvider = ({ children }) => {
       const response = await fetch('http://localhost:5000');
       if (!response.ok) throw new Error('Gagal mengambil data dari server');
       const data = await response.json();
-      setItems(data);
+      setPermintaanLapanganData(data);  
     } catch (err) {
       setError(err.message);
     } finally {
@@ -29,10 +30,16 @@ export const DataProvider = ({ children }) => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, []); 
 
   return (
-    <DataContext.Provider value={{ items, loading, error, refreshData: fetchData }}>
+    <DataContext.Provider value={{
+      permintaanLapanganData,
+      loading,
+      error,
+      refreshData: fetchData,
+      setPermintaanLapanganData,  
+    }}>
       {children}
     </DataContext.Provider>
   );
