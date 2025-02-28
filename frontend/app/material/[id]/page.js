@@ -1,5 +1,9 @@
+<<<<<<< HEAD
+"use client";
+=======
 /* eslint-disable @next/next/no-img-element */
 'use client';
+>>>>>>> 340986476578a4f10b54a0c6c8f80644ed213a87
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -26,26 +30,76 @@ export default function MaterialPage() {
       setLoading(true);
       try {
         console.log("Fetching material with ID:", id);
+<<<<<<< HEAD
+=======
 
         // 🔹 Fetch Material
+>>>>>>> 340986476578a4f10b54a0c6c8f80644ed213a87
         const resMaterial = await fetch(`http://192.168.110.204:5000/materials/${id}`);
         if (!resMaterial.ok) throw new Error("Material tidak ditemukan");
         const materialData = await resMaterial.json();
-
         console.log("✅ Material Data:", materialData);
 
         let vendorData = null;
         let relatedMaterialsData = [];
 
+        // Jika material memiliki vendorId, gunakan itu
         if (materialData.vendorId) {
-          const resVendor = await fetch(`http://192.168.110.204:5000/vendors/${materialData.vendorId}`);
-          vendorData = resVendor.ok ? await resVendor.json() : null;
-        } else if (materialData.vendor) {
-          const resVendor = await fetch(`http://192.168.110.204:5000/vendors?name=${materialData.vendor}`);
-          const vendorList = resVendor.ok ? await resVendor.json() : [];
-          vendorData = vendorList.length > 0 ? vendorList[0] : null;
+          const vendorId =
+            typeof materialData.vendorId === "string"
+              ? Number(materialData.vendorId)
+              : materialData.vendorId;
+          console.log("➡️ Using vendorId:", vendorId);
+          const resVendor = await fetch(`http://192.168.110.204:5000/vendors/${vendorId}`);
+          if (resVendor.ok) {
+            vendorData = await resVendor.json();
+            console.log("✅ Vendor Data:", vendorData);
+          } else {
+            console.warn("Vendor tidak ditemukan dengan ID:", vendorId);
+          }
+        } 
+        // Jika tidak ada vendorId, cari berdasarkan nama vendor
+        else if (materialData.vendor) {
+          const vendorName = materialData.vendor;
+          console.log("➡️ Using vendor name:", vendorName);
+          const resVendor = await fetch(
+            `http://192.168.110.204:5000/vendors?name=${encodeURIComponent(vendorName)}`
+          );
+          if (resVendor.ok) {
+            const vendorList = await resVendor.json();
+            // Lakukan pencarian exact match (case-insensitive)
+            vendorData = vendorList.find(
+              (v) =>
+                v.name.trim().toLowerCase() === vendorName.trim().toLowerCase()
+            ) || null;
+            console.log("✅ Vendor Data by name:", vendorData);
+          }
         }
 
+<<<<<<< HEAD
+        // Untuk related materials, gunakan vendorId jika ada; 
+        // jika tidak, dan jika vendorData ditemukan dari nama, gunakan vendorData.id
+        let searchVendorId = null;
+        if (materialData.vendorId) {
+          searchVendorId =
+            typeof materialData.vendorId === "string"
+              ? Number(materialData.vendorId)
+              : materialData.vendorId;
+        } else if (vendorData && vendorData.id) {
+          searchVendorId = vendorData.id;
+        }
+
+        if (searchVendorId) {
+          const resRelated = await fetch(
+            `http://192.168.110.204:5000/materials?vendorId=${searchVendorId}`
+          );
+          if (resRelated.ok) {
+            const allMaterials = await resRelated.json();
+            relatedMaterialsData = allMaterials.filter(
+              (item) => item.id !== materialData.id
+            );
+          }
+=======
         // 🔹 Fetch Related Materials dari vendor yang sama
         const resRelatedMaterials = await fetch(
           `http://192.168.110.204:5000/materials?vendorId=${materialData.vendorId}`
@@ -53,6 +107,7 @@ export default function MaterialPage() {
         if (resRelatedMaterials.ok) {
           const allMaterials = await resRelatedMaterials.json();
           relatedMaterialsData = allMaterials.filter((item) => item.id !== materialData.id);
+>>>>>>> 340986476578a4f10b54a0c6c8f80644ed213a87
         }
 
         setMaterial(materialData);
@@ -85,10 +140,14 @@ export default function MaterialPage() {
 
       {/* ✅ Konten utama */}
       <div className="flex-1 p-6">
+<<<<<<< HEAD
+        {/* Info Vendor */}
+=======
         {/* Tombol Kembali */}
         
 
         {/* Vendor Info */}
+>>>>>>> 340986476578a4f10b54a0c6c8f80644ed213a87
         <div className="mb-6 bg-white shadow-md p-4 rounded-md">
           <div className="flex justify-between items-center">
             <div>
@@ -111,12 +170,12 @@ export default function MaterialPage() {
           </div>
         </div>
 
+        {/* Detail Material */}
         {/* Material Info */}
         <div className="flex gap-6 items-start mb-8 bg-white shadow-md p-4 rounded-md">
           <div className="bg-gray-100 border border-gray-300 rounded p-4 flex justify-center">
             <img src={materialImage} alt={material.name} className="object-cover max-h-72" />
           </div>
-
           <div className="flex-grow">
             <h3 className="text-2xl font-bold mb-2">{material.name}</h3>
             <p className="text-xl text-blue-600 font-semibold mb-4">
@@ -125,7 +184,6 @@ export default function MaterialPage() {
             <p className="text-sm text-gray-500 mb-4">
               Kategori: <span className="text-gray-700">{material.category || "Tidak ada kategori"}</span>
             </p>
-
             <h4 className="font-bold text-lg mb-2">Deskripsi</h4>
             <p className="text-gray-700 text-sm">{material.description || "Tidak ada deskripsi"}</p>
           </div>
@@ -137,8 +195,12 @@ export default function MaterialPage() {
   Edit Material
 </button>
 
+<<<<<<< HEAD
+        {/* Material Lain dari Vendor yang Sama */}
+=======
 
         {/* Related Materials */}
+>>>>>>> 340986476578a4f10b54a0c6c8f80644ed213a87
         <div className="bg-white shadow-md p-4 rounded-md">
           <h4 className="font-bold text-lg mb-4">Material lainnya dari vendor ini</h4>
           {relatedMaterials.length === 0 && (
@@ -151,7 +213,6 @@ export default function MaterialPage() {
                   ? item.image
                   : `http://192.168.110.204:5000/uploads/${item.image}`
                 : "http://192.168.110.204:5000/uploads/default-image.jpg";
-
               return (
                 <div key={item.id} className="border rounded p-4 text-center bg-white text-sm w-40 h-48 flex flex-col items-center shadow">
                   <img src={relatedImage} alt={item.name} className="mb-2 w-20 h-20 object-cover" />
@@ -164,8 +225,11 @@ export default function MaterialPage() {
             })}
           </div>
         </div>
-        <div> <br></br>
-        <button onClick={() => router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">Kembali</button>
+        <div>
+          <br />
+          <button onClick={() => router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
+            Kembali
+          </button>
         </div>
       </div>
     </div>

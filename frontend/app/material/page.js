@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import AddMaterialForm from "../AddMaterialForm";
+import AddMaterialForm from "./AddMaterialForm";
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
