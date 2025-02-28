@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -6,7 +7,7 @@ import Sidebar from "../../../component/sidebar";
 
 export default function VendorPage() {
   const params = useParams();
-  const vendorId = params.id;
+  const vendorId = params.id; // 🔍 Vendor ID dari URL
   const [vendor, setVendor] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,26 +17,40 @@ export default function VendorPage() {
   useEffect(() => {
     const fetchVendorAndMaterials = async () => {
       try {
+        console.log("🔍 Vendor ID dari URL:", vendorId); // Debug Vendor ID
+  
         const resVendor = await fetch(`http://192.168.110.204:5000/vendors/${vendorId}`);
         if (!resVendor.ok) throw new Error("Gagal mengambil data vendor");
         const vendorData = await resVendor.json();
-
-        const resMaterials = await fetch(`http://192.168.110.204:5000/materials?vendor_id=${vendorId}`);
+  
+        const resMaterials = await fetch(`http://192.168.110.204:5000/materials`);
         if (!resMaterials.ok) throw new Error("Gagal mengambil daftar material");
-        const materialsData = await resMaterials.json();
-
+        const allMaterials = await resMaterials.json();
+  
+        console.log("✅ Semua Data Material:", allMaterials); // Debug Data Material
+  
+        // Filter berdasarkan vendorId
+        const filteredMaterials = allMaterials.filter(material => String(material.vendorId) === String(vendorId));
+  
+        console.log("🎯 Filtered Materials:", filteredMaterials); // Debug Data yang sudah difilter
+  
+        // 🔥 Cek apakah category ada di dalam data material
+        filteredMaterials.forEach(material => {
+          console.log(`📌 Material: ${material.name}, Category:`, material.category);
+        });
+  
         setVendor(vendorData);
-        setMaterials(materialsData);
+        setMaterials(filteredMaterials);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-
+  
     if (vendorId) fetchVendorAndMaterials();
   }, [vendorId]);
-
+  
   if (loading) return <p className="text-center text-blue-500">Loading...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
@@ -46,12 +61,11 @@ export default function VendorPage() {
         <div className="bg-white shadow-md p-6 rounded-md mb-6">
           <h1 className="text-3xl font-bold">{vendor?.name}</h1>
           <p className="text-gray-600 mt-2">{vendor?.address || "Alamat tidak tersedia"}</p>
-          <p className="text-lg mt-2">📞 {vendor?.contact || "Tidak tersedia"}</p>
+          <p className="text-lg mt-2">📞 {vendor?.phone || "Tidak tersedia"}</p>
         </div>
         <div className="bg-white shadow-md p-6 rounded-md">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Material</h2>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded">+ Tambah</button>
           </div>
           <table className="w-full border-collapse border border-gray-200">
             <thead className="bg-blue-600 text-white">
@@ -61,7 +75,6 @@ export default function VendorPage() {
                 <th className="p-2 border">Gambar</th>
                 <th className="p-2 border">Harga</th>
                 <th className="p-2 border">Kategori</th>
-                <th className="p-2 border">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -81,16 +94,13 @@ export default function VendorPage() {
                         "No Image"
                       )}
                     </td>
-                    <td className="p-2 border">Rp {material.price.toLocaleString()}</td>
-                    <td className="p-2 border">{material.category || "Tidak ada kategori"}</td>
-                    <td className="p-2 border">
-                      <button className="bg-blue-500 text-white px-3 py-1 rounded">Lihat</button>
-                    </td>
+                    <td className="p-2 border">Rp {material.price.toLocaleString("id-ID")}</td>
+                    <td className="text-gray-700">{material.category || "Tidak ada kategori"}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center text-gray-500 p-4">Tidak ada material tersedia.</td>
+                  <td colSpan="5" className="text-center text-gray-500 p-4">Tidak ada material tersedia.</td>
                 </tr>
               )}
             </tbody>
