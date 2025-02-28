@@ -170,11 +170,8 @@ export default function MaterialPage() {
           </div>
         </div>
 
-<<<<<<< HEAD
         {/* Detail Material */}
-=======
         {/* Material Info */}
->>>>>>> 340986476578a4f10b54a0c6c8f80644ed213a87
         <div className="flex gap-6 items-start mb-8 bg-white shadow-md p-4 rounded-md">
           <div className="bg-gray-100 border border-gray-300 rounded p-4 flex justify-center">
             <img src={materialImage} alt={material.name} className="object-cover max-h-72" />
