@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../component/sidebar";
 import Home from "./Home";
 import PermintaanLapangan from "./permintaan-lapangan/page";
-import PurchaseOrder from "./PurchaseOrder";
+import PurchaseOrder from "./purchase-order/page";
 import ConfirmationOrder from "./ConfirmationOrder";
 import Material from "./material/page";
 import Setting from "./Setting";

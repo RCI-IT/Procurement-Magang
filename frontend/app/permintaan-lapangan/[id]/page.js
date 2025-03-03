@@ -2,60 +2,54 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Sidebar from "../../../component/sidebar";  // Mengimpor Sidebar
+import Sidebar from "../../../component/sidebar";  
 
 export default function DetailPermintaanLapangan() {
-  const { id } = useParams();  // Mengambil ID dari URL
+  const { id } = useParams();  
   const router = useRouter();
   const [data, setData] = useState(null);
 
   useEffect(() => {
     if (!id) return;
 
-    // Mengambil data dari API atau localStorage berdasarkan ID permintaan
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`); // Mengambil data permintaan berdasarkan ID dari API
+        const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`); 
         const result = await response.json();
         
         if (result) {
-          setData(result);  // Menyimpan data yang ditemukan
+          setData(result);  
         } else {
-          // Jika data tidak ditemukan, arahkan kembali ke halaman utama
+         
           router.push("/?page=permintaan-lapangan");
         }
       } catch (error) {
         console.error("Gagal mengambil data permintaan lapangan:", error);
-        router.push("/?page=permintaan-lapangan");  // Redirect jika terjadi error
+        router.push("/?page=permintaan-lapangan");  
       }
     };
 
-    fetchData(); // Memanggil fungsi fetchData
+    fetchData(); 
   }, [id, router]);
 
-  // Jika data belum tersedia, tampilkan pesan "Data tidak ditemukan"
   if (!data) return <p className="text-red-500 text-center mt-10">Data tidak ditemukan</p>;
 
-  // Parsing tanggal string "2025-02-26" menjadi objek Date
   const parseDate = (dateString) => {
     const date = new Date(dateString);
     const day = date.getDate();
-    const month = date.getMonth() + 1; // getMonth() mulai dari 0, jadi +1
+    const month = date.getMonth() + 1; 
     const year = date.getFullYear();
     return { day, month, year };
   };
 
-  // Mendapatkan tanggal yang telah diparsing
   const { day, month, year } = parseDate(data.tanggal);
 
   return (
     <div className="flex">
-      {/* Sidebar */}
       <div className="w-64 bg-gray-800 text-white p-4">
         <Sidebar />
       </div>
 
-      {/* Konten utama */}
       <div className="flex-1 p-6">
         <div className="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-6">
           <div className="flex justify-between items-center mb-4">
@@ -82,7 +76,6 @@ export default function DetailPermintaanLapangan() {
             <p>{data.keterangan}</p>
           </div>
 
-          {/* Menampilkan Detail Permintaan berdasarkan permintaanId */}
           <table className="w-full border-collapse border border-gray-300 mt-4 text-sm">
             <thead className="bg-blue-600 text-white">
               <tr>
