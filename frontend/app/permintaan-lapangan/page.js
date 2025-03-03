@@ -1,5 +1,3 @@
-// app/permintaan-lapangan/page.js
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -65,6 +63,15 @@ export default function PermintaanLapangan({ setActiveContent }) {
     }
   };
 
+  // Parsing Tanggal untuk menampilkan dengan format yang benar
+  const parseDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.getMonth() + 1; // getMonth() mulai dari 0, jadi +1
+    const year = date.getFullYear();
+    return { day, month, year };
+  };
+
   return (
     <div className="flex">
       {/* Konten utama */}
@@ -125,30 +132,33 @@ export default function PermintaanLapangan({ setActiveContent }) {
               </thead>
               <tbody>
                 {filteredData.length > 0 ? (
-                  filteredData.slice(0, rowsToShow).map((item, index) => (
-                    <tr key={item.nomor || `row-${index}`} className="hover:bg-gray-100">
-                      <td className="border px-4 py-2 text-center">{index + 1}</td>
-                      <td className="border px-4 py-2">{item.nomor}</td>
-                      <td className="border px-4 py-2">
-                        {item.tanggal.day} {getMonthName(Number(item.tanggal.month))} {item.tanggal.year}
-                      </td>
-                      <td className="border px-4 py-2">{item.lokasi}</td>
-                      <td className="border px-4 py-2 text-center">
-                        <button
-                          className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
-                          onClick={() => router.push(`/permintaan-lapangan/${item.id}`)}
-                        >
-                          Lihat
-                        </button>
-                        <button
-                          className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600 ml-2"
-                          onClick={() => handleDelete(item.id)}  // Menghapus permintaan lapangan
-                        >
-                          Hapus
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  filteredData.slice(0, rowsToShow).map((item, index) => {
+                    const { day, month, year } = parseDate(item.tanggal);  // Parsing tanggal
+                    return (
+                      <tr key={item.nomor || `row-${index}`} className="hover:bg-gray-100">
+                        <td className="border px-4 py-2 text-center">{index + 1}</td>
+                        <td className="border px-4 py-2">{item.nomor}</td>
+                        <td className="border px-4 py-2">
+                          {day} {getMonthName(month)} {year}
+                        </td>
+                        <td className="border px-4 py-2">{item.lokasi}</td>
+                        <td className="border px-4 py-2 text-center">
+                          <button
+                            className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
+                            onClick={() => router.push(`/permintaan-lapangan/${item.id}`)}  // Mengarahkan ke halaman detail
+                          >
+                            Lihat
+                          </button>
+                          <button
+                            className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600 ml-2"
+                            onClick={() => handleDelete(item.id)}  // Menghapus permintaan lapangan
+                          >
+                            Hapus
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan="5" className="border px-4 py-2 text-center text-gray-500">
