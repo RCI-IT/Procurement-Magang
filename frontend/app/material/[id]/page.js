@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-"use client";
-=======
 /* eslint-disable @next/next/no-img-element */
-'use client';
->>>>>>> 340986476578a4f10b54a0c6c8f80644ed213a87
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -12,7 +8,7 @@ import Sidebar from "../../../component/sidebar";
 export default function MaterialPage() {
   const { id } = useParams();
   const router = useRouter();
-  
+
   const [material, setMaterial] = useState(null);
   const [vendor, setVendor] = useState(null);
   const [relatedMaterials, setRelatedMaterials] = useState([]);
@@ -30,11 +26,6 @@ export default function MaterialPage() {
       setLoading(true);
       try {
         console.log("Fetching material with ID:", id);
-<<<<<<< HEAD
-=======
-
-        // 🔹 Fetch Material
->>>>>>> 340986476578a4f10b54a0c6c8f80644ed213a87
         const resMaterial = await fetch(`http://192.168.110.204:5000/materials/${id}`);
         if (!resMaterial.ok) throw new Error("Material tidak ditemukan");
         const materialData = await resMaterial.json();
@@ -43,7 +34,7 @@ export default function MaterialPage() {
         let vendorData = null;
         let relatedMaterialsData = [];
 
-        // Jika material memiliki vendorId, gunakan itu
+        // Jika material memiliki vendorId, gunakan itu (dengan konversi ke number jika perlu)
         if (materialData.vendorId) {
           const vendorId =
             typeof materialData.vendorId === "string"
@@ -57,8 +48,8 @@ export default function MaterialPage() {
           } else {
             console.warn("Vendor tidak ditemukan dengan ID:", vendorId);
           }
-        } 
-        // Jika tidak ada vendorId, cari berdasarkan nama vendor
+        }
+        // Jika tidak ada vendorId, cari vendor berdasarkan nama dengan exact match
         else if (materialData.vendor) {
           const vendorName = materialData.vendor;
           console.log("➡️ Using vendor name:", vendorName);
@@ -67,7 +58,6 @@ export default function MaterialPage() {
           );
           if (resVendor.ok) {
             const vendorList = await resVendor.json();
-            // Lakukan pencarian exact match (case-insensitive)
             vendorData = vendorList.find(
               (v) =>
                 v.name.trim().toLowerCase() === vendorName.trim().toLowerCase()
@@ -76,9 +66,7 @@ export default function MaterialPage() {
           }
         }
 
-<<<<<<< HEAD
-        // Untuk related materials, gunakan vendorId jika ada; 
-        // jika tidak, dan jika vendorData ditemukan dari nama, gunakan vendorData.id
+        // Tentukan vendorId untuk pencarian material terkait
         let searchVendorId = null;
         if (materialData.vendorId) {
           searchVendorId =
@@ -99,15 +87,6 @@ export default function MaterialPage() {
               (item) => item.id !== materialData.id
             );
           }
-=======
-        // 🔹 Fetch Related Materials dari vendor yang sama
-        const resRelatedMaterials = await fetch(
-          `http://192.168.110.204:5000/materials?vendorId=${materialData.vendorId}`
-        );
-        if (resRelatedMaterials.ok) {
-          const allMaterials = await resRelatedMaterials.json();
-          relatedMaterialsData = allMaterials.filter((item) => item.id !== materialData.id);
->>>>>>> 340986476578a4f10b54a0c6c8f80644ed213a87
         }
 
         setMaterial(materialData);
@@ -135,27 +114,23 @@ export default function MaterialPage() {
 
   return (
     <div className="flex h-screen">
-      {/* ✅ Sidebar */}
       <Sidebar />
-
-      {/* ✅ Konten utama */}
       <div className="flex-1 p-6">
-<<<<<<< HEAD
-        {/* Info Vendor */}
-=======
-        {/* Tombol Kembali */}
-        
-
         {/* Vendor Info */}
->>>>>>> 340986476578a4f10b54a0c6c8f80644ed213a87
         <div className="mb-6 bg-white shadow-md p-4 rounded-md">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-3xl font-bold">{vendor?.name || "Vendor Tidak Diketahui"}</h2>
-              <p className="text-gray-600 text-sm">{vendor?.address || "Alamat tidak tersedia"}</p>
+              <h2 className="text-3xl font-bold">
+                {vendor?.name || "Vendor Tidak Diketahui"}
+              </h2>
+              <p className="text-gray-600 text-sm">
+                {vendor?.address || "Alamat tidak tersedia"}
+              </p>
             </div>
             <div className="flex items-center space-x-4">
-              <p className="text-gray-800 font-medium">{vendor?.phone || "Tidak ada kontak"}</p>
+              <p className="text-gray-800 font-medium">
+                {vendor?.phone || "Tidak ada kontak"}
+              </p>
               {vendor?.phone && (
                 <a
                   href={`https://wa.me/${vendor.phone}`}
@@ -170,8 +145,7 @@ export default function MaterialPage() {
           </div>
         </div>
 
-        {/* Detail Material */}
-        {/* Material Info */}
+        {/* Material Detail */}
         <div className="flex gap-6 items-start mb-8 bg-white shadow-md p-4 rounded-md">
           <div className="bg-gray-100 border border-gray-300 rounded p-4 flex justify-center">
             <img src={materialImage} alt={material.name} className="object-cover max-h-72" />
@@ -188,19 +162,8 @@ export default function MaterialPage() {
             <p className="text-gray-700 text-sm">{material.description || "Tidak ada deskripsi"}</p>
           </div>
         </div>
-        <button
-  onClick={() => router.push(`/material/${id}/edit`)}
-  className="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
->
-  Edit Material
-</button>
-
-<<<<<<< HEAD
-        {/* Material Lain dari Vendor yang Sama */}
-=======
 
         {/* Related Materials */}
->>>>>>> 340986476578a4f10b54a0c6c8f80644ed213a87
         <div className="bg-white shadow-md p-4 rounded-md">
           <h4 className="font-bold text-lg mb-4">Material lainnya dari vendor ini</h4>
           {relatedMaterials.length === 0 && (
@@ -225,6 +188,7 @@ export default function MaterialPage() {
             })}
           </div>
         </div>
+
         <div>
           <br />
           <button onClick={() => router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
