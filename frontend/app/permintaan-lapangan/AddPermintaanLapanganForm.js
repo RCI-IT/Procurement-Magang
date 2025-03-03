@@ -31,13 +31,14 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+  
     if (!formData.nomor || !formData.tanggal.day || !formData.tanggal.month || !formData.tanggal.year) {
       alert("Harap lengkapi semua kolom!");
       return;
     }
-
+  
     const newPermintaan = {
+      id: Date.now(),  // Generate ID unik untuk setiap permintaan
       nomor: formData.nomor,
       tanggal: {
         day: formData.tanggal.day,
@@ -51,12 +52,14 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
       qty: formData.qty,
       satuan: formData.satuan,
       keterangan: formData.keterangan,
+      items: []  // Data items bisa disesuaikan
     };
-
+  
     const existingData = JSON.parse(localStorage.getItem('permintaanData')) || [];
     existingData.push(newPermintaan);
     localStorage.setItem('permintaanData', JSON.stringify(existingData));
-    router.push(`/detail-permintaan/${newPermintaan.id}`); 
+    router.push(`/permintaan-lapangan/${newPermintaan.id}`); // Redirect ke halaman detail setelah submit
+  
 
     onAddPermintaan(newPermintaan);
 
