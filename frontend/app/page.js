@@ -8,7 +8,7 @@ import PurchaseOrder from "./purchase-order/page";
 import ConfirmationOrder from "./ConfirmationOrder";
 import Material from "./material/page";
 import Setting from "./Setting";
-import AddPermintaanLapanganForm from "./permintaan-lapangan/AddPermintaanLapanganForm";
+import AddPermintaanLapanganForm from "./permintaan-lapangan/add/page ";
 import { useData } from "../context/DataContext";
 import { useSearchParams } from "next/navigation";
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import AddPermintaanLapanganForm from "./AddPermintaanLapanganForm";  // Formulir untuk menambah permintaan lapangan
+import AddPermintaanLapanganForm from "./add/page";  // Formulir untuk menambah permintaan lapangan
 
 const months = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
