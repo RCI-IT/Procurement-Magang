@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "../../component/sidebar";  // Mengimpor Sidebar
-import AddPermintaanLapanganForm from "./AddPermintaanLapanganForm";  // Formulir untuk menambah permintaan lapangan
+import AddPermintaanLapanganForm from "./add/page";  // Formulir untuk menambah permintaan lapangan
 
 const months = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -53,16 +52,33 @@ export default function PermintaanLapangan({ setActiveContent }) {
 
   // Fungsi untuk menghapus permintaan lapangan
   const handleDelete = async (id) => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus permintaan ini?")) return;
+  
     try {
-      await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
+      // Tampilkan indikator loading di UI (misalnya disable tombol sementara)
+      setUpdatedData(prevData =>
+        prevData.map(item => item.id === id ? { ...item, deleting: true } : item)
+      );
+  
+      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
         method: "DELETE",
       });
-      setUpdatedData(updatedData.filter(item => item.id !== id));  // Menghapus data dari state
+  
+      if (!response.ok) throw new Error("Gagal menghapus permintaan");
+  
+      setUpdatedData(prevData => prevData.filter(item => item.id !== id));
+      alert("Permintaan berhasil dihapus!");
     } catch (error) {
       console.error("Gagal menghapus permintaan lapangan:", error);
+      alert("Terjadi kesalahan saat menghapus permintaan.");
+    } finally {
+      // Pastikan data kembali ke normal jika gagal menghapus
+      setUpdatedData(prevData =>
+        prevData.map(item => item.id === id ? { ...item, deleting: false } : item)
+      );
     }
   };
-
+  
   // Parsing Tanggal untuk menampilkan dengan format yang benar
   const parseDate = (dateString) => {
     const date = new Date(dateString);
