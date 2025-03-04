@@ -1,80 +1,109 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddForm }) {
   const router = useRouter();
-
+  const [materials, setMaterials] = useState([]); // Data material dari database
   const [formData, setFormData] = useState({
-    tanggal: { day: "", month: "", year: "" },
     nomor: "",
-    picLapangan: "",
+    tanggal: { day: "", month: "", year: "" },
     lokasi: "",
-    namaBarang: "",
-    spesifikasi: "",
-    code: "",
-    qty: "",
-    satuan: "",
+    picLapangan: "",
     keterangan: "",
+    detail: [
+      { id: Date.now(), materialId: "", qty: "", satuan: "", mention: "", code: "" }, // 1 detail default
+    ],
   });
+
+  useEffect(() => {
+    fetch("http://192.168.110.204:5000/materials")
+      .then((res) => res.json())
+      .then((data) => setMaterials(data))
+      .catch((error) => console.error("Gagal mengambil data material:", error));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (["day", "month", "year"].includes(name)) {
-      setFormData((prevData) => ({
-        ...prevData,
-        tanggal: { ...prevData.tanggal, [name]: value },
+    if (name.startsWith("tanggal")) {
+      const field = name.split(".")[1];
+      setFormData((prev) => ({
+        ...prev,
+        tanggal: { ...prev.tanggal, [field]: value },
       }));
     } else {
-      setFormData((prevData) => ({ ...prevData, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleDetailChange = (field, value) => {
+    const updatedDetails = [...formData.detail];
+    updatedDetails[0][field] = value;
+    setFormData((prev) => ({ ...prev, detail: updatedDetails }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
   
-    if (!formData.nomor || !formData.tanggal.day || !formData.tanggal.month || !formData.tanggal.year) {
+    if (!formData.nomor || !formData.tanggal.day || !formData.tanggal.month || !formData.tanggal.year || !formData.lokasi || !formData.picLapangan) {
       alert("Harap lengkapi semua kolom!");
       return;
     }
   
-    const newPermintaan = {
-      id: Date.now(),  // Generate ID unik untuk setiap permintaan
-      nomor: formData.nomor,
-      tanggal: {
-        day: formData.tanggal.day,
-        month: formData.tanggal.month,
-        year: formData.tanggal.year
-      },
-      lokasi: formData.lokasi,
-      namaBarang: formData.namaBarang,
-      spesifikasi: formData.spesifikasi,
-      code: formData.code,
-      qty: formData.qty,
-      satuan: formData.satuan,
-      keterangan: formData.keterangan,
-      items: []  // Data items bisa disesuaikan
+    const finalData = {
+      ...formData,
+      tanggal: `${formData.tanggal.year}-${formData.tanggal.month}-${formData.tanggal.day}`,
+      detail: formData.detail.map((d) => ({
+        materialId: Number(d.materialId),
+        qty: Number(d.qty),
+        satuan: d.satuan,
+        mention: d.mention,
+        code: d.code,
+      })),
     };
   
-    const existingData = JSON.parse(localStorage.getItem('permintaanData')) || [];
-    existingData.push(newPermintaan);
-    localStorage.setItem('permintaanData', JSON.stringify(existingData));
-    router.push(`/permintaan-lapangan/${newPermintaan.id}`); // Redirect ke halaman detail setelah submit
+    try {
+      const response = await fetch("http://192.168.110.204:5000/permintaan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(finalData),
+      });
   
-
-    onAddPermintaan(newPermintaan);
-
-    toggleAddForm();
-
-    router.push("/?page=permintaan-lapangan");
+      let result;
+      try {
+        result = await response.json();
+      } catch (err) {
+        console.error("Gagal parsing response JSON", err);
+        throw new Error("Server tidak mengembalikan response yang valid.");
+      }
+  
+      if (!response.ok) {
+        console.error("Server Response Error:", result);
+        throw new Error(result.message || "Gagal menambahkan permintaan lapangan");
+      }
+  
+      alert("Permintaan berhasil ditambahkan!");
+      
+      // Reset state formData setelah submit
+      setFormData({
+        nomor: "",
+        tanggal: { day: "", month: "", year: "" },
+        lokasi: "",
+        picLapangan: "",
+        keterangan: "",
+        detail: [{ id: Date.now(), materialId: "", qty: "", satuan: "", mention: "", code: "" }],
+      });
+  
+      onAddPermintaan();
+      toggleAddForm();
+      router.push("/?page=permintaan-lapangan");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Terjadi kesalahan saat menyimpan data. Cek log untuk detail.");
+    }
   };
-
-  const months = [
-    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-  ];
-
-  const years = ["2025", "2024", "2023", "2022", "2021", "2020", "2019"];
-
+  
   return (
     <div className="p-6 bg-gray-100 rounded-lg shadow-md">
       <h1 className="text-3xl font-bold mb-6">Tambah Permintaan Lapangan</h1>
@@ -84,39 +113,40 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
             <label className="block font-medium">Tanggal:</label>
             <div className="flex space-x-2">
               <input
-                type="number"
-                name="day"
+                type="text"
+                name="tanggal.day"
                 placeholder="Tanggal"
                 value={formData.tanggal.day}
                 onChange={handleChange}
                 className="border border-gray-300 rounded px-2 py-1 w-1/3"
               />
               <select
-                name="month"
+                name="tanggal.month"
                 value={formData.tanggal.month}
                 onChange={handleChange}
                 className="border border-gray-300 rounded px-2 py-1 w-1/3"
               >
                 <option value="">Bulan</option>
-                {months.map((month, index) => (
-                  <option key={index} value={index + 1}>
-                    {month}
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {new Date(0, i).toLocaleString("id-ID", { month: "long" })}
                   </option>
                 ))}
               </select>
               <select
-                name="year"
-                value={formData.tanggal.year}
-                onChange={handleChange}
-                className="border border-gray-300 rounded px-2 py-1 w-1/3"
-              >
-                <option value="">Tahun</option>
-                {years.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
+  name="tanggal.year"
+  value={formData.tanggal.year}
+  onChange={handleChange}
+  className="border border-gray-300 rounded px-2 py-1 w-full"
+>
+  <option value="">Tahun</option>
+  {Array.from({ length: new Date().getFullYear() - 2018 }, (_, i) => (
+    <option key={2019 + i} value={2019 + i}>
+      {2019 + i}
+    </option>
+  ))}
+</select>
+
             </div>
           </div>
           <div>
@@ -154,84 +184,76 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
           </div>
         </div>
 
+        <div>
+          <label className="block font-medium">Keterangan:</label>
+          <textarea
+            name="keterangan"
+            value={formData.keterangan}
+            onChange={handleChange}
+            className="border border-gray-300 rounded px-4 py-2 w-full h-24"
+          />
+        </div>
+
+        <h2 className="text-xl font-bold mt-6">Detail Permintaan</h2>
         <div className="grid grid-cols-2 gap-6">
           <div>
             <label className="block font-medium">Nama Barang:</label>
-            <input
-              type="text"
-              name="namaBarang"
-              value={formData.namaBarang}
-              onChange={handleChange}
-              className="border border-gray-300 rounded px-4 py-2 w-full"
-            />
-            <label className="block font-medium mt-2">Spesifikasi:</label>
-            <input
-              type="text"
-              name="spesifikasi"
-              value={formData.spesifikasi}
-              onChange={handleChange}
-              className="border border-gray-300 rounded px-4 py-2 w-full"
-            />
-            <label className="block font-medium mt-2">Code:</label>
-            <input
-              type="text"
-              name="code"
-              value={formData.code}
-              onChange={handleChange}
-              className="border border-gray-300 rounded px-4 py-2 w-full"
-            />
+            <select
+              value={formData.detail[0].materialId}
+              onChange={(e) => handleDetailChange("materialId", e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1 w-full h-8"
+            >
+              <option value="">Pilih Material</option>
+              {materials.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
-            <label className="block font-medium">Keterangan:</label>
-            <textarea
-              name="keterangan"
-              value={formData.keterangan}
-              onChange={handleChange}
-              className="border border-gray-300 rounded px-4 py-2 w-full h-24"
+            <label className="block font-medium">Spesifikasi:</label>
+            <input
+              type="text"
+              value={formData.detail[0].mention}
+              onChange={(e) => handleDetailChange("mention", e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1 w-full"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-6">
+          <div>
+            <label className="block font-medium">Code:</label>
+            <input
+              type="text"
+              value={formData.detail[0].code}
+              onChange={(e) => handleDetailChange("code", e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1 w-full h-8 "
+            />
+          </div>
           <div className="flex space-x-2">
-            <div>
-              <label className="block font-medium">Qty:</label>
-              <input
-                type="number"
-                name="qty"
-                value={formData.qty}
-                onChange={handleChange}
-                className="border border-gray-300 rounded px-4 py-2 w-full"
-              />
-            </div>
-            <div>
-              <label className="block font-medium">Satuan:</label>
-              <input
-                type="text"
-                name="satuan"
-                value={formData.satuan}
-                onChange={handleChange}
-                className="border border-gray-300 rounded px-4 py-2 w-full"
-              />
-            </div>
+            <input
+              type="number"
+              placeholder="Qty"
+              value={formData.detail[0].qty}
+              onChange={(e) => handleDetailChange("qty", e.target.value)}
+              className="border border-gray-300  rounded px-2 py-1 w-full "
+            />
+            <input
+              type="text"
+              placeholder="Satuan"
+              value={formData.detail[0].satuan}
+              onChange={(e) => handleDetailChange("satuan", e.target.value)}
+              className="border border-gray-300  rounded px-2 py-1 w-full" />
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="bg-blue-500 text-white rounded px-6 py-2"
-          >
-            Selesai
-          </button>
+        <div className="flex justify-between mt-4">
+          <button type="button" className="text-red-500">Batal</button>
+          <button type="submit" className="bg-blue-500 text-white rounded px-6 py-2">Selesai</button>
         </div>
       </form>
-      <button
-        onClick={toggleAddForm}
-        className="mt-4 text-red-500 hover:text-red-700"
-      >
-        Batal
-      </button>
     </div>
   );
 }
