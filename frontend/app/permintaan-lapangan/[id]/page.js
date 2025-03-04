@@ -73,37 +73,48 @@ export default function DetailPermintaanLapangan() {
 
           {/* Tabel untuk detail permintaan tanpa garis border tebal */}
           <table className="w-full border-collapse mt-4 text-sm border-none">
-            <thead className="bg-blue-600 text-white">
-              <tr>
-                <th className="border-none p-2 text-center">No.</th>
-                <th className="border-none p-2 text-center">Nama Barang / Jasa</th>
-                <th className="border-none p-2 text-center">Spesifikasi</th>
-                <th className="border-none p-2 text-center">Code</th>
-                <th className="border-none p-2 text-center">Permintaan</th>
-                <th className="border-none p-2 text-center">Keterangan</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.detail && data.detail.length > 0 ? (
-                data.detail.map((item, index) => (
-                  <tr key={index} className="text-center">
-                    <td className="p-2">{index + 1}</td>
-                    <td className="p-2">{item.materialId}</td>
-                    <td className="p-2">{item.mention}</td>
-                    <td className="p-2">{item.code}</td>
-                    <td className="p-2">{item.qty} {item.satuan}</td>
-                    <td className="p-2">{item.keterangan}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" className="px-4 py-2 text-center text-gray-500">
-                    Tidak ada detail permintaan ditemukan.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+  <thead className="bg-blue-600 text-white">
+    <tr>
+      <th className="border-none p-2 text-center">No.</th>
+      <th className="border-none p-2 text-center">Nama Barang / Jasa</th>
+      <th className="border-none p-2 text-center">Spesifikasi</th>
+      <th className="border-none p-2 text-center">Code</th>
+      <th className="border-none p-2 text-center" colSpan="2">Permintaan</th>
+      <th className="border-none p-2 text-center">Keterangan</th>
+    </tr>
+    <tr>
+      <th className="border-none p-2 text-center"></th>
+      <th className="border-none p-2 text-center"></th>
+      <th className="border-none p-2 text-center"></th>
+      <th className="border-none p-2 text-center"></th>
+      <th className="border-none p-2 text-center">Qty</th>
+      <th className="border-none p-2 text-center">Satuan</th>
+      <th className="border-none p-2 text-center"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {data.detail && data.detail.length > 0 ? (
+      data.detail.map((item, index) => (
+        <tr key={index} className="text-center">
+          <td className="p-2">{index + 1}</td>
+          <td className="p-2">{item.materialId}</td>
+          <td className="p-2">{item.mention}</td>
+          <td className="p-2">{item.code}</td>
+          <td className="p-2">{item.qty}</td>
+          <td className="p-2">{item.satuan}</td>
+          <td className="p-2">{item.keterangan}</td>
+        </tr>
+      ))
+    ) : (
+      <tr>
+        <td colSpan="7" className="px-4 py-2 text-center text-gray-500">
+          Tidak ada detail permintaan ditemukan.
+        </td>
+      </tr>
+    )}
+  </tbody>
+</table>
+
 
           {/* Tabel untuk informasi tambahan dengan garis yang hilang */}
           <div className="mt-6">
