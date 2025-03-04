@@ -14,7 +14,6 @@ export default function AddMaterialForm({ addMaterial }) {
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
 
-  // Fungsi fetchData didefinisikan di sini (di dalam komponen)
   const fetchData = async () => {
     try {
       const [vendorRes, categoryRes] = await Promise.all([
@@ -37,7 +36,6 @@ export default function AddMaterialForm({ addMaterial }) {
     }
   };
 
-  // Panggil fetchData saat komponen pertama kali dimuat
   useEffect(() => {
     fetchData();
   }, []);
