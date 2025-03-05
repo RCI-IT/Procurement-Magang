@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import AddPermintaanLapanganForm from "./add/page";  // Formulir untuk menambah permintaan lapangan
+import AddPermintaanLapanganForm from "./add/page";  
 
 const months = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -13,18 +13,14 @@ export default function PermintaanLapangan({ setActiveContent }) {
   const [rowsToShow, setRowsToShow] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddFormVisible, setIsAddFormVisible] = useState(false);
-  const [updatedData, setUpdatedData] = useState([]);  // Menggunakan array kosong untuk data awal
+  const [updatedData, setUpdatedData] = useState([]);
   const router = useRouter();
 
-  const getMonthName = (monthNumber) => {
-    return months[monthNumber - 1];
-  };
+  const getMonthName = (monthNumber) => months[monthNumber - 1];
 
-  const filteredData = Array.isArray(updatedData)
-    ? updatedData.filter((item) =>
-        item.nomor?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : [];
+  const filteredData = updatedData.filter((item) =>
+    item.nomor?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const toggleAddForm = () => {
     setIsAddFormVisible(!isAddFormVisible);
@@ -35,157 +31,190 @@ export default function PermintaanLapangan({ setActiveContent }) {
     setActiveContent("permintaan-lapangan");
   };
 
-  // Mengambil data dari API menggunakan useEffect
   useEffect(() => {
     const fetchPermintaanLapangan = async () => {
       try {
-        const response = await fetch('http://192.168.110.204:5000/permintaan'); // URL API yang benar
+        const response = await fetch("http://192.168.110.204:5000/permintaan");
         const data = await response.json();
-        setUpdatedData(data);  // Menyimpan data ke state
+        setUpdatedData(data);
       } catch (error) {
         console.error("Gagal mengambil data permintaan lapangan:", error);
       }
     };
 
-    fetchPermintaanLapangan();  // Panggil fungsi untuk mengambil data
+    fetchPermintaanLapangan();
   }, []);
 
-  // Fungsi untuk menghapus permintaan lapangan
   const handleDelete = async (id) => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus permintaan ini?")) return;
-  
+
     try {
-      // Tampilkan indikator loading di UI (misalnya disable tombol sementara)
-      setUpdatedData(prevData =>
-        prevData.map(item => item.id === id ? { ...item, deleting: true } : item)
+      setUpdatedData((prevData) =>
+        prevData.map((item) => (item.id === id ? { ...item, deleting: true } : item))
       );
-  
+
       const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
         method: "DELETE",
       });
-  
+
       if (!response.ok) throw new Error("Gagal menghapus permintaan");
-  
-      setUpdatedData(prevData => prevData.filter(item => item.id !== id));
+
+      setUpdatedData((prevData) => prevData.filter((item) => item.id !== id));
       alert("Permintaan berhasil dihapus!");
     } catch (error) {
       console.error("Gagal menghapus permintaan lapangan:", error);
       alert("Terjadi kesalahan saat menghapus permintaan.");
-    } finally {
-      // Pastikan data kembali ke normal jika gagal menghapus
-      setUpdatedData(prevData =>
-        prevData.map(item => item.id === id ? { ...item, deleting: false } : item)
+    }
+  };
+
+  const handleAPPROVE = async (id) => {
+    if (!window.confirm("Apakah Anda yakin ingin menyetujui permintaan ini?")) return;
+  
+    try {
+      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}/APPROVE`, {
+        method: "PUT",
+      });
+  
+      if (!response.ok) throw new Error("Gagal menyetujui permintaan");
+  
+      // Ambil data baru dari respons API
+      const updatedPermintaan = await response.json();
+  
+      // Update state agar tampilan langsung berubah
+      setUpdatedData((prevData) =>
+        prevData.map((item) =>
+          item.id === id ? { ...item, status: updatedPermintaan.status } : item
+        )
       );
+  
+      alert("Permintaan telah disetujui!");
+    } catch (error) {
+      console.error("Gagal menyetujui permintaan lapangan:", error);
+      alert("Terjadi kesalahan saat menyetujui permintaan.");
     }
   };
   
-  // Parsing Tanggal untuk menampilkan dengan format yang benar
+
   const parseDate = (dateString) => {
     const date = new Date(dateString);
-    const day = date.getDate();
-    const month = date.getMonth() + 1; // getMonth() mulai dari 0, jadi +1
-    const year = date.getFullYear();
-    return { day, month, year };
+    return {
+      day: date.getDate(),
+      month: date.getMonth() + 1,
+      year: date.getFullYear(),
+    };
   };
 
   return (
-    <div className="flex">
-      {/* Konten utama */}
-      <div className="flex-1 p-6">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">Permintaan Lapangan</h1>
-            <div className="flex space-x-4 items-center">
-              <input
-                type="text"
-                placeholder="Cari nomor..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="border border-gray-300 rounded px-4 py-2"
-              />
-              <button
-                onClick={toggleAddForm}
-                className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
-              >
-                Tambah Permintaan
-              </button>
-            </div>
-          </div>
+    <div className="p-6 bg-white shadow-md rounded-lg">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-3xl font-bold">Permintaan Lapangan</h1>
+        <div className="flex space-x-4">
+          <input
+            type="text"
+            placeholder="Cari nomor..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="border border-gray-300 rounded px-4 py-2"
+          />
+          <button
+            onClick={toggleAddForm}
+            className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
+          >
+            Tambah Permintaan
+          </button>
+        </div>
+      </div>
 
-          {isAddFormVisible && (
-            <AddPermintaanLapanganForm
-              onAddPermintaan={handleAddPermintaan} 
-              toggleAddForm={toggleAddForm} 
-            />
-          )}
+      {isAddFormVisible && (
+        <AddPermintaanLapanganForm
+          onAddPermintaan={handleAddPermintaan}
+          toggleAddForm={toggleAddForm}
+        />
+      )}
 
-          <div className="mb-4 flex items-center">
-            <label htmlFor="rowsToShow" className="mr-2 font-medium">
-              Tampilkan
-            </label>
-            <select
-              id="rowsToShow"
-              value={rowsToShow}
-              onChange={(e) => setRowsToShow(Number(e.target.value))}
-              className="border border-gray-300 rounded px-2 py-1"
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={30}>30</option>
-            </select>
-          </div>
+      <div className="mb-4 flex items-center">
+        <label htmlFor="rowsToShow" className="mr-2 font-medium">
+          Tampilkan
+        </label>
+        <select
+          id="rowsToShow"
+          value={rowsToShow}
+          onChange={(e) => setRowsToShow(Number(e.target.value))}
+          className="border border-gray-300 rounded px-2 py-1"
+        >
+          {[10, 20, 30].map((num) => (
+            <option key={num} value={num}>
+              {num}
+            </option>
+          ))}
+        </select>
+      </div>
 
-          <div className="overflow-x-auto">
-            <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
-              <thead className="bg-blue-500 text-white">
-                <tr>
-                  <th className="border px-4 py-2">No.</th>
-                  <th className="border px-4 py-2">Nomor</th>
-                  <th className="border px-4 py-2">Tanggal</th>
-                  <th className="border px-4 py-2">Lokasi</th>
-                  <th className="border px-4 py-2">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredData.length > 0 ? (
-                  filteredData.slice(0, rowsToShow).map((item, index) => {
-                    const { day, month, year } = parseDate(item.tanggal);  // Parsing tanggal
-                    return (
-                      <tr key={item.nomor || `row-${index}`} className="hover:bg-gray-100">
-                        <td className="border px-4 py-2 text-center">{index + 1}</td>
-                        <td className="border px-4 py-2">{item.nomor}</td>
-                        <td className="border px-4 py-2">
-                          {day} {getMonthName(month)} {year}
-                        </td>
-                        <td className="border px-4 py-2">{item.lokasi}</td>
-                        <td className="border px-4 py-2 text-center">
-                          <button
-                            className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
-                            onClick={() => router.push(`/permintaan-lapangan/${item.id}`)}  // Mengarahkan ke halaman detail
-                          >
-                            Lihat
-                          </button>
-                          <button
-                            className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600 ml-2"
-                            onClick={() => handleDelete(item.id)}  // Menghapus permintaan lapangan
-                          >
-                            Hapus
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="border px-4 py-2 text-center text-gray-500">
-                      Tidak ada data ditemukan.
+      <div className="overflow-x-auto">
+        <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
+          <thead className="bg-blue-500 text-white">
+            <tr>
+              <th className="border px-4 py-2">No.</th>
+              <th className="border px-4 py-2">Nomor</th>
+              <th className="border px-4 py-2">Tanggal</th>
+              <th className="border px-4 py-2">Lokasi</th>
+              <th className="border px-4 py-2">Status</th>
+              <th className="border px-4 py-2">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredData.length > 0 ? (
+              filteredData.slice(0, rowsToShow).map((item, index) => {
+                const { day, month, year } = parseDate(item.tanggal);
+                return (
+                  <tr key={item.id} className="hover:bg-gray-100 text-center">
+                    <td className="border px-4 py-2">{index + 1}</td>
+                    <td className="border px-4 py-2">{item.nomor}</td>
+                    <td className="border px-4 py-2">
+                      {day} {getMonthName(month)} {year}
+                    </td>
+                    <td className="border px-4 py-2">{item.lokasi }</td>
+                    <td className="border px-4 py-2">
+                      {item.approved ? (
+                        <span className="text-green-600 font-bold">Disetujui ✅</span>
+                      ) : (
+                        <span className="text-red-600 font-bold">Belum Disetujui ❌</span>
+                      )}
+                    </td>
+                    <td className="border px-4 py-2 flex justify-center gap-2">
+                      <button
+                        className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
+                        onClick={() => router.push(`/permintaan-lapangan/${item.id}`)}
+                      >
+                        Lihat
+                      </button>
+                      {!item.approved && (
+                        <button
+                          className="bg-green-500 text-white rounded px-4 py-2 hover:bg-green-600"
+                          onClick={() => handleApprove(item.id)}
+                        >
+                          Approve
+                        </button>
+                      )}
+                      <button
+                        className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600"
+                        onClick={() => handleDelete(item.id)}
+                      >
+                        Hapus
+                      </button>
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="6" className="border px-4 py-2 text-center text-gray-500">
+                  Tidak ada data ditemukan.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
