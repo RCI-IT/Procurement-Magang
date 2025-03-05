@@ -83,13 +83,13 @@ export default function DetailPermintaanLapangan() {
       <th className="border-none p-2 text-center">Keterangan</th>
     </tr>
     <tr>
-      <th className="border-none p-2 text-center"></th>
-      <th className="border-none p-2 text-center"></th>
-      <th className="border-none p-2 text-center"></th>
-      <th className="border-none p-2 text-center"></th>
+      <th className="border-none p-2 text-center">x</th>
+      <th className="border-none p-2 text-center">x</th>
+      <th className="border-none p-2 text-center">x</th>
+      <th className="border-none p-2 text-center">x</th>
       <th className="border-none p-2 text-center">Qty</th>
       <th className="border-none p-2 text-center">Satuan</th>
-      <th className="border-none p-2 text-center"></th>
+      <th className="border-none p-2 text-center">x</th>
     </tr>
   </thead>
   <tbody>
