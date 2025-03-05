@@ -77,6 +77,31 @@ export default function MaterialPage() {
 
     fetchMaterialDetails();
   }, [id]);
+  const parsePrice = (priceString) => {
+    if (!priceString) return null;
+  
+    // Menghapus "Rp " di awal dan semua titik sebagai pemisah ribuan
+    const cleanPrice = priceString.replace("Rp ", "").replace(/\./g, "");
+  
+    // Konversi ke angka
+    const priceNumber = Number(cleanPrice);
+    
+    // Validasi apakah hasilnya angka yang valid
+    return !isNaN(priceNumber) ? priceNumber : null;
+  };
+  
+  // Parsing dan format harga sebelum ditampilkan
+  const materialPrice = parsePrice(material?.price);
+  const formattedPrice =
+    materialPrice !== null
+      ? new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          minimumFractionDigits: 0, // Mencegah koma/desimal
+          maximumFractionDigits: 0, // Mencegah koma/desimal
+        }).format(materialPrice)
+      : "Harga tidak tersedia";
+  
 
   if (loading) return <div className="text-center text-blue-500">Loading...</div>;
   if (error) return <div className="text-center text-red-500">Error: {error}</div>;
@@ -127,8 +152,9 @@ export default function MaterialPage() {
           <div className="flex-grow">
             <h3 className="text-2xl font-bold mb-2">{material.name}</h3>
             <p className="text-xl text-blue-600 font-semibold mb-4">
-              {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(material.price)}
-            </p>
+  {formattedPrice}
+</p>
+
             <p className="text-sm text-gray-500 mb-4">
               Kategori: <span className="text-gray-700">{material.category || "Tidak ada kategori"}</span>
             </p>
@@ -160,7 +186,14 @@ export default function MaterialPage() {
             })}
           </div>
         </div>
-
+<div>
+<button
+  onClick={() => router.push(`/material/${id}/edit`)}
+  className="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+>
+  Edit Material
+</button>
+</div>
         <div>
           <button onClick={() => router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
             Kembali

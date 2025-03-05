@@ -116,6 +116,38 @@ export default function DetailPermintaanLapangan() {
           <td className="p-1 font-semibold w-1/3">Tanggal Delivery</td>
           <td className="p-1 w-1">:</td>
           <td className="p-1">{data.tanggalDelivery || "-"}</td>
+          {/* Tabel untuk detail permintaan tanpa garis border tebal */}
+          <table className="w-full border-collapse mt-4 text-sm border-none">
+  <thead className="bg-blue-600 text-white">
+    <tr>
+      <th className="border-none p-2 text-center">No.</th>
+      <th className="border-none p-2 text-center">Nama Barang / Jasa</th>
+      <th className="border-none p-2 text-center">Spesifikasi</th>
+      <th className="border-none p-2 text-center">Code</th>
+      <th className="border-none p-2 text-center" colSpan="2">Permintaan</th>
+      <th className="border-none p-2 text-center">Keterangan</th>
+    </tr>
+    <tr>
+      <th className="border-none p-2 text-center">x</th>
+      <th className="border-none p-2 text-center">x</th>
+      <th className="border-none p-2 text-center">x</th>
+      <th className="border-none p-2 text-center">x</th>
+      <th className="border-none p-2 text-center">Qty</th>
+      <th className="border-none p-2 text-center">Satuan</th>
+      <th className="border-none p-2 text-center">x</th>
+    </tr>
+  </thead>
+  <tbody>
+    {data.detail && data.detail.length > 0 ? (
+      data.detail.map((item, index) => (
+        <tr key={index} className="text-center">
+          <td className="p-2">{index + 1}</td>
+          <td className="p-2">{item.materialId}</td>
+          <td className="p-2">{item.mention}</td>
+          <td className="p-2">{item.code}</td>
+          <td className="p-2">{item.qty}</td>
+          <td className="p-2">{item.satuan}</td>
+          <td className="p-2">{item.keterangan}</td>
         </tr>
         <tr>
           <td className="p-1 font-semibold">Lokasi Delivery</td>
