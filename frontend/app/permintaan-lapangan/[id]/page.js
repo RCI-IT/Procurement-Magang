@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Sidebar from "../../../component/sidebar";
 
-// Halaman Detail Permintaan Lapangan
+
 export default function DetailPermintaanLapangan() {
   const { id } = useParams();
   const router = useRouter();
@@ -21,7 +21,6 @@ export default function DetailPermintaanLapangan() {
         if (result) {
           setData(result);  
         } else {
-          // Jika data tidak ditemukan, kembali ke halaman permintaan lapangan
           router.push("/?page=permintaan-lapangan");
         }
       } catch (error) {
@@ -35,7 +34,6 @@ export default function DetailPermintaanLapangan() {
 
   if (!data) return <p className="text-red-500 text-center mt-10">Data tidak ditemukan</p>;
 
-  // Fungsi untuk parsing tanggal
   const parseDate = (dateString) => {
     const date = new Date(dateString);
     const day = date.getDate();
@@ -71,107 +69,127 @@ export default function DetailPermintaanLapangan() {
             <p>{data.keterangan}</p>
           </div>
 
-          {/* Tabel untuk detail permintaan tanpa garis border tebal */}
-          <table className="w-full border-collapse mt-4 text-sm border-none">
-  <thead className="bg-blue-600 text-white">
-    <tr>
-      <th className="border-none p-2 text-center">No.</th>
-      <th className="border-none p-2 text-center">Nama Barang / Jasa</th>
-      <th className="border-none p-2 text-center">Spesifikasi</th>
-      <th className="border-none p-2 text-center">Code</th>
-      <th className="border-none p-2 text-center" colSpan="2">Permintaan</th>
-      <th className="border-none p-2 text-center">Keterangan</th>
-    </tr>
-    <tr>
-      <th className="border-none p-2 text-center"></th>
-      <th className="border-none p-2 text-center"></th>
-      <th className="border-none p-2 text-center"></th>
-      <th className="border-none p-2 text-center"></th>
-      <th className="border-none p-2 text-center">Qty</th>
-      <th className="border-none p-2 text-center">Satuan</th>
-      <th className="border-none p-2 text-center"></th>
-    </tr>
-  </thead>
-  <tbody>
-    {data.detail && data.detail.length > 0 ? (
-      data.detail.map((item, index) => (
-        <tr key={index} className="text-center">
-          <td className="p-2">{index + 1}</td>
-          <td className="p-2">{item.materialId}</td>
-          <td className="p-2">{item.mention}</td>
-          <td className="p-2">{item.code}</td>
-          <td className="p-2">{item.qty}</td>
-          <td className="p-2">{item.satuan}</td>
-          <td className="p-2">{item.keterangan}</td>
+          <table className="w-full border-collapse mt-4 text-sm border border-gray-300">
+          <thead className="bg-blue-700 text-white">
+          <tr>
+            <th className="border border-white p-2 text-center" rowSpan="2">No.</th>
+            <th className="border border-white p-2 text-center" rowSpan="2">Nama Barang / Jasa</th>
+            <th className="border border-white p-2 text-center" rowSpan="2">Spesifikasi</th>
+            <th className="border border-white p-2 text-center" rowSpan="2">Code</th>
+            <th className="border border-white p-2 text-center" colSpan="2">Permintaan</th>
+            <th className="border border-white p-2 text-center" rowSpan="2">Keterangan</th>
+          </tr>
+
+          <tr>
+            <th className="border border-white p-2 text-center">QTY</th>
+            <th className="border border-white p-2 text-center">Satuan</th>
+          </tr>
+          </thead>
+
+          <tbody>
+          {data.detail && data.detail.length > 0 ? (
+          data.detail.map((item, index) => (
+          <tr key={index} className="text-center">
+            <td className="border border-gray-300 p-2">{index + 1}</td>
+            <td className="border border-gray-300 p-2">{item.materialId}</td>
+            <td className="border border-gray-300 p-2">{item.mention}</td>
+            <td className="border border-gray-300 p-2">{item.code}</td>
+            <td className="border border-gray-300 p-2">{item.qty}</td>
+            <td className="border border-gray-300 p-2">{item.satuan}</td>
+            <td className="border border-gray-300 p-2">{item.keterangan}</td>
+          </tr>
+          ))
+          ) : (
+          <tr>
+            <td colSpan="7" className="border border-gray-300 px-4 py-2 text-center text-gray-500">
+              Tidak ada detail permintaan ditemukan.
+            </td>
+          </tr>
+          )}
+{/* Baris untuk informasi tambahan */}
+<tr>
+  {/* Kolom Informasi Tambahan */}
+  <td className="border border-gray-300 p-2 text-left" colSpan="2">
+    <table className="w-full">
+      <tbody>
+        <tr>
+          <td className="p-1 font-semibold w-1/3">Tanggal Delivery</td>
+          <td className="p-1 w-1">:</td>
+          <td className="p-1">{data.tanggalDelivery || "-"}</td>
         </tr>
-      ))
-    ) : (
-      <tr>
-        <td colSpan="7" className="px-4 py-2 text-center text-gray-500">
-          Tidak ada detail permintaan ditemukan.
-        </td>
-      </tr>
-    )}
-  </tbody>
+        <tr>
+          <td className="p-1 font-semibold">Lokasi Delivery</td>
+          <td className="p-1">:</td>
+          <td className="p-1">{data.lokasiDelivery || "-"}</td>
+        </tr>
+        <tr>
+          <td className="p-1 font-semibold">Catatan</td>
+          <td className="p-1">:</td>
+          <td className="p-1">{data.catatan || "-"}</td>
+        </tr>
+        <tr>
+          <td className="p-1 font-semibold">PIC Lapangan</td>
+          <td className="p-1">:</td>
+          <td className="p-1">{data.picLapangan || "-"}</td>
+        </tr>
+        <tr>
+          <td className="p-1 font-semibold">Note</td>
+          <td className="p-1">:</td>
+          <td className="p-1">{data.note || "-"}</td>
+        </tr>
+      </tbody>
+    </table>
+  </td>
+  <tr>
+  {/* Kolom Tanda Tangan */}
+  <td className="border border-gray-300 p-2 text-left" colSpan="5">
+    <table className="w-full text-center">
+      <thead>
+        <tr>
+          <th className="p-2 border-r border-black">Diperiksa</th>
+          <th className="p-2 border-r border-black">Diketahui</th>
+          <th className="p-2">Dibuat</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td className="py-8 border-b border-black border-r border-black"></td>
+          <td className="py-8 border-b border-black border-r border-black"></td>
+          <td className="py-8 border-b border-black"></td>
+        </tr>
+        <tr>
+          <td className="p-2 border-r border-black">Nama</td>
+          <td className="p-2 border-r border-black">Nama</td>
+          <td className="p-2">Nama</td>
+        </tr>
+        <tr className="bg-gray-200">
+          <td className="p-2 border-r border-black">Project Manager</td>
+          <td className="p-2 border-r border-black">Site Manager</td>
+          <td className="p-2">Logistik</td>
+        </tr>
+      </tbody>
+    </table>
+  </td>
+</tr>
+
+</tr>
+
+
+
+
+
+</tbody>
 </table>
 
 
-          {/* Tabel untuk informasi tambahan dengan garis yang hilang */}
+
           <div className="mt-6">
-  <div className="flex justify-between space-x-4">
-    {/* Kolom Kiri */}
-    <div className="w-1/2">
-      <table className="w-full border-collapse text-sm border-none">
-        <tbody>
-          <tr>
-            <td className="border-none p-2"><strong>Tanggal Delivery:</strong></td>
-            <td className="border-none p-2">{data.tanggalDelivery || "-"}</td>
-          </tr>
-          <tr>
-            <td className="border-none p-2"><strong>Lokasi Delivery:</strong></td>
-            <td className="border-none p-2">{data.lokasiDelivery || "-"}</td>
-          </tr>
-          <tr>
-            <td className="border-none p-2"><strong>Catatan:</strong></td>
-            <td className="border-none p-2">{data.catatan || "-"}</td>
-          </tr>
-          <tr>
-            <td className="border-none p-2"><strong>PIC Lapangan:</strong></td>
-            <td className="border-none p-2">{data.picLapangan || "-"}</td>
-          </tr>
-          <tr>
-            <td className="border-none p-2"><strong>Note:</strong></td>
-            <td className="border-none p-2">{data.note || "-"}</td>
-          </tr>
-        </tbody>
-      </table>
+          <div className="flex justify-between space-x-4">
+          <div className="w-1/2">
     </div>
 
-    {/* Kolom Kanan */}
-    <div className="w-1/2">
-      <table className="w-full border-collapse text-sm border-none">
-        <tbody>
-          {/* Baris Header */}
-          <tr>
-            <td className="border-none p-2 font-bold text-center">Diperkisa</td>
-            <td className="border-none p-2 font-bold text-center">Diketahui</td>
-            <td className="border-none p-2 font-bold text-center">Dibuat</td>
-          </tr>
-          {/* Baris Kosong */}
-          <tr>
-            <td className="border-none p-2 text-center">Nama</td>
-            <td className="border-none p-2 text-center">Nama</td>
-            <td className="border-none p-2 text-center">Nama</td>
-          </tr>
-          {/* Baris Kosong dengan Label */}
-          <tr>
-            <td className="border-none p-2 text-center">Project Manager</td>
-            <td className="border-none p-2 text-center">Site Manager</td>
-            <td className="border-none p-2 text-center">Logistik</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <div className="w-1/2 mx-auto">
+</div>
 
             </div>
           </div>
