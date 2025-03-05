@@ -1,7 +1,41 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PermintaanStatus, PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
+
+export const approvePermintaan = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    // Pastikan ID valid
+    const parsedId = Number(id);
+    if (isNaN(parsedId)) {
+      res.status(400).json({ error: "Invalid ID format" });
+      return;
+    }
+
+    // Pastikan permintaan ada di database
+    const existingPermintaan = await prisma.permintaanLapangan.findUnique({
+      where: { id: parsedId },
+    });
+
+    if (!existingPermintaan) {
+      res.status(404).json({ error: "Permintaan tidak ditemukan" });
+      return;
+    }
+
+    // Update status menjadi APPROVED menggunakan ENUM
+    const updatedPermintaan = await prisma.permintaanLapangan.update({
+      where: { id: parsedId },
+      data: { status: PermintaanStatus.APPROVED }, // ✅ Pakai ENUM, bukan string biasa
+    });
+
+    res.status(200).json({ message: "Permintaan telah disetujui", updatedPermintaan });
+  } catch (error) {
+    console.error("Gagal approve permintaan:", error);
+    res.status(500).json({ error: "Terjadi kesalahan saat menyetujui permintaan" });
+  }
+};
 
 export const createPermintaanLapangan = async (req: Request, res: Response) => {
   try {
