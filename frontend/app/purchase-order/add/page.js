@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Sidebar from "../../../component/sidebar"; // Pastikan Sidebar sudah ada
+
 export default function AddPurchaseOrder() {
   const [formData, setFormData] = useState({
     tanggal: "",

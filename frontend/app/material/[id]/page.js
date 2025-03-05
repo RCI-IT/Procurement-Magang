@@ -25,58 +25,34 @@ export default function MaterialPage() {
     const fetchMaterialDetails = async () => {
       setLoading(true);
       try {
-        console.log("Fetching material with ID:", id);
         const resMaterial = await fetch(`http://192.168.110.204:5000/materials/${id}`);
         if (!resMaterial.ok) throw new Error("Material tidak ditemukan");
         const materialData = await resMaterial.json();
-        console.log("✅ Material Data:", materialData);
 
         let vendorData = null;
         let relatedMaterialsData = [];
 
-        // Jika material memiliki vendorId, gunakan itu (dengan konversi ke number jika perlu)
+        // Cek vendor berdasarkan vendorId atau nama
+        let searchVendorId = null;
         if (materialData.vendorId) {
-          const vendorId =
-            typeof materialData.vendorId === "string"
-              ? Number(materialData.vendorId)
-              : materialData.vendorId;
-          console.log("➡️ Using vendorId:", vendorId);
-          const resVendor = await fetch(`http://192.168.110.204:5000/vendors/${vendorId}`);
-          if (resVendor.ok) {
-            vendorData = await resVendor.json();
-            console.log("✅ Vendor Data:", vendorData);
-          } else {
-            console.warn("Vendor tidak ditemukan dengan ID:", vendorId);
-          }
-        }
-        // Jika tidak ada vendorId, cari vendor berdasarkan nama dengan exact match
-        else if (materialData.vendor) {
+          searchVendorId = Number(materialData.vendorId);
+          const resVendor = await fetch(`http://192.168.110.204:5000/vendors/${searchVendorId}`);
+          if (resVendor.ok) vendorData = await resVendor.json();
+        } else if (materialData.vendor) {
           const vendorName = materialData.vendor;
-          console.log("➡️ Using vendor name:", vendorName);
           const resVendor = await fetch(
             `http://192.168.110.204:5000/vendors?name=${encodeURIComponent(vendorName)}`
           );
           if (resVendor.ok) {
             const vendorList = await resVendor.json();
             vendorData = vendorList.find(
-              (v) =>
-                v.name.trim().toLowerCase() === vendorName.trim().toLowerCase()
+              (v) => v.name.trim().toLowerCase() === vendorName.trim().toLowerCase()
             ) || null;
-            console.log("✅ Vendor Data by name:", vendorData);
           }
+          if (vendorData) searchVendorId = vendorData.id;
         }
 
-        // Tentukan vendorId untuk pencarian material terkait
-        let searchVendorId = null;
-        if (materialData.vendorId) {
-          searchVendorId =
-            typeof materialData.vendorId === "string"
-              ? Number(materialData.vendorId)
-              : materialData.vendorId;
-        } else if (vendorData && vendorData.id) {
-          searchVendorId = vendorData.id;
-        }
-
+        // Fetch related materials berdasarkan vendorId
         if (searchVendorId) {
           const resRelated = await fetch(
             `http://192.168.110.204:5000/materials?vendorId=${searchVendorId}`
@@ -84,7 +60,7 @@ export default function MaterialPage() {
           if (resRelated.ok) {
             const allMaterials = await resRelated.json();
             relatedMaterialsData = allMaterials.filter(
-              (item) => item.id !== materialData.id
+              (item) => item.id !== materialData.id && item.vendorId === searchVendorId
             );
           }
         }
@@ -94,7 +70,6 @@ export default function MaterialPage() {
         setRelatedMaterials(relatedMaterialsData);
         setError(null);
       } catch (err) {
-        console.error("❌ Error fetching material details:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -153,7 +128,7 @@ export default function MaterialPage() {
           <div className="flex-grow">
             <h3 className="text-2xl font-bold mb-2">{material.name}</h3>
             <p className="text-xl text-blue-600 font-semibold mb-4">
-              {material.price.startsWith("Rp") ? material.price : `Rp ${material.price}`}
+              {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(material.price)}
             </p>
             <p className="text-sm text-gray-500 mb-4">
               Kategori: <span className="text-gray-700">{material.category || "Tidak ada kategori"}</span>
@@ -171,11 +146,9 @@ export default function MaterialPage() {
           )}
           <div className="flex justify-start gap-4">
             {relatedMaterials.map((item) => {
-              const relatedImage = item.image
-                ? item.image.startsWith("http")
-                  ? item.image
-                  : `http://192.168.110.204:5000/uploads/${item.image}`
-                : "http://192.168.110.204:5000/uploads/default-image.jpg";
+              const relatedImage = item.image?.startsWith("http")
+                ? item.image
+                : `http://192.168.110.204:5000/uploads/${item.image || "default-image.jpg"}`;
               return (
                 <div key={item.id} className="border rounded p-4 text-center bg-white text-sm w-40 h-48 flex flex-col items-center shadow">
                   <img src={relatedImage} alt={item.name} className="mb-2 w-20 h-20 object-cover" />
@@ -190,7 +163,6 @@ export default function MaterialPage() {
         </div>
 
         <div>
-          <br />
           <button onClick={() => router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
             Kembali
           </button>
