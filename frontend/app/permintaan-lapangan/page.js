@@ -44,15 +44,67 @@ export default function PermintaanLapangan({ setActiveContent }) {
 
     fetchPermintaanLapangan();
   }, []);
+  const handlePending = async (id) => {
+    const confirmPending = window.confirm("Apakah Anda yakin ingin mengembalikan status ke Pending?");
+    if (!confirmPending) return;
+  
+    try {
+      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "PENDING" }),
+      });
+  
+      if (!response.ok) throw new Error("Gagal mengubah status");
+  
+      setUpdatedData((prevData) =>
+        prevData.map((item) =>
+          item.id === id ? { ...item, status: "PENDING" } : item
+        )
+      );
+  
+      alert("Status berhasil dikembalikan ke Pending.");
+    } catch (error) {
+      console.error("Gagal mengubah status:", error);
+      alert("Terjadi kesalahan saat mengubah status.");
+    }
+  };
+  
 
+  const handleApprove = async (id) => {
+    const confirmApprove = window.confirm("Apakah Anda yakin ingin menyetujui permintaan ini?");
+    if (!confirmApprove) return;
+  
+    try {
+      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "APPROVED" }),
+      });
+  
+      if (!response.ok) throw new Error("Gagal mengubah status");
+  
+      setUpdatedData((prevData) =>
+        prevData.map((item) =>
+          item.id === id ? { ...item, status: "APPROVED" } : item
+        )
+      );
+  
+      alert("Permintaan berhasil disetujui!");
+    } catch (error) {
+      console.error("Gagal mengubah status:", error);
+      alert("Terjadi kesalahan saat mengubah status.");
+    }
+  };
+  
   const handleDelete = async (id) => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus permintaan ini?")) return;
 
     try {
-      setUpdatedData((prevData) =>
-        prevData.map((item) => (item.id === id ? { ...item, deleting: true } : item))
-      );
-
       const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
         method: "DELETE",
       });
@@ -66,34 +118,6 @@ export default function PermintaanLapangan({ setActiveContent }) {
       alert("Terjadi kesalahan saat menghapus permintaan.");
     }
   };
-
-  const handleAPPROVE = async (id) => {
-    if (!window.confirm("Apakah Anda yakin ingin menyetujui permintaan ini?")) return;
-  
-    try {
-      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}/APPROVE`, {
-        method: "PUT",
-      });
-  
-      if (!response.ok) throw new Error("Gagal menyetujui permintaan");
-  
-      // Ambil data baru dari respons API
-      const updatedPermintaan = await response.json();
-  
-      // Update state agar tampilan langsung berubah
-      setUpdatedData((prevData) =>
-        prevData.map((item) =>
-          item.id === id ? { ...item, status: updatedPermintaan.status } : item
-        )
-      );
-  
-      alert("Permintaan telah disetujui!");
-    } catch (error) {
-      console.error("Gagal menyetujui permintaan lapangan:", error);
-      alert("Terjadi kesalahan saat menyetujui permintaan.");
-    }
-  };
-  
 
   const parseDate = (dateString) => {
     const date = new Date(dateString);
@@ -173,35 +197,33 @@ export default function PermintaanLapangan({ setActiveContent }) {
                     <td className="border px-4 py-2">
                       {day} {getMonthName(month)} {year}
                     </td>
-                    <td className="border px-4 py-2">{item.lokasi }</td>
+                    <td className="border px-4 py-2">{item.lokasi}</td>
                     <td className="border px-4 py-2">
-                      {item.approved ? (
-                        <span className="text-green-600 font-bold">Disetujui ✅</span>
-                      ) : (
-                        <span className="text-red-600 font-bold">Belum Disetujui ❌</span>
-                      )}
+                      <span className="font-bold text-blue-600">{item.status}</span>
                     </td>
                     <td className="border px-4 py-2 flex justify-center gap-2">
+
+                    {item.status === "PENDING" ? (
+                   <button
+                     className="bg-green-500 text-white rounded px-4 py-2 hover:bg-green-600"
+                      onClick={() => handleApprove(item.id)} > ✅ </button>
+                   ) : (
+                    <button
+                      className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
+                       onClick={() => handlePending(item.id)} > 🔄 </button> )}
                       <button
                         className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
                         onClick={() => router.push(`/permintaan-lapangan/${item.id}`)}
                       >
                         Lihat
                       </button>
-                      {!item.approved && (
-                        <button
-                          className="bg-green-500 text-white rounded px-4 py-2 hover:bg-green-600"
-                          onClick={() => handleApprove(item.id)}
-                        >
-                          Approve
-                        </button>
-                      )}
                       <button
                         className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600"
                         onClick={() => handleDelete(item.id)}
                       >
                         Hapus
                       </button>
+                    
                     </td>
                   </tr>
                 );
