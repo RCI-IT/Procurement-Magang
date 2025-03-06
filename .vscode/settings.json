@@ -163,5 +163,6 @@
         "utama",
         "Wijaya",
         "Yakin"
-    ]
+    ],
+    "postman.settings.dotenv-detection-notification-visibility": false
 }

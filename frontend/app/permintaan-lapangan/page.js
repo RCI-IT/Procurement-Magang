@@ -78,6 +78,8 @@ export default function PermintaanLapangan({ setActiveContent }) {
     if (!confirmApprove) return;
   
     try {
+      console.log("Mengirim request ke backend dengan ID:", id);
+  
       const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
         method: "PUT",
         headers: {
@@ -86,12 +88,13 @@ export default function PermintaanLapangan({ setActiveContent }) {
         body: JSON.stringify({ status: "APPROVED" }),
       });
   
+      console.log("Response status:", response.status);
+      console.log("Response data:", await response.json());
+  
       if (!response.ok) throw new Error("Gagal mengubah status");
   
       setUpdatedData((prevData) =>
-        prevData.map((item) =>
-          item.id === id ? { ...item, status: "APPROVED" } : item
-        )
+        prevData.map((item) => (item.id === id ? { ...item, status: "APPROVED" } : item))
       );
   
       alert("Permintaan berhasil disetujui!");
@@ -101,6 +104,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
     }
   };
   
+
   const handleDelete = async (id) => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus permintaan ini?")) return;
 
