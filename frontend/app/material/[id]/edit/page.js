@@ -135,7 +135,10 @@ export default function EditMaterial() {
 
         <button type="submit" className="bg-blue-500 text-white px-4 py-2" disabled={loading}>
           {loading ? "Menyimpan..." : "Simpan Perubahan"}
-        </button>
+        </button><br></br>
+        <button onClick={() => router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
+            Kembali
+          </button>
       </form>
     </div>
   );
