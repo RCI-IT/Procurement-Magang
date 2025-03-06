@@ -215,13 +215,13 @@ export default function PermintaanLapangan({ setActiveContent }) {
                         className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
                         onClick={() => router.push(`/permintaan-lapangan/${item.id}`)}
                       >
-                        Lihat
+                       👁
                       </button>
                       <button
                         className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600"
                         onClick={() => handleDelete(item.id)}
                       >
-                        Hapus
+                        🗑
                       </button>
                     
                     </td>
