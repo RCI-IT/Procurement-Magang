@@ -130,7 +130,7 @@ export const deletePermintaanLapangan = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Gagal menghapus permintaan lapangan' });
   }
 };
-export const editPermintaanLapangan = async (req: Request, res: Response) => {
+export const editPermintaanLapangan = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { nomor, tanggal, lokasi, picLapangan, status, isConfirmed, isReceived, keterangan, detail } = req.body;
@@ -141,11 +141,12 @@ export const editPermintaanLapangan = async (req: Request, res: Response) => {
     });
 
     if (!existingPermintaan) {
-      return res.status(404).json({ error: "Permintaan tidak ditemukan" });
+      res.status(404).json({ error: "Permintaan tidak ditemukan" });
+      return;
     }
 
     // Update permintaan utama
-    const updatedPermintaan = await prisma.permintaanLapangan.update({
+    await prisma.permintaanLapangan.update({
       where: { id: Number(id) },
       data: {
         nomor,
@@ -161,29 +162,31 @@ export const editPermintaanLapangan = async (req: Request, res: Response) => {
 
     // Jika ada detail baru, update juga
     if (detail && Array.isArray(detail)) {
-      for (const item of detail) {
-        await prisma.permintaanDetails.upsert({
-          where: { id: item.id || 0 }, // Jika ID ada, update, jika tidak, buat baru
-          update: {
-            materialId: item.materialId,
-            qty: item.qty,
-            satuan: item.satuan,
-            mention: item.mention,
-            code: item.code,
-          },
-          create: {
-            permintaanId: updatedPermintaan.id,
-            materialId: item.materialId,
-            qty: item.qty,
-            satuan: item.satuan,
-            mention: item.mention,
-            code: item.code,
-          },
-        });
-      }
+      await Promise.all(
+        detail.map((item) =>
+          prisma.permintaanDetails.upsert({
+            where: { id: item.id || 0 }, // Jika ID ada, update, jika tidak, buat baru
+            update: {
+              materialId: item.materialId,
+              qty: item.qty,
+              satuan: item.satuan,
+              mention: item.mention,
+              code: item.code,
+            },
+            create: {
+              permintaanId: Number(id),
+              materialId: item.materialId,
+              qty: item.qty,
+              satuan: item.satuan,
+              mention: item.mention,
+              code: item.code,
+            },
+          })
+        )
+      );
     }
 
-    res.status(200).json({ message: "Permintaan berhasil diperbarui", updatedPermintaan });
+    res.status(200).json({ message: "Permintaan berhasil diperbarui" });
   } catch (error) {
     console.error("Gagal memperbarui permintaan lapangan:", error);
     res.status(500).json({ error: "Gagal memperbarui permintaan lapangan" });
