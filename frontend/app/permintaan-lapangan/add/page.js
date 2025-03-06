@@ -95,7 +95,7 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
         detail: [{ id: Date.now(), materialId: "", qty: "", satuan: "", mention: "", code: "" }],
       });
   
-      onAddPermintaan();
+      //onAddPermintaan();
       toggleAddForm();
       router.push("/?page=permintaan-lapangan");
     } catch (error) {

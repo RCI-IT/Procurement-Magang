@@ -3,13 +3,26 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Sidebar from "../../../component/sidebar";
+import html2pdf from "html2pdf.js";
 
-// Halaman Detail Permintaan Lapangan
+
 export default function DetailPermintaanLapangan() {
   const { id } = useParams();
   const router = useRouter();
   const [data, setData] = useState(null);
 
+  const handleEdit = () => {
+  router.push(`/permintaan-lapangan/${id}/edit`);
+};
+
+const handlePrint = () => {
+  window.print();
+};
+
+const handleDownloadPDF = () => {
+  const element = document.getElementById("permintaan-lapangan");
+  html2pdf().from(element).save("permintaan-lapangan.pdf");
+};
   useEffect(() => {
     if (!id) return;
 
@@ -21,7 +34,6 @@ export default function DetailPermintaanLapangan() {
         if (result) {
           setData(result);  
         } else {
-          // Jika data tidak ditemukan, kembali ke halaman permintaan lapangan
           router.push("/?page=permintaan-lapangan");
         }
       } catch (error) {
@@ -32,146 +44,191 @@ export default function DetailPermintaanLapangan() {
 
     fetchData(); 
   }, [id, router]);
-
   if (!data) return <p className="text-red-500 text-center mt-10">Data tidak ditemukan</p>;
 
-  // Fungsi untuk parsing tanggal
   const parseDate = (dateString) => {
+    if (!dateString) return { day: "-", month: "-", year: "-" }; // Handle jika tanggal null atau undefined
+    
     const date = new Date(dateString);
-    const day = date.getDate();
-    const month = date.getMonth() + 1; 
+    if (isNaN(date)) return { day: "-", month: "-", year: "-" }; // Handle jika format tanggal tidak valid
+  
+    const day = date.getDate().toString().padStart(2, "0"); // Tambahkan nol di depan jika perlu
+    const monthIndex = date.getMonth();
     const year = date.getFullYear();
-    return { day, month, year };
+  
+    const months = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+  
+    return { day, month: months[monthIndex], year };
   };
-
+  
   const { day, month, year } = parseDate(data.tanggal);
+  
 
   return (
     <div className="flex h-screen">
       <Sidebar />
       <div className="flex-1 p-6">
         <div className="flex justify-end space-x-2">
-          <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32">Edit</button>
-          <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">Cetak</button>
-          <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32">Simpan PDF</button>
-        </div>
+  <button 
+    onClick={handleEdit} 
+    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32">
+    Edit
+  </button>
+  <button 
+    onClick={handlePrint} 
+    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
+    Cetak
+  </button>
+  <button 
+    onClick={handleDownloadPDF} 
+    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32">
+    Simpan PDF
+  </button>
+</div>
+
         <div className="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-xl font-bold text-gray-800">Detail Permintaan Lapangan</h1>
-          </div>
-          <div className="grid grid-cols-2 gap-4 border-b py-3 text-sm">
-            <div><strong>Tanggal:</strong> {day} {month} {year}</div>
-            <div><strong>Nomor:</strong> {data.nomor}</div>
-            <div><strong>Lokasi:</strong> {data.lokasi}</div>
-            <div><strong>Status:</strong> {data.status}</div>
-          </div>
+        <div className="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-6">
+  {/* Header */}
+  <div className="flex justify-between items-center border-b pb-3">
+    <h1 className="text-lg font-bold text-blue-900 uppercase">Company Name</h1>
+    <h2 className="text-lg font-bold text-blue-900 uppercase">Permintaan Lapangan</h2>
+    <div className="border border-gray-400 text-sm">
+      <table className="border-collapse w-full">
+        <tbody>
+          <tr>
+            <td className="border border-gray-400 px-2 py-1 font-semibold">Tanggal</td>
+            <td className="border border-gray-400 px-2 py-1">{day} {month} {year}</td>
+          </tr>
+          <tr>
+            <td className="border border-gray-400 px-2 py-1 font-semibold">Nomor</td>
+            <td className="border border-gray-400 px-2 py-1">{data.nomor}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-          <div className="my-4">
-            <strong>Keterangan:</strong>
-            <p>{data.keterangan}</p>
-          </div>
-
-          {/* Tabel untuk detail permintaan tanpa garis border tebal */}
-          <table className="w-full border-collapse mt-4 text-sm border-none">
-  <thead className="bg-blue-600 text-white">
+          <br></br>
+          <br></br>
+          <table className="w-full border-collapse mt-4 text-sm border border-gray-300">
+  <thead className="bg-blue-700 text-white">
     <tr>
-      <th className="border-none p-2 text-center">No.</th>
-      <th className="border-none p-2 text-center">Nama Barang / Jasa</th>
-      <th className="border-none p-2 text-center">Spesifikasi</th>
-      <th className="border-none p-2 text-center">Code</th>
-      <th className="border-none p-2 text-center" colSpan="2">Permintaan</th>
-      <th className="border-none p-2 text-center">Keterangan</th>
+      <th rowSpan="2" className="border border-white p-2 text-center">No.</th>
+      <th rowSpan="2" className="border border-white p-2 text-center">Nama Barang / Jasa</th>
+      <th rowSpan="2" className="border border-white p-2 text-center">Spesifikasi</th>
+      <th rowSpan="2" className="border border-white p-2 text-center">code</th>
+      <th colSpan="2" className="border border-white p-2 text-center" >Permintaan</th>
+      <th rowSpan="2" className="border border-white p-2 text-center">Keterangan</th>
     </tr>
-    <tr>
-      <th className="border-none p-2 text-center">x</th>
-      <th className="border-none p-2 text-center">x</th>
-      <th className="border-none p-2 text-center">x</th>
-      <th className="border-none p-2 text-center">x</th>
-      <th className="border-none p-2 text-center">Qty</th>
-      <th className="border-none p-2 text-center">Satuan</th>
-      <th className="border-none p-2 text-center">x</th>
+    <tr> 
+    <th className="border border- p-2 text-center">QTY</th>
+    <th className="border border-white p-2 text-center">Satuan</th>
+     
     </tr>
   </thead>
   <tbody>
     {data.detail && data.detail.length > 0 ? (
       data.detail.map((item, index) => (
         <tr key={index} className="text-center">
-          <td className="p-2">{index + 1}</td>
-          <td className="p-2">{item.materialId}</td>
-          <td className="p-2">{item.mention}</td>
-          <td className="p-2">{item.code}</td>
-          <td className="p-2">{item.qty}</td>
-          <td className="p-2">{item.satuan}</td>
-          <td className="p-2">{item.keterangan}</td>
+          <td className="border border-gray-300 p-2">{index + 1}</td>
+          <td className="border border-gray-300 p-2">{item.materialId}</td>
+          <td className="border border-gray-300 p-2">{item.mention}</td>
+          <td className="border border-gray-300 p-2">{item.code}</td>
+          <td className="border border-gray-300 p-2">{item.qty}</td>
+          <td className="border border-gray-300 p-2">{item.satuan}</td>
+          <td className="border border-gray-300 p-2">{data.keterangan}</td>
         </tr>
       ))
     ) : (
       <tr>
-        <td colSpan="7" className="px-4 py-2 text-center text-gray-500">
+        <td colSpan="7" className="border border-gray-300 px-4 py-2 text-center text-gray-500">
           Tidak ada detail permintaan ditemukan.
         </td>
       </tr>
     )}
+
+    {/* Baris Informasi Tambahan + Kolom TTD yang Nyambung */}
+    <tr className="border-t border-gray-300">
+      <td colSpan="2" rowSpan="4" className="p-2 align-top">
+        <table className="w-full text-sm">
+          <tbody>
+            <tr>
+              <td className="p-2 font-semibold ">Tanggal Delivery</td>
+              <td className="p-1 ">:</td>
+              <td className="p-1">{data.tanggalDelivery || ""}</td>
+            </tr>
+            <tr>
+              <td className="p-2 font-semibold">Lokasi Delivery</td>
+              <td className="p-1">:</td>
+              <td className="p-1">{data.lokasiDelivery || ""}</td>
+            </tr>
+            <tr>
+              <td className="p-2 font-semibold">Catatan</td>
+              <td className="p-1">:</td>
+              <td className="p-1">{data.catatan || ""}</td>
+            </tr>
+            <tr>
+              <td className="p-2 font-semibold">PIC Lapangan</td>
+              <td className="p-1">:</td>
+              <td className="p-1">{data.picLapangan || ""}</td>
+            </tr>
+            <tr>
+              <td className="p-2 font-semibold">Note</td>
+              <td className="p-1">:</td>
+              <td className="p-1">{data.note || ""}</td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+      {/* Kolom Tanda Tangan */}
+      <td colSpan="1" className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1">
+        Diperiksa
+      </td>
+      <td colSpan="3" className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1">
+        Diketahui
+      </td>
+      <td colSpan="1" className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1">
+        Dibuat
+      </td>
+    </tr>
+    <tr>
+      <td colSpan="1" className="border border-gray-300 border-b-0 h-16"></td>
+      <td colSpan="3" className="border border-gray-300 border-b-0 h-16"></td>
+      <td colSpan="1" className="border border-gray-300 border-b-0 h-16"></td>
+    </tr>
+    <tr>
+  <td className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
+  <td className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom" colSpan="3">Nama</td>
+  <td className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
+</tr>
+
+
+<tr>
+  <td colSpan="1" className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1">
+    Project Manager
+  </td>
+  <td colSpan="3" className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1">
+    Site Manager
+  </td>
+  <td colSpan="1" className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1">
+    Logistik
+  </td>
+</tr>
+
   </tbody>
 </table>
 
-
-          {/* Tabel untuk informasi tambahan dengan garis yang hilang */}
           <div className="mt-6">
-  <div className="flex justify-between space-x-4">
-    {/* Kolom Kiri */}
-    <div className="w-1/2">
-      <table className="w-full border-collapse text-sm border-none">
-        <tbody>
-          <tr>
-            <td className="border-none p-2"><strong>Tanggal Delivery:</strong></td>
-            <td className="border-none p-2">{data.tanggalDelivery || "-"}</td>
-          </tr>
-          <tr>
-            <td className="border-none p-2"><strong>Lokasi Delivery:</strong></td>
-            <td className="border-none p-2">{data.lokasiDelivery || "-"}</td>
-          </tr>
-          <tr>
-            <td className="border-none p-2"><strong>Catatan:</strong></td>
-            <td className="border-none p-2">{data.catatan || "-"}</td>
-          </tr>
-          <tr>
-            <td className="border-none p-2"><strong>PIC Lapangan:</strong></td>
-            <td className="border-none p-2">{data.picLapangan || "-"}</td>
-          </tr>
-          <tr>
-            <td className="border-none p-2"><strong>Note:</strong></td>
-            <td className="border-none p-2">{data.note || "-"}</td>
-          </tr>
-        </tbody>
-      </table>
+          <div className="flex justify-between space-x-4">
+          <div className="w-1/2">
     </div>
 
-    {/* Kolom Kanan */}
-    <div className="w-1/2">
-      <table className="w-full border-collapse text-sm border-none">
-        <tbody>
-          {/* Baris Header */}
-          <tr>
-            <td className="border-none p-2 font-bold text-center">Diperkisa</td>
-            <td className="border-none p-2 font-bold text-center">Diketahui</td>
-            <td className="border-none p-2 font-bold text-center">Dibuat</td>
-          </tr>
-          {/* Baris Kosong */}
-          <tr>
-            <td className="border-none p-2 text-center">Nama</td>
-            <td className="border-none p-2 text-center">Nama</td>
-            <td className="border-none p-2 text-center">Nama</td>
-          </tr>
-          {/* Baris Kosong dengan Label */}
-          <tr>
-            <td className="border-none p-2 text-center">Project Manager</td>
-            <td className="border-none p-2 text-center">Site Manager</td>
-            <td className="border-none p-2 text-center">Logistik</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <div className="w-1/2 mx-auto">
+</div>
 
             </div>
           </div>
