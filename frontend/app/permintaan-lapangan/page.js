@@ -186,7 +186,6 @@ export default function PermintaanLapangan({ setActiveContent }) {
               <th className="border px-4 py-2">Nomor</th>
               <th className="border px-4 py-2">Tanggal</th>
               <th className="border px-4 py-2">Lokasi</th>
-              <th className="border px-4 py-2">Status</th>
               <th className="border px-4 py-2">Aksi</th>
             </tr>
           </thead>
@@ -202,19 +201,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
                       {day} {getMonthName(month)} {year}
                     </td>
                     <td className="border px-4 py-2">{item.lokasi}</td>
-                    <td className="border px-4 py-2">
-                      <span className="font-bold text-blue-600">{item.status}</span>
-                    </td>
                     <td className="border px-4 py-2 flex justify-center gap-2">
-
-                    {item.status === "PENDING" ? (
-                   <button
-                     className="bg-green-500 text-white rounded px-4 py-2 hover:bg-green-600"
-                      onClick={() => handleApprove(item.id)} > ✅ </button>
-                   ) : (
-                    <button
-                      className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
-                       onClick={() => handlePending(item.id)} > 🔄 </button> )}
                       <button
                         className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
                         onClick={() => router.push(`/permintaan-lapangan/${item.id}`)}

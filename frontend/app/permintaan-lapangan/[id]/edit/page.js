@@ -18,7 +18,7 @@ export default function EditPermintaanLapangan() {
     detail: [],
   });
 
-  // Ambil data dari API
+  // Ambil data dari API saat halaman dimuat
   useEffect(() => {
     if (!id) return;
 
@@ -41,14 +41,21 @@ export default function EditPermintaanLapangan() {
 
   // Fungsi menangani perubahan input utama
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
   };
 
   // Fungsi menangani perubahan detail
   const handleDetailChange = (index, field, value) => {
     const newDetail = [...formData.detail];
-    newDetail[index][field] = value;
+    if (field === "qty") {
+      newDetail[index][field] = parseInt(value) || 0; // Konversi ke integer
+    } else {
+      newDetail[index][field] = value;
+    }
     setFormData({ ...formData, detail: newDetail });
   };
 
@@ -56,11 +63,8 @@ export default function EditPermintaanLapangan() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Debug: cek data sebelum dikirim
-    console.log("Data dikirim:", JSON.stringify(formData, null, 2));
-
     try {
-      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
+      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}/edit`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -155,7 +159,7 @@ export default function EditPermintaanLapangan() {
                   <input
                     type="number"
                     value={item.qty || ""}
-                    onChange={(e) => handleDetailChange(index, "qty", e.target.value)}
+                    onChange={(e) => handleDetailChange(index, "qty", parseInt(e.target.value) || 0)}
                     className="w-full border border-gray-300 p-1 rounded"
                   />
                 </td>
