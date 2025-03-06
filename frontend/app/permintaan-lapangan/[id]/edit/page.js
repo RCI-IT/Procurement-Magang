@@ -18,7 +18,6 @@ export default function EditPermintaanLapangan() {
     detail: [],
   });
 
-  // Ambil data dari API saat halaman dimuat
   useEffect(() => {
     if (!id) return;
 
@@ -39,7 +38,6 @@ export default function EditPermintaanLapangan() {
     fetchData();
   }, [id, router]);
 
-  // Fungsi menangani perubahan input utama
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -48,18 +46,16 @@ export default function EditPermintaanLapangan() {
     });
   };
 
-  // Fungsi menangani perubahan detail
   const handleDetailChange = (index, field, value) => {
     const newDetail = [...formData.detail];
     if (field === "qty") {
-      newDetail[index][field] = parseInt(value) || 0; // Konversi ke integer
+      newDetail[index][field] = parseInt(value) || 0; 
     } else {
       newDetail[index][field] = value;
     }
     setFormData({ ...formData, detail: newDetail });
   };
 
-  // Fungsi untuk menyimpan perubahan
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -90,7 +86,6 @@ export default function EditPermintaanLapangan() {
       <h1 className="text-lg font-bold text-blue-900 mb-4">Edit Permintaan Lapangan</h1>
 
       <form onSubmit={handleSubmit}>
-        {/* Nomor */}
         <div className="mb-4">
           <label className="block text-sm font-semibold">Nomor</label>
           <input
@@ -102,7 +97,6 @@ export default function EditPermintaanLapangan() {
           />
         </div>
 
-        {/* Tanggal */}
         <div className="mb-4">
           <label className="block text-sm font-semibold">Tanggal</label>
           <input
@@ -114,7 +108,6 @@ export default function EditPermintaanLapangan() {
           />
         </div>
 
-        {/* Keterangan */}
         <div className="mb-4">
           <label className="block text-sm font-semibold">Keterangan</label>
           <textarea
@@ -125,7 +118,6 @@ export default function EditPermintaanLapangan() {
           />
         </div>
 
-        {/* Tabel Detail */}
         <h2 className="text-md font-semibold mt-4 mb-2">Detail Permintaan</h2>
         <table className="w-full border-collapse text-sm border border-gray-300">
           <thead className="bg-blue-700 text-white">
@@ -176,7 +168,6 @@ export default function EditPermintaanLapangan() {
           </tbody>
         </table>
 
-        {/* Tombol Simpan & Kembali */}
         <div className="flex justify-between mt-6">
           <button
             type="button"

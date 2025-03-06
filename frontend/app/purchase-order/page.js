@@ -10,7 +10,6 @@ const PurchaseOrderTable = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Simulasi fetch data PO
     const poData = [
       { id: "1", nomor: "ESPO-2411-015", tanggal: "18 Desember 2024", lokasi: "SERINDIT MERAH" },
       { id: "2", nomor: "PL/AB-ESS/LTC/2412001", tanggal: "18 Desember 2024", lokasi: "LTC-Z1" },

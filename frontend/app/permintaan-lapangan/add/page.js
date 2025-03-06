@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddForm }) {
   const router = useRouter();
-  const [materials, setMaterials] = useState([]); // Data material dari database
+  const [materials, setMaterials] = useState([]); 
   const [formData, setFormData] = useState({
     nomor: "",
     tanggal: { day: "", month: "", year: "" },
@@ -13,7 +13,7 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
     picLapangan: "",
     keterangan: "",
     detail: [
-      { id: Date.now(), materialId: "", qty: "", satuan: "", mention: "", code: "", keterangan: "" }, // 1 detail default
+      { id: Date.now(), materialId: "", qty: "", satuan: "", mention: "", code: "", keterangan: "" }, 
     ],
   });
 
@@ -37,7 +37,6 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
     }
   };
 
-  // Mengubah data detail berdasarkan index
   const handleDetailChange = (index, field, value) => {
     setFormData((prev) => {
       const updatedDetails = [...prev.detail];
@@ -49,7 +48,6 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
     });
   };
 
-  // Menambahkan detail baru
   const addDetail = () => {
     setFormData((prev) => ({
       ...prev,
@@ -60,7 +58,6 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
     }));
   };
 
-  // Menghapus detail berdasarkan index
   const removeDetail = (index) => {
     setFormData((prev) => ({
       ...prev,
@@ -85,7 +82,7 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
         satuan: d.satuan,
         mention: d.mention,
         code: d.code,
-        keterangan: d.keterangan, // Menambahkan keterangan dari detail
+        keterangan: d.keterangan, 
       })),
     };
 
@@ -102,7 +99,6 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
 
       alert("Permintaan berhasil ditambahkan!");
 
-      // Reset formData setelah submit
       setFormData({
         nomor: "",
         tanggal: { day: "", month: "", year: "" },
@@ -125,7 +121,6 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
       <h1 className="text-3xl font-bold mb-6">Tambah Permintaan Lapangan</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-2 gap-6">
-          {/* Bagian Tanggal */}
           <div>
             <label className="block font-medium mb-2">Tanggal:</label>
             <div className="flex items-center gap-2">
@@ -168,7 +163,6 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
             </div>
           </div>
 
-          {/* Bagian PIC Lapangan dan Lokasi */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block font-medium">PIC Lapangan:</label>
@@ -184,7 +178,6 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
         </div>
 
         <div className="grid grid-cols-2 gap-6">
-          {/* Bagian Nomor dan Keterangan */}
           <div>
             <label className="block font-medium">Nomor:</label>
             <input
@@ -207,10 +200,8 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
           </div>
         </div>
 
-        {/* Bagian Detail Permintaan */}
         {formData.detail.map((item, index) => (
           <div key={item.id} className="grid grid-cols-2 gap-4">
-            {/* Nama Barang / Jasa */}
             <div className="flex flex-col">
               <label className="block font-medium">Nama Barang / Jasa:</label>
               <select
@@ -248,7 +239,6 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
               </div>
             </div>
 
-            {/* Keterangan Detail */}
             <div className="flex flex-col">
               <label className="block font-medium">Keterangan Detail:</label>
               <textarea
@@ -258,7 +248,6 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
               />
             </div>
 
-            {/* Qty and Satuan */}
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col">
                 <label className="block font-medium">Qty:</label>
@@ -283,7 +272,6 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
               </div>
             </div>
 
-            {/* Remove Button */}
             {formData.detail.length > 1 && (
               <div className="flex justify-end mt-2">
                 <button
@@ -298,7 +286,6 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
           </div>
         ))}
 
-        {/* Add Detail Button */}
         <div>
           <button
             type="button"

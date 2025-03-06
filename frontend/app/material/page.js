@@ -14,7 +14,6 @@ export default function Material() {
   const [error, setError] = useState(null);
   const router = useRouter();
 
-  // Definisikan fetchData di sini (scope komponen) agar dapat diakses di addMaterial prop
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -39,7 +38,6 @@ export default function Material() {
     }
   };
 
-  // Panggil fetchData saat komponen pertama kali dimuat
   useEffect(() => {
     fetchData();
   }, []);
@@ -99,7 +97,6 @@ export default function Material() {
             {showForm ? "Batal Tambah" : "+ Material"}
           </button>
         </div>
-        {/* Perbaiki prop addMaterial dengan mengoper fetchData langsung */}
         {showForm && <AddMaterialForm addMaterial={fetchData} />}
 
         <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
