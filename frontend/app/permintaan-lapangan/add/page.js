@@ -109,7 +109,7 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
       });
 
       toggleAddForm();
-      router.push("/?page=permintaan-lapangan");
+    window.location.reload();
     } catch (error) {
       console.error("Error:", error);
       alert("Terjadi kesalahan saat menyimpan data. Cek log untuk detail.");
