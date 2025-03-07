@@ -124,10 +124,9 @@ const handleDownloadPDF = () => {
       <th colSpan="2" className="border border-white p-2 text-center" >Permintaan</th>
       <th rowSpan="2" className="border border-white p-2 text-center">Keterangan</th>
     </tr>
-    <tr> 
+    <tr>  
     <th className="border border- p-2 text-center">QTY</th>
     <th className="border border-white p-2 text-center">Satuan</th>
-     
     </tr>
   </thead>
   <tbody>
@@ -140,7 +139,7 @@ const handleDownloadPDF = () => {
           <td className="border border-gray-300 p-2">{item.code}</td>
           <td className="border border-gray-300 p-2">{item.qty}</td>
           <td className="border border-gray-300 p-2">{item.satuan}</td>
-          <td className="border border-gray-300 p-2">{data.keterangan}</td>
+          <td className="border border-gray-300 p-2">{item.keterangan}</td>
         </tr>
       ))
     ) : (

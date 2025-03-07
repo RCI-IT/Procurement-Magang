@@ -29,7 +29,7 @@ export default function EditPermintaanLapangan() {
         if (result) {
           setFormData(result);
         } else {
-          router.push("/permintaan-lapangan");
+          router.push("/?page=permintaan-lapangan");
         }
       } catch (error) {
         console.error("Gagal mengambil data permintaan lapangan:", error);
@@ -48,7 +48,11 @@ export default function EditPermintaanLapangan() {
   // Fungsi menangani perubahan detail
   const handleDetailChange = (index, field, value) => {
     const newDetail = [...formData.detail];
-    newDetail[index][field] = value;
+    if (field === "qty"){
+      newDetail[index][field] = parseInt(value) || 0;
+    } else {
+      newDetail[index][field] = value;
+    }
     setFormData({ ...formData, detail: newDetail });
   };
 
@@ -60,7 +64,7 @@ export default function EditPermintaanLapangan() {
     console.log("Data dikirim:", JSON.stringify(formData, null, 2));
 
     try {
-      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
+      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}/edit`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -70,7 +74,7 @@ export default function EditPermintaanLapangan() {
 
       if (response.ok) {
         alert("Data berhasil diperbarui!");
-        router.push("/permintaan-lapangan");
+        router.push("/?page=permintaan-lapangan");
       } else {
         alert("Gagal memperbarui data.");
       }
@@ -154,8 +158,8 @@ export default function EditPermintaanLapangan() {
                 <td className="border border-gray-300 p-2">
                   <input
                     type="number"
-                    value={item.qty || ""}
-                    onChange={(e) => handleDetailChange(index, "qty", e.target.value)}
+                    value={item.qty ||"" }
+                    onChange={(e) => handleDetailChange(index, "qty",parseInt(e.target.value) || 0)}
                     className="w-full border border-gray-300 p-1 rounded"
                   />
                 </td>

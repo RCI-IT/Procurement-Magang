@@ -8,86 +8,110 @@ generator client {
 }
 
 model PermintaanLapangan {
-  id            Int              @id @default(autoincrement())
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  nomor         String           @unique
-  tanggal       DateTime
-  lokasi        String
-  picLapangan   String
-  status        PermintaanStatus @default(PENDING)
-  isConfirmed   Boolean          @default(false)
-  isReceived    Boolean          @default(false)
-  keterangan    String?
-  detail        PermintaanDetails[]
+  id              Int               @id @default(autoincrement())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  nomor           String            @unique
+  tanggal         DateTime
+  lokasi          String
+  picLapangan     String
+  status          PermintaanStatus  @default(PENDING)
+  isConfirmed     Boolean           @default(false)
+  isReceived      Boolean           @default(false)
+  keterangan      String?
+  detail          PermintaanDetails[]
+  purchaseOrder   PurchaseOrder?    @relation(fields: [purchaseOrderId], references: [id]) // Hanya di sini ada references
+  purchaseOrderId Int?              @unique
 }
 
 enum PermintaanStatus {
-  PENDING        // Permintaan baru dibuat, menunggu konfirmasi
-  APPROVED       // Permintaan disetujui oleh pihak terkait
-  REJECTED       // Permintaan ditolak
-  PROCESSING     // Permintaan sedang diproses
-  COMPLETED      // Permintaan telah selesai dan diterima
-  CANCELLED      // Permintaan dibatalkan
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+  CANCELLED
 }
 
 model PermintaanDetails {
-  id            Int              @id @default(autoincrement())
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  permintaanId  Int
-  permintaan    PermintaanLapangan @relation(fields: [permintaanId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  materialId    Int
-  material      Materials         @relation(fields: [materialId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  qty           Int
-  satuan        String           // Satuan barang atau jasa
-  mention       String?          // Spesifikasi barang atau jasa
-  code          String           // Kode barang atau jasa
+  id           Int               @id @default(autoincrement())
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  permintaanId Int
+  permintaan   PermintaanLapangan @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
+  materialId   Int
+  material     Materials         @relation(fields: [materialId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  qty          Int
+  satuan       String
+  mention      String?
+  code         String
+  keterangan   String?
+}
+
+model PurchaseOrder {
+  id           Int               @id @default(autoincrement())
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  nomorPO      String            @unique
+  tanggalPO    DateTime
+  lokasiPO     String
+  keterangan   String?
+  status       POStatus          @default(PENDING)
+  permintaan   PermintaanLapangan?
+}
+
+enum POStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+  CANCELLED
 }
 
 model Materials {
-  id          Int             @id @default(autoincrement())
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  image       String?
-  name        String
+  id         Int        @id @default(autoincrement())
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  image      String?
+  name       String
   description String
-  price       Int
-  categoryId  Int
-  category    Categories      @relation(fields: [categoryId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  vendorId    Int
-  vendor      Vendors         @relation(fields: [vendorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  permintaan  PermintaanDetails[]
+  price      Int
+  categoryId Int
+  category   Categories @relation(fields: [categoryId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  vendorId   Int
+  vendor     Vendors    @relation(fields: [vendorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  permintaan PermintaanDetails[]
 }
 
 model Categories {
-  id          Int             @id @default(autoincrement())
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  name        String          @unique
-  material    Materials[]
+  id         Int        @id @default(autoincrement())
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @default(now())
+  name       String     @unique
+  material   Materials[]
 }
 
 model Vendors {
-  id          Int             @id @default(autoincrement())
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  name        String
-  address     String?
-  city        String?
-  phone       String?
-  material    Materials[]
+  id         Int        @id @default(autoincrement())
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @default(now())
+  name       String
+  address    String?
+  city       String?
+  phone      String?
+  material   Materials[]
 }
 
 model User {
-  id          Int             @id @default(autoincrement())
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @default(now())
-  username    String          @unique
-  password    String
-  email       String          @unique
-  fullName    String
-  role        UserRole        @default(USER_LAPANGAN)
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+  username  String    @unique
+  password  String
+  email     String    @unique
+  fullName  String
+  role      UserRole  @default(USER_LAPANGAN)
 }
 
 enum UserRole {
