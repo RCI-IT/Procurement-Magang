@@ -28,7 +28,7 @@ export default function EditPermintaanLapangan() {
         if (result) {
           setFormData(result);
         } else {
-          router.push("/permintaan-lapangan");
+          router.push("/?page=permintaan-lapangan");
         }
       } catch (error) {
         console.error("Gagal mengambil data permintaan lapangan:", error);
@@ -70,7 +70,7 @@ export default function EditPermintaanLapangan() {
 
       if (response.ok) {
         alert("Data berhasil diperbarui!");
-        router.push("/permintaan-lapangan");
+        router.push("/?page=permintaan-lapangan");
       } else {
         alert("Gagal memperbarui data.");
       }

@@ -38,29 +38,28 @@
 }
 
 {
-  "nomor": "PL-002",
-  "tanggal": "2025-02-26",
-  "lokasi": "Gudang Baru",
-  "picLapangan": "Andi Wijaya",
-  "status": "Diproses",
-  "isConfirmed": true,
-  "isReceived": false,
-  "keterangan": "Update permintaan material proyek B",
+  "nomor": "PL-003",
+  "tanggal": "2025-03-06",
+  "lokasi": "Gudang Utama",
+  "picLapangan": "Budi Santoso",
+  "keterangan": "Permintaan baru untuk proyek C",
   "detail": [
     {
-      "id": 1,
-      "materialId": 1,
-      "qty": 20,
-      "satuan": "pcs",
-      "mention": "Update jumlah pemasangan",
-      "code": "MAT-123"
+      "materialId": 2,
+      "qty": 10,
+      "satuan": "meter",
+      "mention": "Kabel tambahan",
+      "code": "MAT-456",
+      "keterangan": "Untuk instalasi listrik"
     },
     {
       "materialId": 3,
-      "qty": 7,
-      "satuan": "liter",
-      "mention": "Cat tambahan",
-      "code": "MAT-789"
+      "qty": 15,
+      "satuan": "kg",
+      "mention": "Besi tambahan",
+      "code": "MAT-321",
+      "keterangan": "Struktur bangunan"
     }
   ]
 }
+
