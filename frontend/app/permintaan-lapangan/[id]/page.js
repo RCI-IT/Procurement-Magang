@@ -47,12 +47,12 @@ const handleDownloadPDF = () => {
   if (!data) return <p className="text-red-500 text-center mt-10">Data tidak ditemukan</p>;
 
   const parseDate = (dateString) => {
-    if (!dateString) return { day: "-", month: "-", year: "-" }; // Handle jika tanggal null atau undefined
+    if (!dateString) return { day: "-", month: "-", year: "-" }; 
     
     const date = new Date(dateString);
-    if (isNaN(date)) return { day: "-", month: "-", year: "-" }; // Handle jika format tanggal tidak valid
+    if (isNaN(date)) return { day: "-", month: "-", year: "-" }; 
   
-    const day = date.getDate().toString().padStart(2, "0"); // Tambahkan nol di depan jika perlu
+    const day = date.getDate().toString().padStart(2, "0"); 
     const monthIndex = date.getMonth();
     const year = date.getFullYear();
   
@@ -91,7 +91,6 @@ const handleDownloadPDF = () => {
 
         <div className="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-6">
         <div className="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-6">
-  {/* Header */}
   <div className="flex justify-between items-center border-b pb-3">
     <h1 className="text-lg font-bold text-blue-900 uppercase">Company Name</h1>
     <h2 className="text-lg font-bold text-blue-900 uppercase">Permintaan Lapangan</h2>
@@ -150,7 +149,6 @@ const handleDownloadPDF = () => {
       </tr>
     )}
 
-    {/* Baris Informasi Tambahan + Kolom TTD yang Nyambung */}
     <tr className="border-t border-gray-300">
       <td colSpan="2" rowSpan="4" className="p-2 align-top">
         <table className="w-full text-sm">
@@ -183,7 +181,6 @@ const handleDownloadPDF = () => {
           </tbody>
         </table>
       </td>
-      {/* Kolom Tanda Tangan */}
       <td colSpan="1" className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1">
         Diperiksa
       </td>

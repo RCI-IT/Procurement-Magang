@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -7,7 +6,7 @@ import Sidebar from "../../../component/sidebar";
 
 export default function VendorPage() {
   const params = useParams();
-  const vendorId = params.id; // 🔍 Vendor ID dari URL
+  const vendorId = params.id; // 🔍  
   const [vendor, setVendor] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +16,7 @@ export default function VendorPage() {
   useEffect(() => {
     const fetchVendorAndMaterials = async () => {
       try {
-        console.log("🔍 Vendor ID dari URL:", vendorId); // Debug Vendor ID
+        console.log("🔍 Vendor ID dari URL:", vendorId); 
   
         const resVendor = await fetch(`http://192.168.110.204:5000/vendors/${vendorId}`);
         if (!resVendor.ok) throw new Error("Gagal mengambil data vendor");
@@ -27,14 +26,12 @@ export default function VendorPage() {
         if (!resMaterials.ok) throw new Error("Gagal mengambil daftar material");
         const allMaterials = await resMaterials.json();
   
-        console.log("✅ Semua Data Material:", allMaterials); // Debug Data Material
-  
-        // Filter berdasarkan vendorId
+        console.log("✅ Semua Data Material:", allMaterials); 
+
         const filteredMaterials = allMaterials.filter(material => String(material.vendorId) === String(vendorId));
   
-        console.log("🎯 Filtered Materials:", filteredMaterials); // Debug Data yang sudah difilter
-  
-        // 🔥 Cek apakah category ada di dalam data material
+        console.log("🎯 Filtered Materials:", filteredMaterials); 
+
         filteredMaterials.forEach(material => {
           console.log(`📌 Material: ${material.name}, Category:`, material.category);
         });

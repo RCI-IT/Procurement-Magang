@@ -75,10 +75,8 @@ export default function EditMaterial() {
         throw new Error("Gagal mengupdate material");
       }
 
-      // Tampilkan pop-up setelah berhasil menyimpan
       window.alert("Material berhasil diperbarui!");
 
-      // Arahkan kembali ke halaman daftar material setelah pop-up ditutup
       router.push("/?page=material");
     } catch (error) {
       setError(error.message);

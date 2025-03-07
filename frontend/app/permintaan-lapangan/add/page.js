@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddForm }) {
   const router = useRouter();
-  const [materials, setMaterials] = useState([]); // Data material dari database
+  const [materials, setMaterials] = useState([]); 
   const [formData, setFormData] = useState({
     nomor: "",
     tanggal: { day: "", month: "", year: "" },
@@ -13,7 +13,7 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
     picLapangan: "",
     keterangan: "",
     detail: [
-      { id: Date.now(), materialId: "", qty: "", satuan: "", mention: "", code: "" }, // 1 detail default
+      { id: Date.now(), materialId: "", qty: "", satuan: "", mention: "", code: "", keterangan: "" }, 
     ],
   });
 
@@ -37,20 +37,42 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
     }
   };
 
-  const handleDetailChange = (field, value) => {
-    const updatedDetails = [...formData.detail];
-    updatedDetails[0][field] = value;
-    setFormData((prev) => ({ ...prev, detail: updatedDetails }));
+  const handleDetailChange = (index, field, value) => {
+    setFormData((prev) => {
+      const updatedDetails = [...prev.detail];
+      updatedDetails[index] = {
+        ...updatedDetails[index],
+        [field]: value,
+      };
+      return { ...prev, detail: updatedDetails };
+    });
+  };
+
+  const addDetail = () => {
+    setFormData((prev) => ({
+      ...prev,
+      detail: [
+        ...prev.detail,
+        { id: Date.now(), materialId: "", qty: "", satuan: "", mention: "", code: "", keterangan: "" },
+      ],
+    }));
+  };
+
+  const removeDetail = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      detail: prev.detail.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!formData.nomor || !formData.tanggal.day || !formData.tanggal.month || !formData.tanggal.year || !formData.lokasi || !formData.picLapangan) {
       alert("Harap lengkapi semua kolom!");
       return;
     }
-  
+
     const finalData = {
       ...formData,
       tanggal: `${formData.tanggal.year}-${formData.tanggal.month}-${formData.tanggal.day}`,
@@ -60,42 +82,32 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
         satuan: d.satuan,
         mention: d.mention,
         code: d.code,
+        keterangan: d.keterangan, 
       })),
     };
-  
+
     try {
       const response = await fetch("http://192.168.110.204:5000/permintaan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(finalData),
       });
-  
-      let result;
-      try {
-        result = await response.json();
-      } catch (err) {
-        console.error("Gagal parsing response JSON", err);
-        throw new Error("Server tidak mengembalikan response yang valid.");
-      }
-  
+
       if (!response.ok) {
-        console.error("Server Response Error:", result);
-        throw new Error(result.message || "Gagal menambahkan permintaan lapangan");
+        throw new Error("Gagal menambahkan permintaan lapangan");
       }
-  
+
       alert("Permintaan berhasil ditambahkan!");
-      
-      // Reset state formData setelah submit
+
       setFormData({
         nomor: "",
         tanggal: { day: "", month: "", year: "" },
         lokasi: "",
         picLapangan: "",
         keterangan: "",
-        detail: [{ id: Date.now(), materialId: "", qty: "", satuan: "", mention: "", code: "" }],
+        detail: [{ id: Date.now(), materialId: "", qty: "", satuan: "", mention: "", code: "", keterangan: "" }],
       });
-  
-      //onAddPermintaan();
+
       toggleAddForm();
       router.push("/?page=permintaan-lapangan");
     } catch (error) {
@@ -103,61 +115,65 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
       alert("Terjadi kesalahan saat menyimpan data. Cek log untuk detail.");
     }
   };
-  
+
   return (
     <div className="p-6 bg-gray-100 rounded-lg shadow-md">
       <h1 className="text-3xl font-bold mb-6">Tambah Permintaan Lapangan</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <label className="block font-medium">Tanggal:</label>
-            <div className="flex space-x-2">
+            <label className="block font-medium mb-2">Tanggal:</label>
+            <div className="flex items-center gap-2">
               <input
                 type="text"
                 name="tanggal.day"
-                placeholder="Tanggal"
+                placeholder="day"
                 value={formData.tanggal.day}
                 onChange={handleChange}
-                className="border border-gray-300 rounded px-2 py-1 w-1/3"
+                className="border border-gray-300 rounded px-2 py-1 w-16"
               />
+              <span>/</span>
               <select
                 name="tanggal.month"
                 value={formData.tanggal.month}
                 onChange={handleChange}
-                className="border border-gray-300 rounded px-2 py-1 w-1/3"
+                className="border border-gray-300 rounded px-2 py-1 w-auto min-w-[80px]"  
               >
-                <option value="">Bulan</option>
+                <option value="">month</option>
                 {Array.from({ length: 12 }, (_, i) => (
                   <option key={i + 1} value={i + 1}>
                     {new Date(0, i).toLocaleString("id-ID", { month: "long" })}
                   </option>
                 ))}
               </select>
+              <span>/</span>
               <select
-  name="tanggal.year"
-  value={formData.tanggal.year}
-  onChange={handleChange}
-  className="border border-gray-300 rounded px-2 py-1 w-full"
->
-  <option value="">Tahun</option>
-  {Array.from({ length: new Date().getFullYear() - 2018 }, (_, i) => (
-    <option key={2019 + i} value={2019 + i}>
-      {2019 + i}
-    </option>
-  ))}
-</select>
-
+                name="tanggal.year"
+                value={formData.tanggal.year}
+                onChange={handleChange}
+                className="border border-gray-300 rounded px-2 py-1 w-24"
+              >
+                <option value="">year</option>
+                {Array.from({ length: new Date().getFullYear() - 2018 }, (_, i) => (
+                  <option key={2019 + i} value={2019 + i}>
+                    {2019 + i}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
-          <div>
-            <label className="block font-medium">PIC Lapangan:</label>
-            <input
-              type="text"
-              name="picLapangan"
-              value={formData.picLapangan}
-              onChange={handleChange}
-              className="border border-gray-300 rounded px-4 py-2 w-full"
-            />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block font-medium">PIC Lapangan:</label>
+              <input
+                type="text"
+                name="picLapangan"
+                value={formData.picLapangan}
+                onChange={handleChange}
+                className="border border-gray-300 rounded px-4 py-2 w-full"
+              />
+            </div>
           </div>
         </div>
 
@@ -184,74 +200,109 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
           </div>
         </div>
 
+        {formData.detail.map((item, index) => (
+          <div key={item.id} className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <label className="block font-medium">Nama Barang / Jasa:</label>
+              <select
+                value={item.materialId}
+                onChange={(e) => handleDetailChange(index, "materialId", e.target.value)}
+                className="border border-gray-300 rounded px-2 py-1 w-full"
+              >
+                <option value="">Pilih Material</option>
+                {materials.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+              <br />
+
+              <div className="flex flex-col">
+                <label className="block font-medium">Spesifikasi:</label>
+                <input
+                  type="text"
+                  value={item.mention}
+                  onChange={(e) => handleDetailChange(index, "mention", e.target.value)}
+                  className="border border-gray-300 rounded px-2 py-1 w-full"
+                />
+                <br />
+                <div className="flex flex-col">
+                  <label className="block font-medium">Code:</label>
+                  <input
+                    type="text"
+                    value={item.code}
+                    onChange={(e) => handleDetailChange(index, "code", e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1 w-full"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col">
+              <label className="block font-medium">Keterangan Detail:</label>
+              <textarea
+                value={item.keterangan}
+                onChange={(e) => handleDetailChange(index, "keterangan", e.target.value)}
+                className="border border-gray-300 rounded px-4 py-2 w-full h-24"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col">
+                <label className="block font-medium">Qty:</label>
+                <input
+                  type="number"
+                  placeholder="Qty"
+                  value={item.qty}
+                  onChange={(e) => handleDetailChange(index, "qty", e.target.value)}
+                  className="border border-gray-300 rounded px-2 py-1 w-full"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="block font-medium">Satuan:</label>
+                <input
+                  type="text"
+                  placeholder="Satuan"
+                  value={item.satuan}
+                  onChange={(e) => handleDetailChange(index, "satuan", e.target.value)}
+                  className="border border-gray-300 rounded px-2 py-1 w-full"
+                />
+              </div>
+            </div>
+
+            {formData.detail.length > 1 && (
+              <div className="flex justify-end mt-2">
+                <button
+                  type="button"
+                  onClick={() => removeDetail(index)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  Hapus Detail
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+
         <div>
-          <label className="block font-medium">Keterangan:</label>
-          <textarea
-            name="keterangan"
-            value={formData.keterangan}
-            onChange={handleChange}
-            className="border border-gray-300 rounded px-4 py-2 w-full h-24"
-          />
-        </div>
-
-        <h2 className="text-xl font-bold mt-6">Detail Permintaan</h2>
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <label className="block font-medium">Nama Barang:</label>
-            <select
-              value={formData.detail[0].materialId}
-              onChange={(e) => handleDetailChange("materialId", e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 w-full h-8"
-            >
-              <option value="">Pilih Material</option>
-              {materials.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block font-medium">Spesifikasi:</label>
-            <input
-              type="text"
-              value={formData.detail[0].mention}
-              onChange={(e) => handleDetailChange("mention", e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 w-full"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <label className="block font-medium">Code:</label>
-            <input
-              type="text"
-              value={formData.detail[0].code}
-              onChange={(e) => handleDetailChange("code", e.target.value)}
-              className="border border-gray-300 rounded px-2 py-1 w-full h-8 "
-            />
-          </div>
-          <div className="flex space-x-2">
-            <input
-              type="number"
-              placeholder="Qty"
-              value={formData.detail[0].qty}
-              onChange={(e) => handleDetailChange("qty", e.target.value)}
-              className="border border-gray-300  rounded px-2 py-1 w-full "
-            />
-            <input
-              type="text"
-              placeholder="Satuan"
-              value={formData.detail[0].satuan}
-              onChange={(e) => handleDetailChange("satuan", e.target.value)}
-              className="border border-gray-300  rounded px-2 py-1 w-full" />
-          </div>
+          <button
+            type="button"
+            onClick={addDetail}
+            className="bg-green-500 text-white px-4 py-2 rounded mt-4"
+          >
+            Tambah Detail
+          </button>
         </div>
 
         <div className="flex justify-between mt-4">
-          <button type="button" className="text-red-500">Batal</button>
-          <button type="submit" className="bg-blue-500 text-white rounded px-6 py-2">Selesai</button>
+          <button type="button" className="text-red-500" onClick={toggleAddForm}>
+            Batal
+          </button>
+          <button type="submit" className="bg-blue-500 text-white rounded px-6 py-2">
+            Selesai
+          </button>
         </div>
       </form>
     </div>

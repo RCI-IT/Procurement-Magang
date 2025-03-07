@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "../../../component/sidebar"; // Pastikan Sidebar sudah ada
+import Sidebar from "../../../component/sidebar"; 
 
 export default function AddPurchaseOrder() {
   const [formData, setFormData] = useState({
@@ -26,7 +26,6 @@ export default function AddPurchaseOrder() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Hitung total harga otomatis
     if (name === "harga" || name === "qty") {
       const harga = name === "harga" ? parseFloat(value) || 0 : parseFloat(formData.harga) || 0;
       const qty = name === "qty" ? parseInt(value) || 0 : parseInt(formData.qty) || 0;
@@ -50,14 +49,11 @@ export default function AddPurchaseOrder() {
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Konten Utama */}
       <div className="flex-1 p-6">
         <h1 className="text-2xl font-bold mb-6">Tambah Purchase Order</h1>
         <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 shadow-md rounded-lg">
-          {/* Informasi Umum */}
           <div className="grid grid-cols-2 gap-4 border-b pb-4">
             <div>
               <label className="block font-medium">Tanggal:</label>
@@ -85,7 +81,6 @@ export default function AddPurchaseOrder() {
             </div>
           </div>
 
-          {/* Detail Barang */}
           <div className="grid grid-cols-2 gap-4 border-b pb-4">
             <div>
               <label className="block font-medium">Kode Barang:</label>
@@ -111,12 +106,10 @@ export default function AddPurchaseOrder() {
             </div>
           </div>
 
-          {/* Total Harga */}
           <div className="text-lg font-semibold mt-4">
             Total: <span className="text-blue-600">Rp{total.toLocaleString("id-ID")}</span>
           </div>
 
-          {/* Tombol Submit */}
           <button type="submit" className="bg-blue-500 text-white px-6 py-2 rounded-md w-full hover:bg-blue-600">
             Selesai
           </button>

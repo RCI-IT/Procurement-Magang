@@ -31,7 +31,6 @@ export default function MaterialPage() {
         let vendorData = null;
         let relatedMaterialsData = [];
 
-        // Cek vendor berdasarkan vendorId atau nama
         let searchVendorId = null;
         if (materialData.vendorId) {
           searchVendorId = Number(materialData.vendorId);
@@ -51,7 +50,6 @@ export default function MaterialPage() {
           if (vendorData) searchVendorId = vendorData.id;
         }
 
-        // Fetch related materials berdasarkan vendorId
         if (searchVendorId) {
           const resRelated = await fetch(
             `http://192.168.110.204:5000/materials?vendorId=${searchVendorId}`
@@ -79,26 +77,22 @@ export default function MaterialPage() {
   }, [id]);
   const parsePrice = (priceString) => {
     if (!priceString) return null;
-  
-    // Menghapus "Rp " di awal dan semua titik sebagai pemisah ribuan
+
     const cleanPrice = priceString.replace("Rp ", "").replace(/\./g, "");
-  
-    // Konversi ke angka
+
     const priceNumber = Number(cleanPrice);
-    
-    // Validasi apakah hasilnya angka yang valid
+
     return !isNaN(priceNumber) ? priceNumber : null;
   };
-  
-  // Parsing dan format harga sebelum ditampilkan
+
   const materialPrice = parsePrice(material?.price);
   const formattedPrice =
     materialPrice !== null
       ? new Intl.NumberFormat("id-ID", {
           style: "currency",
           currency: "IDR",
-          minimumFractionDigits: 0, // Mencegah koma/desimal
-          maximumFractionDigits: 0, // Mencegah koma/desimal
+          minimumFractionDigits: 0, 
+          maximumFractionDigits: 0, 
         }).format(materialPrice)
       : "Harga tidak tersedia";
   
@@ -115,7 +109,6 @@ export default function MaterialPage() {
     <div className="flex h-screen">
       <Sidebar />
       <div className="flex-1 p-6">
-        {/* Vendor Info */}
         <div className="mb-6 bg-white shadow-md p-4 rounded-md">
           <div className="flex justify-between items-center">
             <div>
@@ -144,7 +137,6 @@ export default function MaterialPage() {
           </div>
         </div>
 
-        {/* Material Detail */}
         <div className="flex gap-6 items-start mb-8 bg-white shadow-md p-4 rounded-md">
           <div className="bg-gray-100 border border-gray-300 rounded p-4 flex justify-center">
             <img src={materialImage} alt={material.name} className="object-cover max-h-72" />
@@ -163,7 +155,6 @@ export default function MaterialPage() {
           </div>
         </div>
 
-        {/* Related Materials */}
         <div className="bg-white shadow-md p-4 rounded-md">
           <h4 className="font-bold text-lg mb-4">Material lainnya dari vendor ini</h4>
           {relatedMaterials.length === 0 && (
