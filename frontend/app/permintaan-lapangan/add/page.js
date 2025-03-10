@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Sidebar from "../../../component/sidebar";
 
 export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddForm }) {
   const router = useRouter();
@@ -108,8 +109,8 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
         detail: [{ id: Date.now(), materialId: "", qty: "", satuan: "", mention: "", code: "", keterangan: "" }],
       });
 
-      toggleAddForm();
-    window.location.reload();
+      router.back();
+
     } catch (error) {
       console.error("Error:", error);
       alert("Terjadi kesalahan saat menyimpan data. Cek log untuk detail.");
@@ -117,6 +118,8 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
   };
 
   return (
+    <div className="flex h-screen">
+      <Sidebar />
     <div className="p-6 bg-gray-100 rounded-lg shadow-md">
       <h1 className="text-3xl font-bold mb-6">Tambah Permintaan Lapangan</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -297,14 +300,19 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
         </div>
 
         <div className="flex justify-between mt-4">
-          <button type="button" className="text-red-500" onClick={toggleAddForm}>
-            Batal
-          </button>
+        <button type="button"
+  onClick={() => router.back()} 
+  className="mt-6 bg-gray-500 text-white px-4 py-2 rounded"
+>
+  Gak Jadi
+</button>
+
           <button type="submit" className="bg-blue-500 text-white rounded px-6 py-2">
             Selesai
           </button>
         </div>
       </form>
+    </div>
     </div>
   );
 }
