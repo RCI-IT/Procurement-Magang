@@ -27,11 +27,8 @@ export default function AddMaterialPage() {
           throw new Error("Gagal mengambil data dari server");
         }
 
-        const vendorData = await vendorRes.json();
-        const categoryData = await categoryRes.json();
-
-        setVendors(vendorData);
-        setCategories(categoryData);
+        setVendors(await vendorRes.json());
+        setCategories(await categoryRes.json());
       } catch (error) {
         console.error("Error fetching data:", error);
         setError(`Gagal memuat vendor atau kategori: ${error.message}`);
@@ -68,12 +65,10 @@ export default function AddMaterialPage() {
         body: formData,
       });
 
-      const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.error || "Gagal menambahkan material");
+        throw new Error("Gagal menambahkan material");
       }
 
-      // Reset form
       setName("");
       setVendorId("");
       setPrice("");
@@ -93,7 +88,10 @@ export default function AddMaterialPage() {
       <Sidebar />
       <div className="flex-1 p-6">
         <h1 className="text-2xl font-bold mb-6">Tambah Material</h1>
-        <form onSubmit={handleSubmit} className="bg-white p-6 shadow-md rounded-lg max-w-lg">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white p-6 shadow-md rounded-lg w-full max-w-none"
+        >
           {error && <div className="text-red-500 mb-4">{error}</div>}
 
           <div className="mb-4">
@@ -121,6 +119,7 @@ export default function AddMaterialPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="border border-gray-400 rounded px-2 py-1 w-full"
+              rows="3"
             />
           </div>
 
@@ -166,21 +165,21 @@ export default function AddMaterialPage() {
             </select>
           </div>
 
-          <div className="flex flex-col gap-2 mt-4">
-            <button
-              type="submit"
-              className="bg-blue-500 text-white rounded px-4 py-2 w-40"
-              disabled={loading}
-            >
-              {loading ? "Menambahkan..." : "Tambah Material"}
-            </button>
-
+          <div className="flex justify-between mt-6">
             <button
               type="button"
               onClick={() => window.history.back()}
               className="bg-gray-500 text-white rounded px-4 py-2 w-40"
             >
               Kembali
+            </button>
+
+            <button
+              type="submit"
+              className="bg-blue-500 text-white rounded px-4 py-2 w-40"
+              disabled={loading}
+            >
+              {loading ? "Menambahkan..." : "Tambah Material"}
             </button>
           </div>
         </form>
