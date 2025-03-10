@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Sidebar from "../../../component/sidebar";
 
 export default function PurchaseOrderDetail() {
   const { id } = useParams();
@@ -67,6 +68,8 @@ const terbilang = (angka) => {
   poDetail?.permintaan?.detail?.reduce((sum, item) => sum + (item.material.price * item.qty), 0) || 0;
 
   return (
+    <div className="flex h-screen">
+      <Sidebar />
     <div className="p-6 max-w-6xl mx-auto bg-white shadow-md rounded-md">
       {/* Header dengan Tombol Aksi */}
       <div className="flex justify-between items-center border-b pb-4">
@@ -226,6 +229,7 @@ const terbilang = (angka) => {
 </table>
 
 
+    </div>
     </div>
   );
 }

@@ -233,12 +233,14 @@ export default function DetailPermintaanLapangan() {
           </div>
 
           <div className="text-right mt-6">
-            <button
-              onClick={() => router.push("/?page=permintaan-lapangan")}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-            >
-              Kembali
-            </button>
+          <button
+  onClick={() => router.push("/?page=permintaan-lapangan")}
+  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 no-print"
+>
+  Kembali
+</button>
+
+
           </div>
         </div>
       </div>
