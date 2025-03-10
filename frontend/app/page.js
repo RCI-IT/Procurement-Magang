@@ -5,7 +5,7 @@ import Sidebar from "../component/sidebar";
 import Home from "./Home";
 import PermintaanLapangan from "./permintaan-lapangan/page";
 import PurchaseOrder from "./purchase-order/page";
-import ConfirmationOrder from "./ConfirmationOrder";
+import ConfirmationOrder from "./confirmation-order/page";
 import Material from "./material/page";
 import Setting from "./Setting";
 import AddPermintaanLapanganForm from "./permintaan-lapangan/add/page";
@@ -13,7 +13,7 @@ import { useData } from "../context/DataContext";
 import { useSearchParams } from "next/navigation";
 
 export default function MainPage() {
-  const [activeContent, setActiveContent] = useState("home");
+  const [setActiveContent] = useState("home");
   const searchParams = useSearchParams();
   const page = searchParams.get("page");
   const { permintaanLapanganData, setPermintaanLapanganData } = useData();
