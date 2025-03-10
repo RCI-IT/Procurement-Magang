@@ -3,9 +3,6 @@ import { PrismaClient, POStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-/**
- * Membuat Purchase Order baru
- */
 export const createPurchaseOrder = async (req: Request, res: Response): Promise<void> => {
   try {
     const { nomorPO, tanggalPO, lokasiPO, keterangan, permintaanId } = req.body;
@@ -35,10 +32,6 @@ export const createPurchaseOrder = async (req: Request, res: Response): Promise<
     res.status(500).json({ error: "Terjadi kesalahan saat membuat Purchase Order" });
   }
 };
-
-/**
- * Mendapatkan semua Purchase Order
- */
 export const getAllPurchaseOrders = async (req: Request, res: Response): Promise<void> => {
   try {
     const purchaseOrders = await prisma.purchaseOrder.findMany({
@@ -52,39 +45,43 @@ export const getAllPurchaseOrders = async (req: Request, res: Response): Promise
   }
 };
 
-/**
- * Mendapatkan Purchase Order berdasarkan ID
- */
 export const getPurchaseOrderById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const parsedId = Number(id);
-
-    if (isNaN(parsedId)) {
-      res.status(400).json({ error: "ID tidak valid" });
-      return;
+    try {
+      const { id } = req.params;
+      const parsedId = Number(id);
+  
+      if (isNaN(parsedId)) {
+        res.status(400).json({ error: "ID tidak valid" });
+        return;
+      }
+  
+      const purchaseOrder = await prisma.purchaseOrder.findUnique({
+        where: { id: parsedId },
+        include: {
+          permintaan: {
+            include: {
+              detail: {
+                include: {
+                  material: true, // Ambil detail material dari PL
+                },
+              },
+            },
+          },
+        },
+      });
+  
+      if (!purchaseOrder) {
+        res.status(404).json({ error: "Purchase Order tidak ditemukan" });
+        return;
+      }
+  
+      res.status(200).json(purchaseOrder);
+    } catch (error) {
+      console.error("Gagal mengambil Purchase Order:", error);
+      res.status(500).json({ error: "Terjadi kesalahan saat mengambil Purchase Order" });
     }
-
-    const purchaseOrder = await prisma.purchaseOrder.findUnique({
-      where: { id: parsedId },
-      include: { permintaan: true },
-    });
-
-    if (!purchaseOrder) {
-      res.status(404).json({ error: "Purchase Order tidak ditemukan" });
-      return;
-    }
-
-    res.status(200).json(purchaseOrder);
-  } catch (error) {
-    console.error("Gagal mengambil Purchase Order:", error);
-    res.status(500).json({ error: "Terjadi kesalahan saat mengambil Purchase Order" });
-  }
-};
-
-/**
- * Mengupdate status Purchase Order
- */
+  };
+  
 export const updatePurchaseOrderStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -113,9 +110,6 @@ export const updatePurchaseOrderStatus = async (req: Request, res: Response): Pr
   }
 };
 
-/**
- * Menghapus Purchase Order
- */
 export const deletePurchaseOrder = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
