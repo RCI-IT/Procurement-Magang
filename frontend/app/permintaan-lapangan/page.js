@@ -23,7 +23,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
   );
 
   const toggleAddForm = () => {
-    setIsAddFormVisible(!isAddFormVisible);
+    router.push("/permintaan-lapangan/add");
   };
 
   const handleAddPermintaan = (newData) => {
@@ -145,11 +145,12 @@ export default function PermintaanLapangan({ setActiveContent }) {
             className="border border-gray-300 rounded px-4 py-2"
           />
           <button
-            onClick={toggleAddForm}
-            className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
-          >
-            Tambah Permintaan
-          </button>
+  onClick={() => router.push("/permintaan-lapangan/add")}
+  className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
+>
+  Tambah Permintaan
+</button>
+
         </div>
       </div>
 
