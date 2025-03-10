@@ -3,14 +3,13 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import AddMaterialForm from "./add/page";
+
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [rowsToShow] = useState(5);
-  const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
@@ -92,13 +91,12 @@ export default function Material() {
             className="border border-gray-300 rounded px-2 py-1"
           />
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => router.push("/material/add")}
             className="bg-blue-500 text-white rounded px-4 py-2"
           >
-            {showForm ? "Batal Tambah" : "+ Material"}
+            + Material
           </button>
         </div>
-        {showForm && <AddMaterialForm addMaterial={fetchData} />}
 
         <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
           <thead className="bg-blue-500 text-white">
