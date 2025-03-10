@@ -41,6 +41,8 @@ export default function MainPage() {
         );
       case "purchase-order":
         return <PurchaseOrder />;
+        case "confirmation-order":
+        return <ConfirmationOrder />;
       case "material":
         return <Material />;
       case "setting":
