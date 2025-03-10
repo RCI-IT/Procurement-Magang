@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "../../../component/sidebar"; 
+import Sidebar from "../../../component/sidebar";
 
 export default function AddPurchaseOrder() {
   const [formData, setFormData] = useState({
@@ -56,7 +56,7 @@ export default function AddPurchaseOrder() {
         <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 shadow-md rounded-lg">
           <div className="grid grid-cols-2 gap-4 border-b pb-4">
             <div>
-              <label className="block font-medium">Tanggal:</label>
+              <label className="block font-medium">Tanggal PO:</label>
               <input type="date" name="tanggal" value={formData.tanggal} onChange={handleChange} className="border px-4 py-2 w-full" required />
             </div>
             <div>
@@ -64,55 +64,40 @@ export default function AddPurchaseOrder() {
               <input type="text" name="noPL" value={formData.noPL} onChange={handleChange} className="border px-4 py-2 w-full" required />
             </div>
             <div>
-              <label className="block font-medium">Nomor:</label>
+              <label className="block font-medium">Nomor PO:</label>
               <input type="text" name="nomor" value={formData.nomor} onChange={handleChange} className="border px-4 py-2 w-full" required />
-            </div>
-            <div>
-              <label className="block font-medium">Tanggal PL:</label>
-              <input type="date" name="tanggalPL" value={formData.tanggalPL} onChange={handleChange} className="border px-4 py-2 w-full" required />
             </div>
             <div>
               <label className="block font-medium">Proyek:</label>
               <input type="text" name="proyek" value={formData.proyek} onChange={handleChange} className="border px-4 py-2 w-full" required />
             </div>
-            <div>
-              <label className="block font-medium">Vendor:</label>
-              <input type="text" name="vendor" value={formData.vendor} onChange={handleChange} className="border px-4 py-2 w-full" required />
-            </div>
           </div>
-
           <div className="grid grid-cols-2 gap-4 border-b pb-4">
             <div>
               <label className="block font-medium">Kode Barang:</label>
               <input type="text" name="kodeBarang" value={formData.kodeBarang} onChange={handleChange} className="border px-4 py-2 w-full" required />
             </div>
-            <div>
-              <label className="block font-medium">Harga:</label>
-              <input type="number" name="harga" value={formData.harga} onChange={handleChange} className="border px-4 py-2 w-full" required />
-            </div>
-            <div>
-              <label className="block font-medium">Nama Barang:</label>
-              <input type="text" name="namaBarang" value={formData.namaBarang} onChange={handleChange} className="border px-4 py-2 w-full" required />
-            </div>
             <div className="flex space-x-2">
-              <div className="w-1/2">
-                <label className="block font-medium">Qty:</label>
-                <input type="number" name="qty" value={formData.qty} onChange={handleChange} className="border px-4 py-2 w-full" required />
-              </div>
-              <div className="w-1/2">
-                <label className="block font-medium">Satuan:</label>
-                <input type="text" name="satuan" value={formData.satuan} onChange={handleChange} className="border px-4 py-2 w-full" required />
-              </div>
             </div>
           </div>
 
-          <div className="text-lg font-semibold mt-4">
-            Total: <span className="text-blue-600">Rp{total.toLocaleString("id-ID")}</span>
-          </div>
+          {/* Tombol Selesai dan Kembali */}
+          <div className="flex flex-col gap-2 mt-4">
+          <button
+    type="button"
+    onClick={() => window.history.back()}
+    className="bg-gray-500 text-white px-4 py-2 rounded text-base w-40"
+  >
+    Kembali
+  </button>
 
-          <button type="submit" className="bg-blue-500 text-white px-6 py-2 rounded-md w-full hover:bg-blue-600">
-            Selesai
-          </button>
+  <button
+    type="submit"
+    className="bg-blue-500 text-white px-4 py-2 rounded text-base w-40"
+  >
+    Selesai
+  </button>
+          </div>
         </form>
       </div>
     </div>

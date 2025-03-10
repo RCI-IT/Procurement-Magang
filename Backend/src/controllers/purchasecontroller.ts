@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient, POStatus } from '@prisma/client';
+import { PrismaClient, POStatus, Vendors } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -46,42 +46,81 @@ export const getAllPurchaseOrders = async (req: Request, res: Response): Promise
 };
 
 export const getPurchaseOrderById = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const parsedId = Number(id);
-  
-      if (isNaN(parsedId)) {
-        res.status(400).json({ error: "ID tidak valid" });
-        return;
-      }
-  
-      const purchaseOrder = await prisma.purchaseOrder.findUnique({
-        where: { id: parsedId },
-        include: {
-          permintaan: {
-            include: {
-              detail: {
-                include: {
-                  material: true, // Ambil detail material dari PL
+  try {
+    const { id } = req.params;
+    const parsedId = Number(id);
+
+    if (isNaN(parsedId)) {
+      res.status(400).json({ error: "ID tidak valid" });
+      return;
+    }
+
+    // 1️⃣ Ambil Purchase Order
+    const purchaseOrder = await prisma.purchaseOrder.findUnique({
+      where: { id: parsedId },
+      include: {
+        permintaan: {
+          include: {
+            detail: {
+              include: {
+                material: {
+                  include: {
+                    vendor: true, // ✅ Ambil data vendor dari material
+                  },
                 },
               },
             },
           },
         },
-      });
-  
-      if (!purchaseOrder) {
-        res.status(404).json({ error: "Purchase Order tidak ditemukan" });
-        return;
-      }
-  
-      res.status(200).json(purchaseOrder);
-    } catch (error) {
-      console.error("Gagal mengambil Purchase Order:", error);
-      res.status(500).json({ error: "Terjadi kesalahan saat mengambil Purchase Order" });
+      },
+    });
+    
+
+    if (!purchaseOrder) {
+      res.status(404).json({ error: "Purchase Order tidak ditemukan" });
+      return;
     }
-  };
-  
+
+    // 2️⃣ Ambil Semua Vendor Berdasarkan vendorId dari Material
+    const vendorIds = purchaseOrder.permintaan?.detail
+      ?.map((detail) => detail.material.vendorId)
+      ?.filter((id, index, self) => id && self.indexOf(id) === index) ?? [];
+
+    const vendors = await prisma.vendors.findMany({
+      where: {
+        id: { in: vendorIds },
+      },
+    });
+
+    // 3️⃣ Gabungkan Data Vendor ke dalam Material
+    const vendorMap = vendors.reduce<Record<number, Vendors>>((acc, vendor) => {
+      acc[vendor.id] = vendor;
+      return acc;
+    }, {});
+
+    const updatedPurchaseOrder = {
+      ...purchaseOrder,
+      permintaan: {
+        ...purchaseOrder.permintaan,
+        detail: purchaseOrder.permintaan?.detail?.map((detail) => ({
+          ...detail,
+          material: {
+            ...detail.material,
+            vendor: vendorMap[detail.material.vendorId] || null,
+          },
+        })) ?? [],
+      },
+    };
+
+    // 4️⃣ Kirim Data ke Frontend
+    res.status(200).json(updatedPurchaseOrder);
+  } catch (error) {
+    console.error("Gagal mengambil Purchase Order:", error);
+    res.status(500).json({ error: "Terjadi kesalahan saat mengambil Purchase Order" });
+  }
+};
+
+
 export const updatePurchaseOrderStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
