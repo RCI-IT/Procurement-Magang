@@ -112,7 +112,7 @@ const terbilang = (angka) => {
       </div>
 
       <div className="border-b-4 border-blue-600 mt-4"></div>
-  <div className=" p-4 bg-white mt-4">
+<div className=" p-4 bg-white mt-4">
   <h3 className="text-gray-600 text-sm">Vendor :</h3>
   
   <div className="flex justify-between items-center">
@@ -155,7 +155,7 @@ const terbilang = (angka) => {
         <tr key={index} className="border">
         <td className="border p-2">{index + 1}</td>
         <td className="border p-2">{item.code || "N/A"}</td>
-        <td className="border p-2 text-left">{item.material.name || "N/A"}</td>
+        <td className="border p-2 text-center">{item.material.name || "N/A"}</td>
         <td className="border p-2">Rp{item.material.price?.toLocaleString() || "0"}</td>
         <td className="border p-2">{item.qty || "0"}</td>
         <td className="border p-2">{item.satuan || "N/A"}</td>
