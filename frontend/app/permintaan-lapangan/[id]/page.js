@@ -5,34 +5,62 @@ import { useEffect, useState } from "react";
 import Sidebar from "../../../component/sidebar";
 import html2pdf from "html2pdf.js";
 
-
 export default function DetailPermintaanLapangan() {
   const { id } = useParams();
   const router = useRouter();
   const [data, setData] = useState(null);
 
+  const parseDate = (dateString) => {
+    if (!dateString) return { day: "-", month: "-", year: "-" };
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return { day: "-", month: "-", year: "-" };
+
+    const day = date.getDate().toString().padStart(2, "0");
+    const monthNames = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    return { day, month, year };
+  };
+
   const handleEdit = () => {
-  router.push(`/permintaan-lapangan/${id}/edit`);
-};
+    router.push(`/permintaan-lapangan/${id}/edit`);
+  };
 
-const handlePrint = () => {
-  window.print();
-};
+  const handlePrint = () => {
+    window.print();
+  };
 
-const handleDownloadPDF = () => {
-  const element = document.getElementById("permintaan-lapangan");
-  html2pdf().from(element).save("permintaan-lapangan.pdf");
-};
+  const handleDownloadPDF = () => {
+    setTimeout(() => {
+      const element = document.getElementById("permintaan-lapangan");
+      if (!element) {
+        console.error("Element not found!");
+        return;
+      }
+      html2pdf()
+        .set({
+          margin: 10,
+          filename: `permintaan-lapangan-${id || "unknown"}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        })
+        .from(element)
+        .save();
+    }, 500);
+  };
+
   useEffect(() => {
     if (!id) return;
-
     const fetchData = async () => {
       try {
         const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`);
         const result = await response.json();
-        
         if (result) {
-          setData(result);  
+          setData(result);
         } else {
           router.push("/?page=permintaan-lapangan");
         }
@@ -41,55 +69,30 @@ const handleDownloadPDF = () => {
         router.push("/?page=permintaan-lapangan");
       }
     };
-
-    fetchData(); 
+    fetchData();
   }, [id, router]);
+
   if (!data) return <p className="text-red-500 text-center mt-10">Data tidak ditemukan</p>;
 
-  const parseDate = (dateString) => {
-    if (!dateString) return { day: "-", month: "-", year: "-" }; 
-    
-    const date = new Date(dateString);
-    if (isNaN(date)) return { day: "-", month: "-", year: "-" }; 
-  
-    const day = date.getDate().toString().padStart(2, "0"); 
-    const monthIndex = date.getMonth();
-    const year = date.getFullYear();
-  
-    const months = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-    ];
-  
-    return { day, month: months[monthIndex], year };
-  };
-  
-  const { day, month, year } = parseDate(data.tanggal);
-  
+  const { day, month, year } = parseDate(data?.tanggal);
 
   return (
     <div className="flex h-screen">
       <Sidebar />
       <div className="flex-1 p-6">
         <div className="flex justify-end space-x-2">
-  <button 
-    onClick={handleEdit} 
-    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32">
-    Edit
-  </button>
-  <button 
-    onClick={handlePrint} 
-    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
-    Cetak
-  </button>
-  <button 
-    onClick={handleDownloadPDF} 
-    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32">
-    Simpan PDF
-  </button>
-</div>
+          <button onClick={handleEdit} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32">
+            Edit
+          </button>
+          <button onClick={handlePrint} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
+            Cetak
+          </button>
+          <button onClick={handleDownloadPDF} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32">
+            Download PDF
+          </button>
+        </div>
 
-        <div className="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-6">
+        <div id="permintaan-lapangan" className="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-6">
         <div className="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-6">
   <div className="flex justify-between items-center border-b pb-3">
     <h1 className="text-lg font-bold text-blue-900 uppercase">Company Name</h1>

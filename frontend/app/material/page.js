@@ -146,13 +146,13 @@ export default function Material() {
                         onClick={() => handleMaterialClick(material.id)}
                         className="bg-blue-500 text-white rounded px-2 py-1"
                       >
-                        Lihat
+                        👁
                       </button>
                       <button
                         onClick={() => handleDelete(material.id)}
                         className="bg-red-500 text-white rounded px-2 py-1 ml-2"
                       >
-                        Hapus
+                        🗑
                       </button>
                     </td>
                   </tr>
