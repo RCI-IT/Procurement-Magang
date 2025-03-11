@@ -4,6 +4,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Sidebar from "../../../component/sidebar";
 import html2pdf from "html2pdf.js";
+import "../../../styles/globals.css";
+
 
 export default function DetailPermintaanLapangan() {
   const { id } = useParams();
@@ -75,6 +77,15 @@ export default function DetailPermintaanLapangan() {
   if (!data) return <p className="text-red-500 text-center mt-10">Data tidak ditemukan</p>;
 
   const { day, month, year } = parseDate(data?.tanggal);
+
+  <style jsx>{`
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+  }
+`}</style>
+
 
   return (
     <div className="flex h-screen">
@@ -234,11 +245,13 @@ export default function DetailPermintaanLapangan() {
 
           <div className="text-right mt-6">
           <button
+  id="kembali-btn"
   onClick={() => router.push("/?page=permintaan-lapangan")}
   className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 no-print"
 >
   Kembali
 </button>
+
 
 
           </div>

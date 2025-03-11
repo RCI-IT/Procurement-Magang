@@ -1,25 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../../component/sidebar";
 
 export default function AddPurchaseOrder() {
   const [formData, setFormData] = useState({
-    tanggalPO: "",
+    tanggal: { day: "", month: "", year: "" },
     nomorPO: "",
     proyek: "",
     noPL: "",
   });
 
   const [items, setItems] = useState([{ kodeBarang: "" }]);
+  const [permintaanLapangan, setPermintaanLapangan] = useState([]);
   const router = useRouter();
+
+  // Fetch data Permintaan Lapangan saat komponen dimuat
+  useEffect(() => {
+    const fetchPermintaanLapangan = async () => {
+      try {
+        const response = await fetch("http://192.168.110.204:5000/permintaan-lapangan");
+        const data = await response.json();
+        console.log("Data Permintaan Lapangan:", data); // Debugging
+        setPermintaanLapangan(data);
+      } catch (error) {
+        console.error("Gagal mengambil data Permintaan Lapangan:", error);
+      }
+    };
+  
+    fetchPermintaanLapangan();
+  }, []);
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    
+    console.log(`Field diubah: ${name}, Nilai: ${value}`); // Debugging
+  
+    setFormData((prevState) => {
+      if (name.startsWith("tanggal.")) {
+        const field = name.split(".")[1];
+        return {
+          ...prevState,
+          tanggal: { ...prevState.tanggal, [field]: value },
+        };
+      }
+      return { ...prevState, [name]: value };
+    });
   };
-
+  
+  
   const handleItemChange = (index, e) => {
     const { name, value } = e.target;
     const newItems = [...items];
@@ -33,6 +64,9 @@ export default function AddPurchaseOrder() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    console.log("Data yang dikirim:", { ...formData, items }); // Debugging
+  
     try {
       await fetch("http://192.168.110.204:5000/purchase-orders", {
         method: "POST",
@@ -44,6 +78,7 @@ export default function AddPurchaseOrder() {
       console.error("Gagal menambah PO:", error);
     }
   };
+  
 
   return (
     <div className="flex h-screen">
@@ -54,13 +89,68 @@ export default function AddPurchaseOrder() {
         <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 shadow-md rounded-lg">
           <div className="grid grid-cols-2 gap-4 border-b pb-4">
             <div>
-              <label className="block font-medium">Tanggal PO:</label>
-              <input type="date" name="tanggalPO" value={formData.tanggalPO} onChange={handleChange} className="border px-4 py-2 w-full" required />
+              <label className="block font-medium mb-2">Tanggal:</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  name="tanggal.day"
+                  placeholder="day"
+                  value={formData.tanggal.day}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded px-2 py-1 w-16"
+                />
+                <span>/</span>
+                <select
+                  name="tanggal.month"
+                  value={formData.tanggal.month}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded px-2 py-1 w-auto min-w-[80px]"
+                >
+                  <option value="">month</option>
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {new Date(0, i).toLocaleString("id-ID", { month: "long" })}
+                    </option>
+                  ))}
+                </select>
+                <span>/</span>
+                <select
+                  name="tanggal.year"
+                  value={formData.tanggal.year}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded px-2 py-1 w-24"
+                >
+                  <option value="">year</option>
+                  {Array.from({ length: new Date().getFullYear() - 2018 }, (_, i) => (
+                    <option key={2019 + i} value={2019 + i}>
+                      {2019 + i}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div>
-              <label className="block font-medium">No. PL:</label>
-              <input type="text" name="noPL" value={formData.noPL} onChange={handleChange} className="border px-4 py-2 w-full" required />
-            </div>
+
+            {/* Dropdown untuk memilih No. PL */}
+            <select
+  name="noPL"
+  value={formData.noPL}
+  onChange={handleChange}
+  className="border px-4 py-2 w-full"
+  required
+>
+  <option value="">Pilih Nomor PL</option>
+  {permintaanLapangan.length > 0 ? (
+    permintaanLapangan.map((pl) => (
+      <option key={pl.id} value={pl.nomor}>
+        {pl.nomor}
+      </option>
+    ))
+  ) : (
+    <option disabled>Data PL tidak ditemukan</option>
+  )}
+</select>
+
+
             <div>
               <label className="block font-medium">Nomor PO:</label>
               <input type="text" name="nomorPO" value={formData.nomorPO} onChange={handleChange} className="border px-4 py-2 w-full" required />
