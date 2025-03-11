@@ -69,8 +69,8 @@ const terbilang = (angka) => {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
-    <div className="p-6 max-w-6xl mx-auto bg-white shadow-md rounded-md">
+      <div> <Sidebar /></div>
+      <div className="w-full max-w-6xl mx-auto px-8">
       {/* Header dengan Tombol Aksi */}
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-xl font-bold text-gray-600">COMPANY NAME</h2>
