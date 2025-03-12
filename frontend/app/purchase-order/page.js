@@ -41,9 +41,9 @@ const PurchaseOrderTable = () => {
   }, [search, data]);
 
   return (
-    <div className="p-4 bg-white shadow-md rounded-md">
+    <div className="p-4 bg-white shadow-md rounded-md"><br></br>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold">Purchase Order</h2>
+        <h1 className="text-3xl font-bold">Purchase Order</h1>
         <div className="flex gap-2">
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -82,7 +82,12 @@ const PurchaseOrderTable = () => {
                 <tr key={po.id} className="text-center border">
                   <td className="border p-2">{index + 1}</td>
                   <td className="border p-2">{po.nomorPO}</td>
-                  <td className="border p-2">{new Date(po.tanggalPO).toLocaleDateString()}</td>
+                  <td className="border p-2">{po.tanggalPO ? new Date(po.tanggalPO).toLocaleDateString("id-ID", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  }): "N/A"}
+                  </td>
                   <td className="border p-2">{po.lokasiPO}</td>
                   <td className="border p-2">
                     <button

@@ -71,6 +71,7 @@ const terbilang = (angka) => {
     <div className="flex h-screen">
       <div> <Sidebar /></div>
       <div className="w-full max-w-6xl mx-auto px-8">
+        <br></br>     <br></br>
       {/* Header dengan Tombol Aksi */}
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-xl font-bold text-gray-600">COMPANY NAME</h2>
@@ -92,8 +93,10 @@ const terbilang = (angka) => {
             </tr>
             <tr className="border">
               <td className="border px-4 py-2 font-semibold">Tanggal</td>
-              <td className="border px-4 py-2">
-                {poDetail?.tanggalPO ? new Date(poDetail.tanggalPO).toLocaleDateString("id-ID") : "N/A"}
+              <td className="border px-4 py-2">{poDetail?.tanggalPO? new Date(poDetail.tanggalPO).toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",}) : "N/A"}
               </td>
             </tr>
             <tr className="border">
@@ -102,9 +105,12 @@ const terbilang = (angka) => {
             </tr>
             <tr className="border">
               <td className="border px-4 py-2 font-semibold">Tanggal PL</td>
-              <td className="border px-4 py-2">
-                {poDetail?.permintaan?.tanggal ? new Date(poDetail.permintaan.tanggal).toLocaleDateString("id-ID") : "N/A"}
+              <td className="border px-4 py-2">{poDetail?.permintaan?.tanggal? new Date(poDetail.permintaan.tanggal).toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",}) : "N/A"}
               </td>
+
             </tr>
             <tr className="border">
               <td className="border px-4 py-2 font-semibold">Proyek</td>
@@ -119,17 +125,17 @@ const terbilang = (angka) => {
   <h3 className="text-gray-600 text-sm">Vendor :</h3>
   
   <div className="flex justify-between items-center">
-  <p className="text-lg font-bold text-gray-900 flex-1">{poDetail?.vendor?.name || "Nama Vendor"}</p>
+  <p className="text-lg font-bold text-gray-900 flex-1">{poDetail?.permintaan?.detail?.[0]?.material?.vendor?.name || "Nama Vendor"}</p>
 
     <div className="flex items-center space-x-6 text-gray-600 text-sm">
     <div className="flex flex-col items-end text-gray-600 text-sm">
     <div className="flex items-center space-x-1">
     <span className="text-green-500">📞</span>
-    <span>{poDetail?.vendor?.kontak || "-"}</span>
+    <span>{poDetail?.permintaan?.detail?.[0]?.material?.vendor?.phone || "-"}</span>
   </div>
   <div className="flex items-center space-x-1 mt-1">
     <span className="text-red-500">📍</span>
-    <span>{poDetail?.vendor?.alamat || "Alamat tidak tersedia"}</span>
+    <span>{poDetail?.permintaan?.detail?.[0]?.material?.vendor?.address|| "Alamat tidak tersedia"}</span>
   </div>
 </div>
 
@@ -227,7 +233,7 @@ const terbilang = (angka) => {
 
   </tbody>
 </table>
-
+<br></br>
 
     </div>
     </div>
