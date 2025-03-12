@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+  header, footer {
+    display: none !important;
+  }
+  th {
+    background-color: #0d6efd !important; /* Warna biru */
+    color: white !important; /* Warna teks putih */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Sembunyikan elemen sidebar dan tombol saat print */
+  .no-print,
+  .sidebar {
+    display: none !important;
+  }
+
+  /* Pastikan hanya konten utama yang dicetak */
+  body *:not(.print-area) {
+    visibility: hidden;
+    -webkit-print-color-adjust: exact;
+  }
+
+  div {
+    color: black !important;
+  }
+
+  header, footer, nav {
+    display: none !important;
+  }
+  .remove-on-print,
+  header,
+  footer,
+  nav,
+  [class*="print-hide"],
+  .next-app-header,
+  .browser-header,
+  .browser-footer {
+    display: none !important;
+  }
+  #permintaan-lapangan,
+  #permintaan-lapangan *,
+  #purchase-order,
+  #purchase-order * {
+    visibility: visible;
+  }
+
+  /* Pastikan elemen yang dicetak tetap dalam layout yang baik */
+  #permintaan-lapangan {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  .print-area, .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+  body {
+    visibility: hidden;
+    -webkit-print-color-adjust: exact;
+  }
+
+  #purchase-order {
+    position: auto;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
+.pdf-format {
+  font-size: 12px; /* Ukuran font tetap, bisa disesuaikan */
+  width: 100%;
+  padding: 10px; /* Tambah sedikit padding agar lebih rapi */
+}
+
+.pdf-format table {
+  width: 100%;
+}
+
+.pdf-format th, 
+.pdf-format td {
+  padding: 10px 12px; /* Tambah padding agar tidak terlalu menempel ke garis */
+  text-align: auto;
+}
+
+/* Header lebih rapi dan proporsional */
+.pdf-format .header {
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+/* Area tanda tangan lebih rapi */
+.pdf-format .signature-box {
+  height: 60px; /* Ukuran tetap tapi proporsional */
+  text-align: center;
+  vertical-align: bottom;
+}
+
+/* Styling tambahan untuk bagian tanda tangan */
+.pdf-format .signature-table td {
+  text-align: center;
+  font-weight: bold;
+  padding-top: 15px;
+  padding-bottom: 10px; /* Tambahkan jarak di bawah */
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
