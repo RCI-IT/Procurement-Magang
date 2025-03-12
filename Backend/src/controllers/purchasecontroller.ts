@@ -7,8 +7,22 @@ export const createPurchaseOrder = async (req: Request, res: Response): Promise<
   try {
     const { nomorPO, tanggalPO, lokasiPO, keterangan, permintaanId } = req.body;
 
+    // **1. Validasi Input**
+    if (!nomorPO || !tanggalPO || !lokasiPO || !permintaanId) {
+      res.status(400).json({ error: "Semua field wajib diisi" });
+      return;
+    }
+
+    // **2. Validasi Format Tanggal**
+    const parsedTanggal = new Date(tanggalPO);
+    if (isNaN(parsedTanggal.getTime())) {
+      res.status(400).json({ error: "Format tanggal tidak valid" });
+      return;
+    }
+
+    // **3. Periksa apakah Permintaan Lapangan ada**
     const existingPermintaan = await prisma.permintaanLapangan.findUnique({
-      where: { id: permintaanId },
+      where: { id: Number(permintaanId) },
     });
 
     if (!existingPermintaan) {
@@ -16,13 +30,14 @@ export const createPurchaseOrder = async (req: Request, res: Response): Promise<
       return;
     }
 
+    // **4. Buat Purchase Order**
     const newPO = await prisma.purchaseOrder.create({
       data: {
         nomorPO,
-        tanggalPO: new Date(tanggalPO),
+        tanggalPO: parsedTanggal,
         lokasiPO,
         keterangan,
-        permintaan: { connect: { id: permintaanId } },
+        permintaan: { connect: { id: Number(permintaanId) } },
       },
     });
 
@@ -44,7 +59,6 @@ export const getAllPurchaseOrders = async (req: Request, res: Response): Promise
     res.status(500).json({ error: "Terjadi kesalahan saat mengambil Purchase Order" });
   }
 };
-
 export const getPurchaseOrderById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -119,8 +133,6 @@ export const getPurchaseOrderById = async (req: Request, res: Response): Promise
     res.status(500).json({ error: "Terjadi kesalahan saat mengambil Purchase Order" });
   }
 };
-
-
 export const updatePurchaseOrderStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -148,7 +160,6 @@ export const updatePurchaseOrderStatus = async (req: Request, res: Response): Pr
     res.status(500).json({ error: "Terjadi kesalahan saat memperbarui status Purchase Order" });
   }
 };
-
 export const deletePurchaseOrder = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
