@@ -20,7 +20,7 @@ export default function AddPurchaseOrder() {
   useEffect(() => {
     const fetchPermintaanLapangan = async () => {
       try {
-        const response = await fetch("http://192.168.110.204:5000/permintaan-lapangan");
+        const response = await fetch("http://192.168.110.204:5000/permintaan");
         const data = await response.json();
         console.log("Data Permintaan Lapangan:", data); // Debugging
         setPermintaanLapangan(data);
