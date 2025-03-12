@@ -34,6 +34,7 @@ export default function DetailPermintaanLapangan() {
   const handlePrint = () => {
     window.print();
   };
+  
 
   const handleDownloadPDF = () => {
     setTimeout(() => {
@@ -78,64 +79,57 @@ export default function DetailPermintaanLapangan() {
 
   const { day, month, year } = parseDate(data?.tanggal);
 
-  <style jsx>{`
-  @media print {
-    .no-print {
-      display: none !important;
-    }
-  }
-`}</style>
-
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
-      <div className="flex-1 p-6">
-        <div className="flex justify-end space-x-2">
-          <button onClick={handleEdit} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32">
-            Edit
-          </button>
-          <button onClick={handlePrint} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
-            Cetak
-          </button>
-          <button onClick={handleDownloadPDF} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32">
-            Download PDF
-          </button>
-        </div>
-
-        <div id="permintaan-lapangan" className="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-6">
-        <div className="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-6">
-  <div className="flex justify-between items-center border-b pb-3">
-    <h1 className="text-lg font-bold text-blue-900 uppercase">Company Name</h1>
-    <h2 className="text-lg font-bold text-blue-900 uppercase">Permintaan Lapangan</h2>
-    <div className="border border-gray-400 text-sm">
-      <table className="border-collapse w-full">
-        <tbody>
-          <tr>
-            <td className="border border-gray-400 px-2 py-1 font-semibold">Tanggal</td>
-            <td className="border border-gray-400 px-2 py-1">{day} {month} {year}</td>
-          </tr>
-          <tr>
-            <td className="border border-gray-400 px-2 py-1 font-semibold">Nomor</td>
-            <td className="border border-gray-400 px-2 py-1">{data.nomor}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <Sidebar className="no-print" />  
+    <div className="flex-1 p-6">
+      {/* Tombol harus tidak dicetak */}
+      <div className="flex justify-end space-x-2 no-print">
+        <button onClick={handleEdit} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32">
+          Edit
+        </button>
+        <button onClick={handlePrint} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
+          Cetak
+        </button>
+        <button onClick={handleDownloadPDF} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32">
+          Download PDF
+        </button>
+      </div>
+  
+      {/* Elemen yang akan dicetak */}
+      <div id="permintaan-lapangan" className="print-container  mx-auto bg-white rounded-lg p-6"> 
+        <div className="border-b-4 border-blue-600 mt-4">
+        <div className="flex justify-between items-center pb-3">
+  <h1 className="text-lg font-bold text-blue-900 uppercase">Company Name</h1>
+  <h2 className="text-lg font-bold text-blue-900 uppercase">Permintaan Lapangan</h2>
+  <div className="border border-gray-300 text-sm">
+    <table className="border-collapse w-full">
+      <tbody>
+        <tr>
+          <td className="border border-gray-300 px-2 py-1 font-semibold">Tanggal</td>
+          <td className="border border-gray-300 px-2 py-1">{day} {month} {year}</td>
+        </tr>
+        <tr>
+          <td className="border border-gray-300 px-2 py-1 font-semibold">Nomor</td>
+          <td className="border border-gray-300 px-2 py-1">{data.nomor}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
-
-          <br></br>
+</div>       
+         <br></br>
           <br></br>
           <table className="w-full border-collapse mt-4 text-sm border border-gray-300">
   <thead className="bg-blue-700 text-white">
     <tr>
-      <th rowSpan="2" className="border border-white p-2 text-center">No.</th>
-      <th rowSpan="2" className="border border-white p-2 text-center">Nama Barang / Jasa</th>
-      <th rowSpan="2" className="border border-white p-2 text-center">Spesifikasi</th>
-      <th rowSpan="2" className="border border-white p-2 text-center">code</th>
-      <th colSpan="2" className="border border-white p-2 text-center" >Permintaan</th>
-      <th rowSpan="2" className="border border-white p-2 text-center">Keterangan</th>
+      <th rowSpan="2" className="border border-gray-300 px-2 text-center">No.</th>
+      <th rowSpan="2" className="border border-gray-300 px-2 text-center">Nama Barang / Jasa</th>
+      <th rowSpan="2" className="border border-gray-300 px-2 text-center">Spesifikasi</th>
+      <th rowSpan="2" className="border border-gray-300 px-2 text-center">code</th>
+      <th colSpan="2" className="border border-gray-300 p-2 text-center" >Permintaan</th>
+      <th rowSpan="2" className="border border-gray-300 px-2 text-center">Keterangan</th>
     </tr>
     <tr>  
     <th className="border border- p-2 text-center">QTY</th>
@@ -147,7 +141,7 @@ export default function DetailPermintaanLapangan() {
       data.detail.map((item, index) => (
         <tr key={index} className="text-center">
           <td className="border border-gray-300 p-2">{index + 1}</td>
-          <td className="border border-gray-300 p-2">{item.materialId}</td>
+          <td className="border border-gray-300 p-2">{item.material?.name || "Nama Material Tidak Tersedia"}</td>
           <td className="border border-gray-300 p-2">{item.mention}</td>
           <td className="border border-gray-300 p-2">{item.code}</td>
           <td className="border border-gray-300 p-2">{item.qty}</td>

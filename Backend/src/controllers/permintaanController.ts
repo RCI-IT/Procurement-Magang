@@ -86,7 +86,12 @@ export const getPermintaanById = async (req: Request, res: Response): Promise<vo
     // Cari permintaan berdasarkan ID
     const permintaan = await prisma.permintaanLapangan.findUnique({
       where: { id: parsedId },
-      include: { detail: true },
+      include: { 
+        detail: { 
+          include: { material: true } // Menyertakan detail material
+        } 
+      }
+      
     });
 
     if (!permintaan) {

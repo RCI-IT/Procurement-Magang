@@ -3,12 +3,17 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Sidebar from "../../../component/sidebar";
+import "../../../styles/globals.css";
 
 export default function PurchaseOrderDetail() {
   const { id } = useParams();
   const [poDetail, setPoDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const handlePrint = () => {
+    window.print();
+  };
 // Fungsi untuk mengonversi angka menjadi teks bahasa Indonesia
 const terbilang = (angka) => {
   const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
@@ -69,75 +74,91 @@ const terbilang = (angka) => {
 
   return (
     <div className="flex h-screen">
-      <div> <Sidebar /></div>
+      <div className="no-print"> <Sidebar /></div>
       <div className="w-full max-w-6xl mx-auto px-8">
-      {/* Header dengan Tombol Aksi */}
-      <div className="flex justify-between items-center border-b pb-4">
-        <h2 className="text-xl font-bold text-gray-600">COMPANY NAME</h2>
-        <h2 className="text-xl font-bold text-gray-800">PURCHASE ORDER</h2>
-        <div className="space-x-2">
-          <button className="bg-blue-500 text-white px-4 py-2 rounded">Edit</button>
-          <button className="bg-green-500 text-white px-4 py-2 rounded">Cetak</button>
-          <button className="bg-red-500 text-white px-4 py-2 rounded">Simpan PDF</button>
+      <div className="text-right space-x-2">
+          <button className="no-print bg-blue-500 text-white px-4 py-2 rounded">Edit</button>
+          <button onClick={handlePrint} className="no-print bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
+          Cetak
+          </button>
+          <button className="no-print bg-red-500 text-white px-4 py-2 rounded">Simpan PDF</button>
         </div>
-      </div>
+        <br></br>     
+        <br></br>
+      <div id="purchase-order" className="border-t pb-4 flex items-center relative mt-4">
+  <h2 className="text-lg font-bold text-blue-900 uppercase">COMPANY NAME</h2>
+  <h2 className="text-lg font-bold text-blue-900 uppercase absolute left-1/2 transform -translate-x-1/2">
+    PURCHASE ORDER
+  </h2>
+    <div className="ml-auto pt-6">
+    <table className="border text-sm">
+      <tbody>
+        <tr className="border">
+          <td className="border px-4 py-2 font-semibold">Nomor</td>
+          <td className="border px-4 py-2">{poDetail?.nomorPO || "N/A"}</td>
+        </tr>
+        <tr className="border">
+          <td className="border px-4 py-2 font-semibold">Tanggal</td>
+          <td className="border px-4 py-2">
+            {poDetail?.tanggalPO
+              ? new Date(poDetail.tanggalPO).toLocaleDateString("id-ID", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })
+              : "N/A"}
+          </td>
+        </tr>
+        <tr className="border">
+          <td className="border px-4 py-2 font-semibold">Nomor PL</td>
+          <td className="border px-4 py-2">{poDetail?.permintaan?.nomor || "N/A"}</td>
+        </tr>
+        <tr className="border">
+          <td className="border px-4 py-2 font-semibold">Tanggal PL</td>
+          <td className="border px-4 py-2">
+            {poDetail?.permintaan?.tanggal
+              ? new Date(poDetail.permintaan.tanggal).toLocaleDateString("id-ID", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })
+              : "N/A"}
+          </td>
+        </tr>
+        <tr className="border">
+          <td className="border px-4 py-2 font-semibold">Proyek</td>
+          <td className="border px-4 py-2">{poDetail?.keterangan || "N/A"}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
-      {/* Informasi PO & PL */}
-      <div className="flex justify-end mt-4">
-        <table className="border text-sm">
-          <tbody>
-            <tr className="border">
-              <td className="border px-4 py-2 font-semibold">Nomor</td>
-              <td className="border px-4 py-2">{poDetail?.nomorPO || "N/A"}</td>
-            </tr>
-            <tr className="border">
-              <td className="border px-4 py-2 font-semibold">Tanggal</td>
-              <td className="border px-4 py-2">
-                {poDetail?.tanggalPO ? new Date(poDetail.tanggalPO).toLocaleDateString("id-ID") : "N/A"}
-              </td>
-            </tr>
-            <tr className="border">
-              <td className="border px-4 py-2 font-semibold">Nomor PL</td>
-              <td className="border px-4 py-2">{poDetail?.permintaan?.nomor || "N/A"}</td>
-            </tr>
-            <tr className="border">
-              <td className="border px-4 py-2 font-semibold">Tanggal PL</td>
-              <td className="border px-4 py-2">
-                {poDetail?.permintaan?.tanggal ? new Date(poDetail.permintaan.tanggal).toLocaleDateString("id-ID") : "N/A"}
-              </td>
-            </tr>
-            <tr className="border">
-              <td className="border px-4 py-2 font-semibold">Proyek</td>
-              <td className="border px-4 py-2">{poDetail?.keterangan || "N/A"}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
-      <div className="border-b-4 border-blue-600 mt-4"></div>
-<div className=" p-4 bg-white mt-4">
+      <div id="purchase-order" className="border-b-4 border-blue-600 mt-4"></div>
+<div id="purchase-order" className=" p-4 bg-white mt-4">
   <h3 className="text-gray-600 text-sm">Vendor :</h3>
   
   <div className="flex justify-between items-center">
-  <p className="text-lg font-bold text-gray-900 flex-1">{poDetail?.vendor?.name || "Nama Vendor"}</p>
+  <p className="text-lg font-bold text-gray-900 flex-1">{poDetail?.permintaan?.detail?.[0]?.material?.vendor?.name || "Nama Vendor"}</p>
 
     <div className="flex items-center space-x-6 text-gray-600 text-sm">
     <div className="flex flex-col items-end text-gray-600 text-sm">
     <div className="flex items-center space-x-1">
     <span className="text-green-500">📞</span>
-    <span>{poDetail?.vendor?.kontak || "-"}</span>
+    <span>{poDetail?.permintaan?.detail?.[0]?.material?.vendor?.phone || "-"}</span>
   </div>
   <div className="flex items-center space-x-1 mt-1">
     <span className="text-red-500">📍</span>
-    <span>{poDetail?.vendor?.alamat || "Alamat tidak tersedia"}</span>
+    <span>{poDetail?.permintaan?.detail?.[0]?.material?.vendor?.address|| "Alamat tidak tersedia"}</span>
   </div>
 </div>
 
     </div>
   </div>
 </div>
-<div className="border-b-4 border-blue-600 mt-2"></div>
-<table className="w-full border mt-4 text-center rounded-md">
+<div id="purchase-order" className="border-b-4 border-blue-600 mt-2"></div>
+<table id="purchase-order" className="w-full border mt-4 text-center rounded-md">
   <thead className="bg-blue-600 text-white">
     <tr>
       <th className="border p-2" rowSpan={2}>No.</th>
@@ -193,12 +214,12 @@ const terbilang = (angka) => {
 </table>
 
 
-<table className="w-full border mt-6">
+<table id="purchase-order" className="w-full border mt-6">
   <tbody>
 
     {/* Baris Keterangan & Header Tanda Tangan */}
     <tr className="text-center ">
-      <td rowSpan={4} className="border p-4 text-left align-top">Keterangan :</td>
+    <td rowSpan={4} className="border p-4 text-left align-top w-1/4 ">Keterangan :</td>
       <td className="bg-gray-300 font-semibold border p-2">Diperiksa</td>
       <td className="bg-gray-300 font-semibold border p-2 ">Diketahui</td>
       <td className="bg-gray-300 font-semibold border p-2">Dibuat</td>
@@ -206,16 +227,16 @@ const terbilang = (angka) => {
 
     {/* Baris Ruang Kosong untuk Tanda Tangan */}
     <tr>
-      <td className="border h-16"></td>
-      <td className="border h-16"></td>
-      <td className="border h-16"></td>
+      <td className="border-b-0 border h-24 w-1/4"></td>
+      <td className="border-b-0 border h-24 w-1/4"></td>
+      <td className="border-b-0 border h-24 w-1/4"></td>
     </tr>
 
     {/* Baris Nama */}
     <tr className="text-center">
-      <td className="border p-2 font-semibold">Nama</td>
-      <td className="border p-2 font-semibold">Nama</td>
-      <td className="border p-2 font-semibold">Nama</td>
+      <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
+      <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
+      <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
     </tr>
 
     {/* Baris Jabatan */}
@@ -227,7 +248,7 @@ const terbilang = (angka) => {
 
   </tbody>
 </table>
-
+<br></br>
 
     </div>
     </div>
