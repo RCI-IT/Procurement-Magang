@@ -92,8 +92,44 @@
     width: 100%;
   }
 }
+.pdf-format {
+  font-size: 12px; /* Ukuran font tetap, bisa disesuaikan */
+  width: 100%;
+  padding: 10px; /* Tambah sedikit padding agar lebih rapi */
+}
 
+.pdf-format table {
+  width: 100%;
+}
 
+.pdf-format th, 
+.pdf-format td {
+  padding: 10px 12px; /* Tambah padding agar tidak terlalu menempel ke garis */
+  text-align: auto;
+}
+
+/* Header lebih rapi dan proporsional */
+.pdf-format .header {
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+/* Area tanda tangan lebih rapi */
+.pdf-format .signature-box {
+  height: 60px; /* Ukuran tetap tapi proporsional */
+  text-align: center;
+  vertical-align: bottom;
+}
+
+/* Styling tambahan untuk bagian tanda tangan */
+.pdf-format .signature-table td {
+  text-align: center;
+  font-weight: bold;
+  padding-top: 15px;
+  padding-bottom: 10px; /* Tambahkan jarak di bawah */
+}
 
 body {
   color: var(--foreground);

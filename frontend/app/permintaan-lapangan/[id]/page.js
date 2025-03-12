@@ -39,22 +39,39 @@ export default function DetailPermintaanLapangan() {
   const handleDownloadPDF = () => {
     setTimeout(() => {
       const element = document.getElementById("permintaan-lapangan");
+      const backButton = document.getElementById("back-button");
+  
       if (!element) {
         console.error("Element not found!");
         return;
       }
+  
+      // Sembunyikan tombol kembali sebelum generate PDF
+      if (backButton) backButton.style.visibility = "hidden";
+  
+      // Tambahkan class untuk merapikan PDF sebelum generate
+      element.classList.add("pdf-format");
+  
       html2pdf()
         .set({
           margin: 10,
           filename: `permintaan-lapangan-${id || "unknown"}.pdf`,
           image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2 },
+          html2canvas: { scale: 2, useCORS: true },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         })
         .from(element)
-        .save();
+        .save()
+        .then(() => {
+          // Hapus class setelah PDF selesai dibuat
+          element.classList.remove("pdf-format");
+  
+          // Tampilkan kembali tombol setelah PDF selesai dibuat
+          if (backButton) backButton.style.visibility = "visible";
+        });
     }, 500);
   };
+  
 
   useEffect(() => {
     if (!id) return;
@@ -237,7 +254,7 @@ export default function DetailPermintaanLapangan() {
             </div>
           </div>
 
-          <div className="text-right mt-6">
+          <div id="back-button" className="text-right mt-6">
           <button
   id="kembali-btn"
   onClick={() => router.push("/?page=permintaan-lapangan")}
