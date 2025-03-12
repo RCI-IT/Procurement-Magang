@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Sidebar from "../../../component/sidebar";
 import "../../../styles/globals.css";
+import html2pdf from "html2pdf.js";
 
 export default function PurchaseOrderDetail() {
   const { id } = useParams();
@@ -14,7 +15,34 @@ export default function PurchaseOrderDetail() {
   const handlePrint = () => {
     window.print();
   };
-// Fungsi untuk mengonversi angka menjadi teks bahasa Indonesia
+
+const handleDownloadPDF = () => {
+  setTimeout(() => {
+    const headerElement = document.getElementById("purchase-order");
+    const noPrintElements = document.querySelectorAll(".no-print");
+
+    if (!headerElement) {
+      console.error("Header element not found!");
+      return;
+    }
+    noPrintElements.forEach(el => el.style.display = "none");
+
+    html2pdf()
+      .set({
+        margin: 10,
+        filename: `purchase-order${new Date().toISOString().slice(0, 10)}.pdf`,
+        image: { type: "png", quality: 1 },
+        html2canvas: { scale: 1 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait", size:"69" },
+      })
+      .from(headerElement)
+      .save()
+      .then(() => {
+        noPrintElements.forEach(el => el.style.display = "block");
+      });
+  }, 500);
+};
+
 const terbilang = (angka) => {
   const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
   const belasan = ["Sepuluh", "Sebelas", "Dua Belas", "Tiga Belas", "Empat Belas", "Lima Belas", "Enam Belas", "Tujuh Belas", "Delapan Belas", "Sembilan Belas"];
@@ -81,9 +109,12 @@ const terbilang = (angka) => {
           <button onClick={handlePrint} className="no-print bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
           Cetak
           </button>
-          <button className="no-print bg-red-500 text-white px-4 py-2 rounded">Simpan PDF</button>
+          <button onClick={handleDownloadPDF} className="no-print bg-red-500 text-white px-4 py-2 rounded">
+  Simpan PDF
+</button>
+
         </div>
-        <br></br>     
+        <br></br>
         <br></br>
       <div id="purchase-order" className="border-t pb-4 flex items-center relative mt-4">
   <h2 className="text-lg font-bold text-blue-900 uppercase">COMPANY NAME</h2>
@@ -162,7 +193,7 @@ const terbilang = (angka) => {
   <thead className="bg-blue-600 text-white">
     <tr>
       <th className="border p-2" rowSpan={2}>No.</th>
-      <th className="border p-2" rowSpan={2}>Kode</th>
+      <th className="border p-2" rowSpan={2}>Code</th>
       <th className="border p-2" rowSpan={2}>Nama Barang</th>
       <th className="border p-2" rowSpan={2}>Harga</th>
       <th className="border p-2 w-12 " colSpan="2">Permintaan</th>
@@ -193,8 +224,6 @@ const terbilang = (angka) => {
         <td colSpan={7} className="text-center p-4 text-gray-500">Tidak ada item</td>
       </tr>
     )}
-    
-    {/* Baris Terbilang */}
     <tr className="font-semibold">
       <td colSpan="4" className="bg-blue-600 text-white p-2 text-left">Terbilang</td>
       <td colSpan="2" rowSpan={2} className="p-2 text-center border">TOTAL</td>
@@ -205,7 +234,6 @@ const terbilang = (angka) => {
         {terbilang(totalHarga) || "-"}
       </td>
 </tr>
-    {/* Baris Total */}
     <tr className="bg-white font-bold">
       
 
@@ -216,40 +244,30 @@ const terbilang = (angka) => {
 
 <table id="purchase-order" className="w-full border mt-6">
   <tbody>
-
-    {/* Baris Keterangan & Header Tanda Tangan */}
     <tr className="text-center ">
     <td rowSpan={4} className="border p-4 text-left align-top w-1/4 ">Keterangan :</td>
       <td className="bg-gray-300 font-semibold border p-2">Diperiksa</td>
       <td className="bg-gray-300 font-semibold border p-2 ">Diketahui</td>
       <td className="bg-gray-300 font-semibold border p-2">Dibuat</td>
     </tr>
-
-    {/* Baris Ruang Kosong untuk Tanda Tangan */}
     <tr>
       <td className="border-b-0 border h-24 w-1/4"></td>
       <td className="border-b-0 border h-24 w-1/4"></td>
       <td className="border-b-0 border h-24 w-1/4"></td>
     </tr>
-
-    {/* Baris Nama */}
     <tr className="text-center">
       <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
       <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
       <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
     </tr>
-
-    {/* Baris Jabatan */}
     <tr className="text-center bg-gray-300">
       <td className="border p-2">Project Manager</td>
       <td className="border p-2">Site Manager</td>
       <td className="border p-2">Logistik</td>
     </tr>
-
   </tbody>
 </table>
 <br></br>
-
     </div>
     </div>
   );
