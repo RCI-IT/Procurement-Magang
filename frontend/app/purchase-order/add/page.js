@@ -36,7 +36,7 @@ export default function AddPurchaseOrder() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    console.log(`Field diubah: ${name}, Nilai: ${value}`); // Debugging
+    console.log(`Field diubah: ${name}, Nilai: ${value}`); 
   
     setFormData((prevState) => {
       if (name.startsWith("tanggal.")) {
