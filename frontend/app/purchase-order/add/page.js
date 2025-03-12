@@ -31,6 +31,11 @@ export default function AddPurchaseOrder() {
     setItems([...items, { kodeBarang: "" }]);
   };
 
+  const handleRemoveItem = (index) => {
+    const newItems = items.filter((_, i) => i !== index);
+    setItems(newItems);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -75,18 +80,28 @@ export default function AddPurchaseOrder() {
           <div className="border-b pb-4">
             <label className="block font-medium">Barang:</label>
             {items.map((item, index) => (
-              <div key={index} className="mt-4">
-                <label className="block font-medium">Kode Barang {index + 1}:</label>
-                <input
-                  type="text"
-                  name="kodeBarang"
-                  value={item.kodeBarang}
-                  onChange={(e) => handleItemChange(index, e)}
-                  className="border px-4 py-2 w-full"
-                  required
-                />
+              <div key={index} className="flex items-center gap-4 mt-4">
+                <div className="flex-1">
+                  <label className="block font-medium">Kode Barang {index + 1}:</label>
+                  <input
+                    type="text"
+                    name="kodeBarang"
+                    value={item.kodeBarang}
+                    onChange={(e) => handleItemChange(index, e)}
+                    className="border px-4 py-2 w-full"
+                    required
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveItem(index)}
+                  className="text-red-500 border border-red-500 px-3 py-2 rounded hover:bg-red-500 hover:text-white transition"
+                >
+                  Hapus Detail
+                </button>
               </div>
             ))}
+
             {/* Tombol Tambah Barang */}
             <button
               type="button"
