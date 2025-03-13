@@ -5,22 +5,19 @@ const prisma = new PrismaClient();
 
 export const createPurchaseOrder = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { nomorPO, tanggalPO, lokasiPO, keterangan, permintaanId } = req.body;
+    const { nomorPO, tanggalPO, lokasiPO, permintaanId, items } = req.body;
 
-    // **1. Validasi Input**
-    if (!nomorPO || !tanggalPO || !lokasiPO || !permintaanId) {
-      res.status(400).json({ error: "Semua field wajib diisi" });
+    if (!nomorPO || !tanggalPO || !lokasiPO || !permintaanId || !items || items.length === 0) {
+      res.status(400).json({ error: "Semua field wajib diisi dan harus ada barang" });
       return;
     }
 
-    // **2. Validasi Format Tanggal**
     const parsedTanggal = new Date(tanggalPO);
     if (isNaN(parsedTanggal.getTime())) {
       res.status(400).json({ error: "Format tanggal tidak valid" });
       return;
     }
 
-    // **3. Periksa apakah Permintaan Lapangan ada**
     const existingPermintaan = await prisma.permintaanLapangan.findUnique({
       where: { id: Number(permintaanId) },
     });
@@ -30,18 +27,29 @@ export const createPurchaseOrder = async (req: Request, res: Response): Promise<
       return;
     }
 
-    // **4. Buat Purchase Order**
+    // **Buat Purchase Order**
     const newPO = await prisma.purchaseOrder.create({
       data: {
         nomorPO,
         tanggalPO: parsedTanggal,
         lokasiPO,
-        keterangan,
         permintaan: { connect: { id: Number(permintaanId) } },
       },
     });
 
-    res.status(201).json({ message: "Purchase Order berhasil dibuat", newPO });
+    // **Simpan ke PODetails**
+    const purchaseDetails = items.map((item: any) => ({
+      purchaseOrderId: newPO.id,
+      permintaanDetailId: item.permintaanDetailId,
+      materialId: item.id,
+      qty: item.qty,
+      satuan: item.satuan,
+      code: item.kodeBarang,
+    }));
+
+    await prisma.pODetails.createMany({ data: purchaseDetails });
+
+    res.status(201).json({ message: "Purchase Order berhasil dibuat", newPO, details: purchaseDetails });
   } catch (error) {
     console.error("Gagal membuat Purchase Order:", error);
     res.status(500).json({ error: "Terjadi kesalahan saat membuat Purchase Order" });

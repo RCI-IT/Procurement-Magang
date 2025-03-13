@@ -77,22 +77,16 @@ export default function AddPurchaseOrder() {
       [name]: value,
     }));
   };
-
-  const toggleItemSelection = (item) => {
-    setSelectedItems((prevSelected) =>
-      prevSelected.some((i) => i.id === item.id)
-        ? prevSelected.filter((i) => i.id !== item.id)
-        : [...prevSelected, item]
-    );
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    const formattedTanggalPO = new Date(formData.tanggalPO).toISOString();
     const payload = {
-      ...formData,
-      items: selectedItems.map(({ id, code, material, qty, satuan }) => ({
-        id,
+      nomorPO: formData.nomorPO,
+      tanggalPO: formattedTanggalPO,
+      lokasiPO: formData.proyek,
+      permintaanId: parseInt(formData.idPL, 10),
+      items: selectedItems.map(({ material, code, qty, satuan }) => ({
+        id: material?.id,
         kodeBarang: code,
         namaBarang: material?.name ?? "Tidak Diketahui",
         harga: material?.price ?? 0,
@@ -100,19 +94,33 @@ export default function AddPurchaseOrder() {
         satuan,
       })),
     };
-
+    
+  
     try {
-      await fetch("http://192.168.110.204:5000/purchase", {
+      const response = await fetch("http://192.168.110.204:5000/purchase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      router.push("/purchase-order");
+  
+      if (response.ok) {
+        router.push("/purchase-order");
+      } else {
+        const errorData = await response.json();
+        console.error("Gagal menambah PO:", errorData);
+      }
     } catch (error) {
       console.error("Gagal menambah PO:", error);
     }
   };
-
+  const toggleItemSelection = (item) => {
+    setSelectedItems((prevSelected) =>
+      prevSelected.some((i) => i.id === item.id)
+        ? prevSelected.filter((i) => i.id !== item.id) // Hapus jika sudah dipilih
+        : [...prevSelected, item] // Tambahkan jika belum dipilih
+    );
+  };
+  
   const totalHarga = selectedItems.reduce(
     (total, item) => total + (item.material?.price || 0) * item.qty,
     0
