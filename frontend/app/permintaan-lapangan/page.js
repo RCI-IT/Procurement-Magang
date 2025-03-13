@@ -135,7 +135,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
   
 
   return (
-    <div className="p-6 bg-white shadow-md rounded-lg">
+    <div className={`p-6 bg-white shadow-md rounded-lg transition-all duration-300 ${isAddFormVisible ? 'min-h-screen' : 'h-auto'}`}>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">Permintaan Lapangan</h1>
         <div className="flex space-x-4">
