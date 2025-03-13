@@ -12,7 +12,6 @@ const router = express.Router();
 
 router.put('/:id/edit', editPermintaanLapangan);
 router.put('/:id', updateStatusPermintaan); 
-
 router.get('/:id', getPermintaanById);
 router.post('/', createPermintaanLapangan);
 router.get('/', getAllPermintaanLapangan);

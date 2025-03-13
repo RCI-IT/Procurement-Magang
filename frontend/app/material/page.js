@@ -118,15 +118,15 @@ export default function Material() {
                 return (
                   <tr key={material.id}>
                     <td className="border px-4 py-2 text-center">{index + 1}</td>
-                    <td className="border px-4 py-2">{material.name}</td>
+                    <td className="border px-4 py-2 text-center">{material.name}</td>
                     <td className="border px-4 py-2">
-                      <img
-                        src={`http://192.168.110.204:5000/uploads/${material.image}`}
-                        alt={material.image}
-                        className="w-16 h-16 object-cover"
-                      />
+                      <div className="flex justify-center items-center">
+                        <img src={`http://192.168.110.204:5000/uploads/${material.image}`}
+                             alt={material.image}
+                             className="w-16 h-16 object-cover"/>
+                        </div>
                     </td>
-                    <td className="border px-4 py-2">
+                    <td className="text-center border px-4 py-2">
                       {vendor ? (
                         <button
                           onClick={() => handleVendorClick(material.vendorId)}
@@ -138,7 +138,7 @@ export default function Material() {
                         "Tidak Ada Vendor"
                       )}
                     </td>
-                    <td className="border px-4 py-2">
+                    <td className="text-center border px-4 py-2">
                       Rp {new Intl.NumberFormat("id-ID", { useGrouping: true }).format(material.price)}
                     </td>
                     <td className="border px-4 py-2 text-center">

@@ -63,13 +63,23 @@ export const createPermintaanLapangan = async (req: Request, res: Response) => {
 export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
   try {
     const permintaanList = await prisma.permintaanLapangan.findMany({
-      include: { detail: true },
+      include: {
+        detail: {
+          include: {
+            material: {
+              include: {
+                vendor: true, // Pastikan vendor ikut di-fetch
+              },
+            },
+          },
+        },
+      },
     });
 
     res.status(200).json(permintaanList);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Gagal mengambil data permintaan lapangan' });
+    res.status(500).json({ error: "Gagal mengambil data permintaan lapangan" });
   }
 };
 export const getPermintaanById = async (req: Request, res: Response): Promise<void> => {
