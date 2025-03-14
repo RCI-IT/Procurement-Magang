@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Sidebar from "../../../component/sidebar";
 
 export default function AddMaterialPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [vendorId, setVendorId] = useState("");
   const [price, setPrice] = useState("");
@@ -69,12 +71,16 @@ export default function AddMaterialPage() {
         throw new Error("Gagal menambahkan material");
       }
 
+     
+
       setName("");
       setVendorId("");
       setPrice("");
       setCategoryId("");
       setDescription("");
       setImage(null);
+
+      router.back();
     } catch (error) {
       console.error("Error adding material:", error);
       setError(`Terjadi kesalahan: ${error.message}`);
