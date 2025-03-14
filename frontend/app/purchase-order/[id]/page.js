@@ -98,7 +98,11 @@ const terbilang = (angka) => {
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
   const totalHarga =
-  poDetail?.permintaan?.detail?.reduce((sum, item) => sum + (item.material.price * item.qty), 0) || 0;
+  poDetail?.poDetails?.reduce((sum, poItem) => {
+    const item = poItem.permintaanDetail; // Ambil permintaan detail dari poDetails
+    return sum + ((item.material?.price || 0) * (item.qty || 0));
+  }, 0) || 0;
+
 
   return (
     <div className="flex h-screen">
@@ -142,23 +146,25 @@ const terbilang = (angka) => {
         </tr>
         <tr className="border">
           <td className="border px-4 py-2 font-semibold">Nomor PL</td>
-          <td className="border px-4 py-2">{poDetail?.permintaan?.nomor || "N/A"}</td>
+          <td className="border px-4 py-2">{poDetail?.poDetails?.[0]?.permintaanDetail?.permintaan?.nomor || "N/A"}</td>
         </tr>
         <tr className="border">
           <td className="border px-4 py-2 font-semibold">Tanggal PL</td>
           <td className="border px-4 py-2">
-            {poDetail?.permintaan?.tanggal
-              ? new Date(poDetail.permintaan.tanggal).toLocaleDateString("id-ID", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                })
-              : "N/A"}
-          </td>
+  {poDetail?.poDetails?.[0]?.permintaanDetail?.permintaan?.tanggal
+    ? new Date(poDetail.poDetails[0].permintaanDetail.permintaan.tanggal).toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      })
+    : "N/A"}
+</td>
+
         </tr>
         <tr className="border">
           <td className="border px-4 py-2 font-semibold">Proyek</td>
-          <td className="border px-4 py-2">{poDetail?.keterangan || "N/A"}</td>
+          <td className="border px-4 py-2">{poDetail?.lokasiPO || "N/A"}
+          </td>
         </tr>
       </tbody>
     </table>
@@ -171,17 +177,18 @@ const terbilang = (angka) => {
   <h3 className="text-gray-600 text-sm">Vendor :</h3>
   
   <div className="flex justify-between items-center">
-  <p className="text-lg font-bold text-gray-900 flex-1">{poDetail?.permintaan?.detail?.[0]?.material?.vendor?.name || "Nama Vendor"}</p>
-
+  <p className="text-lg font-bold text-gray-900 flex-1">
+  {poDetail?.poDetails?.[0]?.permintaanDetail?.material?.vendor?.name || "Nama Vendor"}
+</p>
     <div className="flex items-center space-x-6 text-gray-600 text-sm">
     <div className="flex flex-col items-end text-gray-600 text-sm">
     <div className="flex items-center space-x-1">
     <span className="text-green-500">📞</span>
-    <span>{poDetail?.permintaan?.detail?.[0]?.material?.vendor?.phone || "-"}</span>
+    <span>{poDetail?.poDetails?.[0]?.permintaanDetail?.material?.vendor?.phone || "-"}</span>
   </div>
   <div className="flex items-center space-x-1 mt-1">
     <span className="text-red-500">📍</span>
-    <span>{poDetail?.permintaan?.detail?.[0]?.material?.vendor?.address|| "Alamat tidak tersedia"}</span>
+    <span>{poDetail?.poDetails?.[0]?.permintaanDetail?.material?.vendor?.address || "Di goa"}</span>
   </div>
 </div>
 
@@ -205,25 +212,30 @@ const terbilang = (angka) => {
     </tr>
   </thead>
   <tbody>
-    {poDetail?.permintaan?.detail?.length > 0 ? (
-      poDetail.permintaan.detail.map((item, index) => (
+  {poDetail?.poDetails?.length > 0 ? (
+    poDetail.poDetails.map((poItem, index) => {
+      const item = poItem.permintaanDetail; // Ambil permintaan detail dari poDetails
+      return (
         <tr key={index} className="border">
-        <td className="border p-2">{index + 1}</td>
-        <td className="border p-2">{item.code || "N/A"}</td>
-        <td className="border p-2 text-center">{item.material.name || "N/A"}</td>
-        <td className="border p-2">Rp{item.material.price?.toLocaleString() || "0"}</td>
-        <td className="border p-2">{item.qty || "0"}</td>
-        <td className="border p-2">{item.satuan || "N/A"}</td>
-        <td className="border p-2 font-bold text-right">
-          Rp{((item.material.price || 0) * (item.qty || 0)).toLocaleString()}
-        </td>
-      </tr>
-      ))
-    ) : (
-      <tr>
-        <td colSpan={7} className="text-center p-4 text-gray-500">Tidak ada item</td>
-      </tr>
-    )}
+          <td className="border p-2">{index + 1}</td>
+          <td className="border p-2">{item.code || "N/A"}</td>
+          <td className="border p-2 text-center">{item.material?.name || "N/A"}</td>
+          <td className="border p-2">Rp{item.material?.price?.toLocaleString() || "0"}</td>
+          <td className="border p-2">{item.qty || "0"}</td>
+          <td className="border p-2">{item.satuan || "N/A"}</td>
+          <td className="border p-2 font-bold text-right">
+            Rp{((item.material?.price || 0) * (item.qty || 0)).toLocaleString()}
+          </td>
+        </tr>
+      );
+    })
+  ) : (
+    <tr>
+      <td colSpan={7} className="text-center p-4 text-gray-500">
+        Tidak ada item
+      </td>
+    </tr>
+  )}
     <tr className="font-semibold">
       <td colSpan="4" className="bg-blue-600 text-white p-2 text-left">Terbilang</td>
       <td colSpan="2" rowSpan={2} className="p-2 text-center border">TOTAL</td>

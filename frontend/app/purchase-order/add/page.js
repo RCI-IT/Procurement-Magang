@@ -22,6 +22,7 @@ export default function AddPurchaseOrder() {
   const [tanggalPL, setTanggalPL] = useState("");
   const router = useRouter();
 
+  // Fetch data Permintaan Lapangan
   useEffect(() => {
     const fetchPermintaanLapangan = async () => {
       try {
@@ -36,6 +37,7 @@ export default function AddPurchaseOrder() {
     fetchPermintaanLapangan();
   }, []);
 
+  // Update daftar barang dan vendor berdasarkan PL yang dipilih
   useEffect(() => {
     if (formData.idPL) {
       const selectedPL = permintaanLapangan.find((pl) => pl.id === parseInt(formData.idPL));
@@ -61,6 +63,7 @@ export default function AddPurchaseOrder() {
     }
   }, [formData.idPL, permintaanLapangan]);
 
+  // Filter barang berdasarkan vendor yang dipilih
   useEffect(() => {
     if (formData.idVendor) {
       const filtered = allItems.filter((item) => item.material.vendor.id === parseInt(formData.idVendor));
@@ -79,14 +82,25 @@ export default function AddPurchaseOrder() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formattedTanggalPO = new Date(formData.tanggalPO).toISOString();
+    
+    if (!formData.nomorPO || !formData.proyek || !formData.tanggalPO || !formData.idPL || !formData.idVendor) {
+      alert("Semua kolom harus diisi!");
+      return;
+    }
+  
+    if (selectedItems.length === 0) {
+      alert("Pilih minimal 1 barang!");
+      return;
+    }
+  
+    // Pastikan hanya item yang dipilih yang dikirim ke backend
     const payload = {
       nomorPO: formData.nomorPO,
-      tanggalPO: formattedTanggalPO,
+      tanggalPO: new Date(formData.tanggalPO).toISOString(),
       lokasiPO: formData.proyek,
       permintaanId: parseInt(formData.idPL, 10),
-      items: selectedItems.map(({ material, code, qty, satuan }) => ({
-        id: material?.id,
+      items: selectedItems.map(({ id, material, code, qty, satuan }) => ({
+        permintaanDetailId: id,  // Hanya ID dari selectedItems
         kodeBarang: code,
         namaBarang: material?.name ?? "Tidak Diketahui",
         harga: material?.price ?? 0,
@@ -94,6 +108,11 @@ export default function AddPurchaseOrder() {
         satuan,
       })),
     };
+  
+    console.log("Selected Items:", selectedItems);
+    console.log("Payload yang dikirim ke backend:", JSON.stringify(payload, null, 2));
+    console.log("🛠 Items yang akan dikirim:", JSON.stringify(selectedItems, null, 2));
+
     
   
     try {
@@ -104,7 +123,8 @@ export default function AddPurchaseOrder() {
       });
   
       if (response.ok) {
-        router.push("/purchase-order");
+        alert("Purchase Order berhasil ditambahkan!");
+        router.back();
       } else {
         const errorData = await response.json();
         console.error("Gagal menambah PO:", errorData);
@@ -120,7 +140,6 @@ export default function AddPurchaseOrder() {
         : [...prevSelected, item] // Tambahkan jika belum dipilih
     );
   };
-  
   const totalHarga = selectedItems.reduce(
     (total, item) => total + (item.material?.price || 0) * item.qty,
     0
@@ -158,7 +177,7 @@ export default function AddPurchaseOrder() {
               </select>
             </div>
 
-            {formData.idPL && vendors.length > 0 && (
+            {formData.idPL && (
               <div>
                 <label className="block font-medium">Pilih Vendor:</label>
                 <select name="idVendor" value={formData.idVendor} onChange={handleChange} className="border px-4 py-2 w-full" required>
@@ -171,38 +190,32 @@ export default function AddPurchaseOrder() {
             )}
           </div>
 
-          {formData.idVendor && filteredItems.length > 0 && (
+          {formData.idVendor && (
             <div className="border-b pb-4">
-              <label className="block font-medium">Barang:</label>
-              <table className="w-full border-collapse border border-gray-300 mt-2">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="border p-2">Pilih</th>
-                    <th className="border p-2">Kode Barang</th>
-                    <th className="border p-2">Nama Barang</th>
-                    <th className="border p-2">Harga</th>
-                    <th className="border p-2">Qty</th>
-                    <th className="border p-2">Satuan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredItems.map((item) => (
-                    <tr key={item.id}>
-                      <td className="border p-2 text-center"><input type="checkbox" checked={selectedItems.some((i) => i.id === item.id)} onChange={() => toggleItemSelection(item)} /></td>
-                      <td className="border p-2">{item.code}</td>
-                      <td className="border p-2">{item.material?.name}</td>
-                      <td className="border p-2">Rp {item.material?.price.toLocaleString()}</td>
-                      <td className="border p-2">{item.qty}</td>
-                      <td className="border p-2">{item.satuan}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <label className="block font-medium">Pilih Barang:</label>
+              {filteredItems.length > 0 ? (
+  <ul>
+    {filteredItems.map((item) => (
+      <li key={item.id} className="flex items-center border p-2">
+        <input
+          type="checkbox"
+          checked={selectedItems.some((i) => i.id === item.id)}
+          onChange={() => toggleItemSelection(item)}
+          className="mr-2"
+        />
+        {item.material?.name} - Rp {item.material?.price.toLocaleString()}
+      </li>
+    ))}
+  </ul>
+) : (
+  <p className="text-gray-500">Tidak ada barang dari vendor ini</p>
+)}
+
             </div>
           )}
 
           <div className="text-xl font-semibold">Total Harga: Rp {totalHarga.toLocaleString()}</div>
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded w-40">Selesai</button>
+          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded w-40">Simpan</button>
         </form>
       </div>
     </div>
