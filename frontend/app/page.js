@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Sidebar from "../component/sidebar";
 import Home from "./Home";
 import PermintaanLapangan from "./permintaan-lapangan/page";
 import PurchaseOrder from "./purchase-order/page";
@@ -41,7 +40,7 @@ export default function MainPage() {
         );
       case "purchase-order":
         return <PurchaseOrder />;
-        case "confirmation-order":
+      case "confirmation-order":
         return <ConfirmationOrder />;
       case "material":
         return <Material />;
@@ -60,9 +59,6 @@ export default function MainPage() {
   };
 
   return (
-    <div className="flex">
-      <Sidebar />
-      <div className="flex-1 p-6">{renderContent()}</div>
-    </div>
+    <div className="flex-1 p-6">{renderContent()}</div>
   );
 }

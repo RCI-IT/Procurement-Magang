@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "../../../component/sidebar";
 
 export default function AddMaterialPage() {
   const router = useRouter();
@@ -91,7 +90,6 @@ export default function AddMaterialPage() {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
       <div className="flex-1 p-6">
         <h1 className="text-2xl font-bold mb-6">Tambah Material</h1>
         <form

@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "../../../component/sidebar";
 
 export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddForm }) {
   const router = useRouter();
@@ -120,7 +119,6 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
     <div className="p-6 bg-gray-100 rounded-lg shadow-md">
       <h1 className="text-3xl font-bold mb-6">Tambah Permintaan Lapangan</h1>
       <form onSubmit={handleSubmit} className="space-y-6">

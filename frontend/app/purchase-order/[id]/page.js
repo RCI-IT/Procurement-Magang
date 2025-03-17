@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Sidebar from "../../../component/sidebar";
 import "../../../styles/globals.css";
 import html2pdf from "html2pdf.js";
 
@@ -106,7 +105,6 @@ const terbilang = (angka) => {
 
   return (
     <div className="flex h-screen">
-      <div className="no-print"> <Sidebar /></div>
       <div className="w-full max-w-6xl mx-auto px-8">
       <div className="text-right space-x-2">
           <button className="no-print bg-blue-500 text-white px-4 py-2 rounded">Edit</button>

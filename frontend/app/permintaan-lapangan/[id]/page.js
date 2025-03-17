@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Sidebar from "../../../component/sidebar";
 import html2pdf from "html2pdf.js";
 import "../../../styles/globals.css";
 
@@ -99,7 +98,6 @@ export default function DetailPermintaanLapangan() {
 
   return (
     <div className="flex h-screen">
-    <Sidebar className="no-print" />  
     <div className="flex-1 p-6">
       {/* Tombol harus tidak dicetak */}
       <div className="flex justify-end space-x-2 no-print">
