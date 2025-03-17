@@ -3,7 +3,6 @@
 import Link from "next/link";
 
 const navigationItems = [
-  { id: "home", label: "Home", icon: "🏠", page: "/?page=home" },
   { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "/?page=permintaan-lapangan" },
   { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "/?page=purchase-order" },
   { id: "material", label: "Material", icon: "📦", page: "/?page=material" },
