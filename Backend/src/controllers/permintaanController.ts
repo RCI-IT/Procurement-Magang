@@ -68,20 +68,30 @@ export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
           include: {
             material: {
               include: {
-                vendor: true, // Pastikan vendor ikut di-fetch
+                vendor: true,
               },
             },
+            poDetails: true, // Tambahkan ini untuk cek apakah barang sudah masuk PO
           },
         },
       },
     });
 
-    res.status(200).json(permintaanList);
+    // **Filter hanya PL yang masih memiliki barang yang belum masuk PO**
+    const filteredPermintaanList = permintaanList
+      .map((pl) => ({
+        ...pl,
+        detail: pl.detail.filter((item) => item.poDetails.length === 0), // Hanya barang yang belum masuk PO
+      }))
+      .filter((pl) => pl.detail.length > 0); // Hanya PL yang masih punya barang
+
+    res.status(200).json(filteredPermintaanList);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Gagal mengambil data permintaan lapangan" });
   }
 };
+
 export const getPermintaanById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -96,12 +106,17 @@ export const getPermintaanById = async (req: Request, res: Response): Promise<vo
     // Cari permintaan berdasarkan ID
     const permintaan = await prisma.permintaanLapangan.findUnique({
       where: { id: parsedId },
-      include: { 
-        detail: { 
-          include: { material: true } // Menyertakan detail material
-        } 
-      }
-      
+      include: {
+        detail: {
+          include: {
+            material: true,
+            poDetails: true, // Tambahkan untuk mengecek apakah sudah masuk PO
+          },
+          where: {
+            poDetails: { none: {} }, // Filter hanya barang yang belum masuk PO
+          },
+        },
+      },
     });
 
     if (!permintaan) {

@@ -169,7 +169,7 @@ export default function DetailPermintaanLapangan() {
     ) : (
       <tr>
         <td colSpan="7" className="border border-gray-300 px-4 py-2 text-center text-gray-500">
-          Tidak ada detail permintaan ditemukan.
+          Data Permintaan Sudah Masuk Ke Purchase Order.
         </td>
       </tr>
     )}
