@@ -91,7 +91,6 @@ export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Gagal mengambil data permintaan lapangan" });
   }
 };
-
 export const getPermintaanById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
