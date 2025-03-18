@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
+import LoadingIcon from "../../component/LoadingIcon.tsx";
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
@@ -11,34 +11,36 @@ export default function Material() {
   const [searchQuery, setSearchQuery] = useState("");
   const [rowsToShow] = useState(5);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const router = useRouter();
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [materialRes, vendorRes] = await Promise.all([
-        fetch("http://192.168.110.204:5000/materials"),
-        fetch("http://192.168.110.204:5000/vendors")
-      ]);
-
-      if (!materialRes.ok || !vendorRes.ok) throw new Error("Gagal mengambil data");
-
-      const [materialData, vendorData] = await Promise.all([
-        materialRes.json(),
-        vendorRes.json()
-      ]);
-
-      setMaterials(materialData);
-      setVendors(vendorData);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [materialRes, vendorRes] = await Promise.all([
+          fetch("http://192.168.110.204:5000/materials"),
+          fetch("http://192.168.110.204:5000/vendors")
+        ]);
+
+        if (!materialRes.ok || !vendorRes.ok) throw new Error("Gagal mengambil data");
+
+        const [materialData, vendorData] = await Promise.all([
+          materialRes.json(),
+          vendorRes.json()
+        ]);
+
+        setMaterials(materialData);
+        setVendors(vendorData);
+        
+        // Simulasi loading tetap muncul sebentar (1.5 detik)
+        setTimeout(() => {
+          setLoading(false);
+        }, 1200); // 1.5 detik delay agar loading terlihat
+      } catch {
+        setLoading(false);
+      }
+    };
+
     fetchData();
   }, []);
 
@@ -77,9 +79,6 @@ export default function Material() {
   return (
     <div className="flex h-screen">
       <div className="p-6 flex-1">
-        {loading && <div className="text-center text-blue-500">Loading...</div>}
-        {error && <div className="text-center text-red-500">Error: {error}</div>}
-
         <h1 className="text-3xl font-bold mb-4">Material</h1>
 
         <div className="mb-4 flex justify-between space-x-2">
@@ -110,54 +109,66 @@ export default function Material() {
             </tr>
           </thead>
           <tbody>
-            {materials
-              .filter((m) => m.name.toLowerCase().includes(searchQuery))
-              .slice(0, rowsToShow)
-              .map((material, index) => {
-                const vendor = vendors.find((v) => v.id === material.vendorId);
-                return (
-                  <tr key={material.id}>
-                    <td className="border px-4 py-2 text-center">{index + 1}</td>
-                    <td className="border px-4 py-2 text-center">{material.name}</td>
-                    <td className="border px-4 py-2">
-                      <div className="flex justify-center items-center">
-                        <img src={`http://192.168.110.204:5000/uploads/${material.image}`}
-                             alt={material.image}
-                             className="w-16 h-16 object-cover"/>
+            {loading ? (
+              <tr>
+                <td colSpan="6" className="text-center py-4">
+                  <LoadingIcon /> Tetap sabar... :)
+                </td>
+              </tr>
+            ) : (
+              materials
+                .filter((m) => m.name.toLowerCase().includes(searchQuery))
+                .slice(0, rowsToShow)
+                .map((material, index) => {
+                  const vendor = vendors.find((v) => v.id === material.vendorId);
+                  return (
+                    <tr key={material.id}>
+                      <td className="border px-4 py-2 text-center">{index + 1}</td>
+                      <td className="border px-4 py-2 text-center">{material.name}</td>
+                      <td className="border px-4 py-2">
+                        <div className="flex justify-center items-center">
+                          <img
+                            src={`http://192.168.110.204:5000/uploads/${material.image}`}
+                            alt={material.image}
+                            className="w-16 h-16 object-cover"
+                          />
                         </div>
-                    </td>
-                    <td className="text-center border px-4 py-2">
-                      {vendor ? (
+                      </td>
+                      <td className="text-center border px-4 py-2">
+                        {vendor ? (
+                          <button
+                            onClick={() => handleVendorClick(material.vendorId)}
+                            className="text-blue-500 underline"
+                          >
+                            {vendor.name}
+                          </button>
+                        ) : (
+                          "Tidak Ada Vendor"
+                        )}
+                      </td>
+                      <td className="text-center border px-4 py-2">
+                        Rp {new Intl.NumberFormat("id-ID", { useGrouping: true }).format(
+                          material.price
+                        )}
+                      </td>
+                      <td className="border px-4 py-2 text-center">
                         <button
-                          onClick={() => handleVendorClick(material.vendorId)}
-                          className="text-blue-500 underline"
+                          onClick={() => handleMaterialClick(material.id)}
+                          className="bg-blue-500 text-white rounded px-2 py-1"
                         >
-                          {vendor.name}
+                          👁
                         </button>
-                      ) : (
-                        "Tidak Ada Vendor"
-                      )}
-                    </td>
-                    <td className="text-center border px-4 py-2">
-                      Rp {new Intl.NumberFormat("id-ID", { useGrouping: true }).format(material.price)}
-                    </td>
-                    <td className="border px-4 py-2 text-center">
-                      <button
-                        onClick={() => handleMaterialClick(material.id)}
-                        className="bg-blue-500 text-white rounded px-2 py-1"
-                      >
-                        👁
-                      </button>
-                      <button
-                        onClick={() => handleDelete(material.id)}
-                        className="bg-red-500 text-white rounded px-2 py-1 ml-2"
-                      >
-                        🗑
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                        <button
+                          onClick={() => handleDelete(material.id)}
+                          className="bg-red-500 text-white rounded px-2 py-1 ml-2"
+                        >
+                          🗑
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+            )}
           </tbody>
         </table>
         <div>
@@ -167,6 +178,5 @@ export default function Material() {
         </div>
       </div>
     </div>
-    
   );
 }
