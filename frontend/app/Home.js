@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const navigationItems = [
@@ -10,39 +11,28 @@ const navigationItems = [
 ];
 
 export default function Home() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [users, setUsers] = useState([]);
   const [role, setRole] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
-    fetch("http://192.168.110.204:5000/users")
-      .then(response => response.json())
-      .then(data => setUsers(data))
-      .catch(error => console.error("Error fetching users:", error));
-  }, []);
+    // Ambil data login dari localStorage
+    const loggedIn = localStorage.getItem("isLoggedIn");
+    const storedUsername = localStorage.getItem("username");
+    const storedRole = localStorage.getItem("role");
 
-  const handleLogin = () => {
-    const validUser = users.find(
-      (user) => user.username === username && user.password === password
-    );
-
-    if (validUser) {
-      setIsLoggedIn(true);
-      setRole(validUser.role);
+    if (!loggedIn) {
+      router.push("/login"); // Jika belum login, redirect ke halaman login
     } else {
-      alert("Invalid credentials");
+      setUsername(storedUsername);
+      setRole(storedRole);
     }
-  };
+  }, [router]);
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUsername("");
-    setPassword("");
-    setRole("");
-    setIsDropdownOpen(false);
+    localStorage.clear(); // Hapus semua data di localStorage
+    router.push("/login"); // Redirect ke halaman login
   };
 
   const filterNavigationItems = () => {
@@ -58,63 +48,34 @@ export default function Home() {
     }
   };
 
-  if (!isLoggedIn) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-blue-500">
-        <div className="p-8 bg-blue-500 text-white rounded-2xl shadow-lg w-80">
-          <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-2 mb-4 rounded-md text-blue-500"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 mb-4 rounded-md text-blue-500"
-          />
-          <button
-            onClick={handleLogin}
-            className="w-full bg-white text-blue-500 p-2 rounded-md hover:bg-blue-100"
-          >
-            Login
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6 min-h-screen bg-white text-blue-500 flex flex-col items-center">
+      {/* Header dengan Dropdown Profil */}
       <div className="w-full flex justify-end mb-6">
         <div className="flex items-center space-x-4">
-        <div className="relative">
-  <button
-    className="flex items-center bg-white p-2 rounded-2xl shadow-md hover:bg-gray-100"
-    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-  >
-    <span className="mr-2 font-semibold">{username || "User"}</span>
-    <span>▼</span>
-  </button>
-  {isDropdownOpen && (
-    <div className="absolute right-0 mt-2 bg-white rounded-md w-full">
-      <button
-        onClick={handleLogout}
-        className="block w-full text-center px-4 py-2 text-sm text-gray-700 hover:bg-red-700 rounded-md hover:text-white"
-      >
-        Logout
-      </button>
-    </div>
-  )}
-</div>
-
+          <div className="relative">
+            <button
+              className="flex items-center bg-white p-2 rounded-2xl shadow-md hover:bg-gray-100"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            >
+              <span className="mr-2 font-semibold">{username || "User"}</span>
+              <span>▼</span>
+            </button>
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 bg-white rounded-md w-full">
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-center px-4 py-2 text-sm text-gray-700 hover:bg-red-700 rounded-md hover:text-white"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Judul */}
       <h1 className="text-5xl font-extrabold mb-10 tracking-wide text-black bg-clip-text ">Procurement</h1>
 
       {/* Navigation Buttons */}
