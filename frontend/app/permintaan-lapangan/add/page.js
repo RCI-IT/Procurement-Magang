@@ -118,8 +118,8 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
   };
 
   return (
-    <div className="flex h-screen">
-    <div className="p-6 bg-gray-100 rounded-lg shadow-md">
+<div className="flex px-10 py-6 w-full">
+<div className="w-full max-w-10xl p-8 bg-white-100 rounded-lg shadow-md overflow-x-auto">
       <h1 className="text-3xl font-bold mb-6">Tambah Permintaan Lapangan</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-2 gap-6">
@@ -273,7 +273,15 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
                 />
               </div>
             </div>
-
+            <div>
+          <button
+            type="button"
+            onClick={addDetail}
+            className="bg-green-500 text-white px-4 py-2 rounded mt-4"
+          >
+            Tambah Detail
+          </button>
+        </div>
             {formData.detail.length > 1 && (
               <div className="flex justify-end mt-2">
                 <button
@@ -284,20 +292,11 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
                   Hapus Detail
                 </button>
               </div>
+              
             )}
           </div>
+    
         ))}
-
-        <div>
-          <button
-            type="button"
-            onClick={addDetail}
-            className="bg-green-500 text-white px-4 py-2 rounded mt-4"
-          >
-            Tambah Detail
-          </button>
-        </div>
-
         <div className="flex justify-between mt-4">
         <button type="button"
   onClick={() => router.back()} 
