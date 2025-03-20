@@ -49,7 +49,7 @@ export default function Home() {
       case "ADMIN":
         return navigationItems;
       case "USER_LAPANGAN":
-        return navigationItems.filter(item => item.id === "permintaan-lapangan");
+        return navigationItems.filter(item => item.id === "material" || item.id === "permintaan-lapangan");
       case "USER_PURCHASE":
         return navigationItems.filter(item => item.id === "material" || item.id === "purchase-order");
       default:
