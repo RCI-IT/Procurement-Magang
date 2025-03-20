@@ -215,6 +215,12 @@ export default function AddPurchaseOrder() {
           )}
 
           <div className="text-xl font-semibold">Total Harga: Rp {totalHarga.toLocaleString()}</div>
+          <button type="button"
+  onClick={() => router.back()} 
+  className="mt-6 bg-gray-500 text-white px-4 py-2 rounded"
+>
+  Gak Jadi
+</button>
           <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded w-40">Simpan</button>
         </form>
       </div>
