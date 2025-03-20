@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Home from "./Home";
+import Home from "./home/page";
 import PermintaanLapangan from "./permintaan-lapangan/page";
 import PurchaseOrder from "./purchase-order/page";
-import ConfirmationOrder from "./confirmation-order/page";
 import Material from "./material/page";
 import Setting from "./Setting";
 import AddPermintaanLapanganForm from "./permintaan-lapangan/add/page";

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import Sidebar from "../../../../component/sidebar";
 
 export default function EditMaterial() {
   const { id } = useParams();
@@ -86,7 +87,10 @@ export default function EditMaterial() {
   };
 
   return (
-    <div className="p-6">
+    <div className="flex">
+    <Sidebar />
+    <div className="p-6 flex-1">
+    
       <h2 className="text-2xl font-bold mb-4">Edit Material</h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
@@ -138,6 +142,7 @@ export default function EditMaterial() {
             Kembali
           </button>
       </form>
+    </div>
     </div>
   );
 }

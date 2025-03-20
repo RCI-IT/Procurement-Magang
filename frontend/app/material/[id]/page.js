@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-
+import Sidebar from "../../../component/sidebar";
 export default function MaterialPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -105,8 +105,9 @@ export default function MaterialPage() {
     : "http://192.168.110.204:5000/uploads/default-image.jpg";
 
   return (
-    <div className="flex h-screen">
-      <div className="flex-1 p-6">
+    <div className="flex">
+    <Sidebar />
+    <div className="p-6 flex-1">
         <div className="mb-6 bg-white shadow-md p-4 rounded-md">
           <div className="flex justify-between items-center">
             <div>

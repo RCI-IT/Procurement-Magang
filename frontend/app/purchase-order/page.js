@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Sidebar from "@/component/sidebar";
 
 const PurchaseOrderTable = () => {
   const [data, setData] = useState([]); // Data dari API
@@ -41,7 +42,9 @@ const PurchaseOrderTable = () => {
   }, [search, data]);
 
   return (
-    <div className="p-4 bg-white shadow-md rounded-md">
+    <div className="flex h-screen">
+      <Sidebar />
+    <div className="p-4 flex-1 bg-white shadow-md rounded-md">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">Purchase Order</h1>
         <div className="flex gap-2">
@@ -112,11 +115,7 @@ const PurchaseOrderTable = () => {
           </tbody>
         </table>
       )}
-              <div>
-          <button onClick={() => router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
-            Kembali
-          </button>
-        </div>
+    </div>
     </div>
   );
 };

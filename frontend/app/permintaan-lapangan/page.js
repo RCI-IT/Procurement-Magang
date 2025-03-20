@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AddPermintaanLapanganForm from "./add/page";  
-
+import Sidebar from "../../component/sidebar";
 const months = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
   "Juli", "Agustus", "September", "Oktober", "November", "Desember"
@@ -135,7 +135,9 @@ export default function PermintaanLapangan({ setActiveContent }) {
   
 
   return (
-    <div className={`p-6 bg-white shadow-md rounded-lg transition-all duration-300 ${isAddFormVisible ? 'min-h-screen' : 'h-auto'}`}>
+    <div className="flex h-screen">
+       <Sidebar />
+    <div className={`p-6 bg-white flex-1 h-screen shadow-md rounded-lg transition-all duration-300 ${isAddFormVisible ? 'min-h-screen' : 'h-auto'}`}>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">Permintaan Lapangan</h1>
         <div className="flex space-x-4">
@@ -231,12 +233,8 @@ export default function PermintaanLapangan({ setActiveContent }) {
             )}
           </tbody>
         </table>
-        <div>
-          <button onClick={() =>  router.push("/")} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
-            Kembali
-          </button>
-        </div>
       </div>
+    </div>
     </div>
   );
 }

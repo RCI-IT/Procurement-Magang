@@ -3,19 +3,17 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import LoadingIcon from "../../component/LoadingIcon.tsx";
+import Sidebar from "../../component/sidebar.js";
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [rowsToShow] = useState(5);
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
       try {
         const [materialRes, vendorRes] = await Promise.all([
           fetch("http://192.168.110.204:5000/materials"),
@@ -31,13 +29,8 @@ export default function Material() {
 
         setMaterials(materialData);
         setVendors(vendorData);
-        
-        // Simulasi loading tetap muncul sebentar (1.5 detik)
-        setTimeout(() => {
-          setLoading(false);
-        }, 1200); // 1.5 detik delay agar loading terlihat
-      } catch {
-        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
     };
 
@@ -77,7 +70,8 @@ export default function Material() {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex">
+      <Sidebar />
       <div className="p-6 flex-1">
         <h1 className="text-3xl font-bold mb-4">Material</h1>
 
@@ -109,73 +103,60 @@ export default function Material() {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="6" className="text-center py-4">
-                  <LoadingIcon /> Tetap sabar... :)
-                </td>
-              </tr>
-            ) : (
-              materials
-                .filter((m) => m.name.toLowerCase().includes(searchQuery))
-                .slice(0, rowsToShow)
-                .map((material, index) => {
-                  const vendor = vendors.find((v) => v.id === material.vendorId);
-                  return (
-                    <tr key={material.id}>
-                      <td className="border px-4 py-2 text-center">{index + 1}</td>
-                      <td className="border px-4 py-2 text-center">{material.name}</td>
-                      <td className="border px-4 py-2">
-                        <div className="flex justify-center items-center">
-                          <img
-                            src={`http://192.168.110.204:5000/uploads/${material.image}`}
-                            alt={material.image}
-                            className="w-16 h-16 object-cover"
-                          />
-                        </div>
-                      </td>
-                      <td className="text-center border px-4 py-2">
-                        {vendor ? (
-                          <button
-                            onClick={() => handleVendorClick(material.vendorId)}
-                            className="text-blue-500 underline"
-                          >
-                            {vendor.name}
-                          </button>
-                        ) : (
-                          "Tidak Ada Vendor"
-                        )}
-                      </td>
-                      <td className="text-center border px-4 py-2">
-                        Rp {new Intl.NumberFormat("id-ID", { useGrouping: true }).format(
-                          material.price
-                        )}
-                      </td>
-                      <td className="border px-4 py-2 text-center">
+            {materials
+              .filter((m) => m.name.toLowerCase().includes(searchQuery))
+              .slice(0, rowsToShow)
+              .map((material, index) => {
+                const vendor = vendors.find((v) => v.id === material.vendorId);
+                return (
+                  <tr key={material.id}>
+                    <td className="border px-4 py-2 text-center">{index + 1}</td>
+                    <td className="border px-4 py-2 text-center">{material.name}</td>
+                    <td className="border px-4 py-2">
+                      <div className="flex justify-center items-center">
+                        <img
+                          src={`http://192.168.110.204:5000/uploads/${material.image}`}
+                          alt={material.image}
+                          className="w-16 h-16 object-cover"
+                        />
+                      </div>
+                    </td>
+                    <td className="text-center border px-4 py-2">
+                      {vendor ? (
                         <button
-                          onClick={() => handleMaterialClick(material.id)}
-                          className="bg-blue-500 text-white rounded px-2 py-1"
+                          onClick={() => handleVendorClick(material.vendorId)}
+                          className="text-blue-500 underline"
                         >
-                          👁
+                          {vendor.name}
                         </button>
-                        <button
-                          onClick={() => handleDelete(material.id)}
-                          className="bg-red-500 text-white rounded px-2 py-1 ml-2"
-                        >
-                          🗑
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-            )}
+                      ) : (
+                        "Tidak Ada Vendor"
+                      )}
+                    </td>
+                    <td className="text-center border px-4 py-2">
+                      Rp {new Intl.NumberFormat("id-ID", { useGrouping: true }).format(
+                        material.price
+                      )}
+                    </td>
+                    <td className="border px-4 py-2 text-center">
+                      <button
+                        onClick={() => handleMaterialClick(material.id)}
+                        className="bg-blue-500 text-white rounded px-2 py-1"
+                      >
+                        👁
+                      </button>
+                      <button
+                        onClick={() => handleDelete(material.id)}
+                        className="bg-red-500 text-white rounded px-2 py-1 ml-2"
+                      >
+                        🗑
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
-        <div>
-          <button onClick={() => router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
-            Kembali
-          </button>
-        </div>
       </div>
     </div>
   );

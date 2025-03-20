@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import "../../../styles/globals.css";
 import html2pdf from "html2pdf.js";
+import Sidebar from "../../../component/sidebar";
+import { useRouter } from "next/navigation";
 
 export default function PurchaseOrderDetail() {
   const { id } = useParams();
   const [poDetail, setPoDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const router = useRouter();
 
   const handlePrint = () => {
     window.print();
@@ -105,6 +108,7 @@ const terbilang = (angka) => {
 
   return (
     <div className="flex h-screen">
+      <Sidebar / >
       <div className="w-full max-w-6xl mx-auto px-8">
       <div className="text-right space-x-2">
           <button className="no-print bg-blue-500 text-white px-4 py-2 rounded">Edit</button>
@@ -278,6 +282,9 @@ const terbilang = (angka) => {
   </tbody>
 </table>
 <br></br>
+<button onClick={() =>  router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
+            Kembali
+          </button>
     </div>
     </div>
   );

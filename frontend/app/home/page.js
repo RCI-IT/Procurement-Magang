@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import LoadingIcon from "../component/LoadingIcon"; // Import LoadingIcon
+import LoadingIcon from "../../component/LoadingIcon"; // Import LoadingIcon
 
 const navigationItems = [
   { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "/?page=permintaan-lapangan" },
