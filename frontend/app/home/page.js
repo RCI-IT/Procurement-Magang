@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import LoadingIcon from "../../component/LoadingIcon"; // Import LoadingIcon
+import LoadingIcon from "../../component/LoadingIcon";
+import Header from "../../component/Header"; // Import Header
 
 const navigationItems = [
   { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "/?page=permintaan-lapangan" },
@@ -15,8 +16,7 @@ export default function Home() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [role, setRole] = useState("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // State loading
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = () => {
@@ -32,17 +32,12 @@ export default function Home() {
       }
 
       setTimeout(() => {
-        setIsLoading(false); // Matikan loading setelah data user diambil
-      }, 950); // Simulasi loading 1 detik
+        setIsLoading(false);
+      }, 950);
     };
 
     fetchData();
   }, [router]);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    router.push("/login");
-  };
 
   const filterNavigationItems = () => {
     switch (role) {
@@ -59,7 +54,6 @@ export default function Home() {
 
   return (
     <div className="p-6 min-h-screen bg-white text-blue-500 flex flex-col items-center">
-      {/* Loading */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center h-screen">
           <LoadingIcon />
@@ -67,35 +61,10 @@ export default function Home() {
         </div>
       ) : (
         <>
-          {/* Header dengan Dropdown Profil */}
-          <div className="w-full flex justify-end mb-6">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <button
-                  className="flex items-center bg-white p-2 rounded-2xl shadow-md hover:bg-gray-100"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                >
-                  <span className="mr-2 font-semibold">{username || "User"}</span>
-                  <span>▼</span>
-                </button>
-                {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 bg-white rounded-md w-full">
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-center px-4 py-2 text-sm text-gray-700 hover:bg-red-700 rounded-md hover:text-white"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <Header username={username} />
 
-          {/* Judul */}
-          <h1 className="text-5xl font-extrabold mb-10 tracking-wide text-black bg-clip-text ">Procurement</h1>
+          <h1 className="text-5xl font-extrabold mb-10 tracking-wide text-black bg-clip-text">Procurement</h1>
 
-          {/* Navigation Buttons */}
           <div className="flex flex-col gap-6 w-full max-w-md items-center">
             {filterNavigationItems().map((item) => (
               <Link key={item.id} href={item.page}>

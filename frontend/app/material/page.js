@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../component/sidebar.js";
+import Header from "../../component/Header.js";
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
@@ -11,20 +12,21 @@ export default function Material() {
   const [searchQuery, setSearchQuery] = useState("");
   const [rowsToShow] = useState(5);
   const router = useRouter();
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [materialRes, vendorRes] = await Promise.all([
           fetch("http://192.168.110.204:5000/materials"),
-          fetch("http://192.168.110.204:5000/vendors")
+          fetch("http://192.168.110.204:5000/vendors"),
         ]);
 
         if (!materialRes.ok || !vendorRes.ok) throw new Error("Gagal mengambil data");
 
         const [materialData, vendorData] = await Promise.all([
           materialRes.json(),
-          vendorRes.json()
+          vendorRes.json(),
         ]);
 
         setMaterials(materialData);
@@ -37,11 +39,15 @@ export default function Material() {
     fetchData();
   }, []);
 
-  const handleVendorClick = (vendorId) => {
-    if (!vendorId) {
-      console.error("Vendor ID tidak tersedia!");
-      return;
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
     }
+  }, []);
+
+  const handleVendorClick = (vendorId) => {
+    if (!vendorId) return;
     router.push(`/vendor/${vendorId}`);
   };
 
@@ -57,7 +63,7 @@ export default function Material() {
     try {
       const response = await fetch(`http://192.168.110.204:5000/materials/${id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) throw new Error("Gagal menghapus material");
@@ -70,93 +76,96 @@ export default function Material() {
   };
 
   return (
-    <div className="flex">
-      <Sidebar />
-      <div className="p-6 flex-1">
-        <h1 className="text-3xl font-bold mb-4">Material</h1>
-
-        <div className="mb-4 flex justify-between space-x-2">
-          <input
-            type="text"
-            placeholder="Cari Material"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
-            className="border border-gray-300 rounded px-2 py-1"
-          />
-          <button
-            onClick={() => router.push("/material/add")}
-            className="bg-blue-500 text-white rounded px-4 py-2"
-          >
-            + Material
-          </button>
-        </div>
-
-        <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
-          <thead className="bg-blue-500 text-white">
-            <tr>
-              <th className="border px-4 py-2">No</th>
-              <th className="border px-4 py-2">Nama</th>
-              <th className="border px-4 py-2">Gambar</th>
-              <th className="border px-4 py-2">Vendor</th>
-              <th className="border px-4 py-2">Harga</th>
-              <th className="border px-4 py-2">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {materials
-              .filter((m) => m.name.toLowerCase().includes(searchQuery))
-              .slice(0, rowsToShow)
-              .map((material, index) => {
-                const vendor = vendors.find((v) => v.id === material.vendorId);
-                return (
-                  <tr key={material.id}>
-                    <td className="border px-4 py-2 text-center">{index + 1}</td>
-                    <td className="border px-4 py-2 text-center">{material.name}</td>
-                    <td className="border px-4 py-2">
-                      <div className="flex justify-center items-center">
-                        <img
-                          src={`http://192.168.110.204:5000/uploads/${material.image}`}
-                          alt={material.image}
-                          className="w-16 h-16 object-cover"
-                        />
-                      </div>
-                    </td>
-                    <td className="text-center border px-4 py-2">
-                      {vendor ? (
-                        <button
-                          onClick={() => handleVendorClick(material.vendorId)}
-                          className="text-blue-500 underline"
-                        >
-                          {vendor.name}
-                        </button>
-                      ) : (
-                        "Tidak Ada Vendor"
-                      )}
-                    </td>
-                    <td className="text-center border px-4 py-2">
-                      Rp {new Intl.NumberFormat("id-ID", { useGrouping: true }).format(
-                        material.price
-                      )}
-                    </td>
-                    <td className="border px-4 py-2 text-center">
-                      <button
-                        onClick={() => handleMaterialClick(material.id)}
-                        className="bg-blue-500 text-white rounded px-2 py-1"
-                      >
-                        👁
-                      </button>
-                      <button
-                        onClick={() => handleDelete(material.id)}
-                        className="bg-red-500 text-white rounded px-2 py-1 ml-2"
-                      >
-                        🗑
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-          </tbody>
-        </table>
+    <div className="flex flex-col min-h-screen">
+      <Header username={username} />
+      <div className="flex flex-1">
+        <Sidebar />
+        <main className="p-6 flex-1 overflow-auto">
+          <h1 className="text-3xl font-bold mb-4">Material</h1>
+          <div className="mb-4 flex justify-between space-x-2">
+            <input
+              type="text"
+              placeholder="Cari Material"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
+              className="border border-gray-300 rounded px-2 py-1"
+            />
+            <button
+              onClick={() => router.push("/material/add")}
+              className="bg-blue-500 text-white rounded px-4 py-2"
+            >
+              + Material
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
+              <thead className="bg-blue-500 text-white">
+                <tr>
+                  <th className="border px-4 py-2">No</th>
+                  <th className="border px-4 py-2">Nama</th>
+                  <th className="border px-4 py-2">Gambar</th>
+                  <th className="border px-4 py-2">Vendor</th>
+                  <th className="border px-4 py-2">Harga</th>
+                  <th className="border px-4 py-2">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {materials
+                  .filter((m) => m.name.toLowerCase().includes(searchQuery))
+                  .slice(0, rowsToShow)
+                  .map((material, index) => {
+                    const vendor = vendors.find((v) => v.id === material.vendorId);
+                    return (
+                      <tr key={material.id}>
+                        <td className="border px-4 py-2 text-center">{index + 1}</td>
+                        <td className="border px-4 py-2 text-center">{material.name}</td>
+                        <td className="border px-4 py-2">
+                          <div className="flex justify-center items-center">
+                            <img
+                              src={`http://192.168.110.204:5000/uploads/${material.image}`}
+                              alt={material.image}
+                              className="w-16 h-16 object-cover"
+                            />
+                          </div>
+                        </td>
+                        <td className="text-center border px-4 py-2">
+                          {vendor ? (
+                            <button
+                              onClick={() => handleVendorClick(material.vendorId)}
+                              className="text-blue-500 underline"
+                            >
+                              {vendor.name}
+                            </button>
+                          ) : (
+                            "Tidak Ada Vendor"
+                          )}
+                        </td>
+                        <td className="text-center border px-4 py-2">
+                          Rp {new Intl.NumberFormat("id-ID", { useGrouping: true }).format(
+                            material.price
+                          )}
+                        </td>
+                        <td className="border px-4 py-2 text-center">
+                          <button
+                            onClick={() => handleMaterialClick(material.id)}
+                            className="bg-blue-500 text-white rounded px-2 py-1"
+                          >
+                            👁
+                          </button>
+                          <button
+                            onClick={() => handleDelete(material.id)}
+                            className="bg-red-500 text-white rounded px-2 py-1 ml-2"
+                          >
+                            🗑
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+        </main>
       </div>
     </div>
   );
