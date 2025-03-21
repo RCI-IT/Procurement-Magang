@@ -77,10 +77,14 @@ export default function Material() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header username={username} />
+     
+
       <div className="flex flex-1">
         <Sidebar />
         <main className="p-6 flex-1 overflow-auto">
+        <div className="w-full">
+        <Header username={username} />
+        </div>
           <h1 className="text-3xl font-bold mb-4">Material</h1>
           <div className="mb-4 flex justify-between space-x-2">
             <input
