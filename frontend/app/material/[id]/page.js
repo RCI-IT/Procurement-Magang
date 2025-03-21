@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Sidebar from "../../../component/sidebar";
+import Header from "../../../component/Header";
+
 export default function MaterialPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -12,6 +14,7 @@ export default function MaterialPage() {
   const [relatedMaterials, setRelatedMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     if (!id) {
@@ -19,6 +22,13 @@ export default function MaterialPage() {
       setLoading(false);
       return;
     }
+
+    useEffect(() => {
+      const storedUsername = localStorage.getItem("username");
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+    }, []);
 
     const fetchMaterialDetails = async () => {
       setLoading(true);
@@ -108,6 +118,9 @@ export default function MaterialPage() {
     <div className="flex">
     <Sidebar />
     <div className="p-6 flex-1">
+    <div className="w-full">
+        <Header username={username} />
+        </div>
         <div className="mb-6 bg-white shadow-md p-4 rounded-md">
           <div className="flex justify-between items-center">
             <div>
