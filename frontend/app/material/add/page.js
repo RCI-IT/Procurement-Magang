@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Header from "../../../component/Header";
+import Sidebar from "../../../component/sidebar";
 
 export default function AddMaterialPage() {
   const router = useRouter();
@@ -15,6 +17,7 @@ export default function AddMaterialPage() {
   const [vendors, setVendors] = useState([]);
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,6 +40,13 @@ export default function AddMaterialPage() {
     };
 
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
   }, []);
 
   const handleSubmit = async (event) => {
@@ -90,7 +100,11 @@ export default function AddMaterialPage() {
 
   return (
     <div className="flex h-screen">
+       <Sidebar />
       <div className="flex-1 p-6">
+      <div className="w-full">
+        <Header username={username} />
+        </div>
         <h1 className="text-2xl font-bold mb-6">Tambah Material</h1>
         <form
           onSubmit={handleSubmit}

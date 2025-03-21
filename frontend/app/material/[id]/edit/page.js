@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Sidebar from "../../../../component/sidebar";
+import Header from "../../../../component/Header";
 
 export default function EditMaterial() {
   const { id } = useParams();
@@ -18,6 +19,7 @@ export default function EditMaterial() {
   const [vendors, setVendors] = useState([]);
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,8 +50,16 @@ export default function EditMaterial() {
       }
     };
 
+    useEffect(() => {
+      const storedUsername = localStorage.getItem("username");
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+    }, []);
+
     fetchData();
   }, [id]);
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -90,7 +100,10 @@ export default function EditMaterial() {
     <div className="flex">
     <Sidebar />
     <div className="p-6 flex-1">
-    
+    <div className="w-full">
+        <Header username={username} />
+        </div>
+
       <h2 className="text-2xl font-bold mb-4">Edit Material</h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
