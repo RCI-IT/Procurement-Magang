@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Sidebar from "../../.../../../../component/sidebar";
 
 export default function EditPermintaanLapangan() {
   const { id } = useParams();
@@ -82,7 +83,9 @@ export default function EditPermintaanLapangan() {
   if (!formData.nomor) return <p className="text-red-500 text-center mt-10">Memuat data...</p>;
 
   return (
-    <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
+    <div className="flex h-screen">
+       <Sidebar />
+    <div className="flex-1 p-6">
       <h1 className="text-lg font-bold text-blue-900 mb-4">Edit Permintaan Lapangan</h1>
 
       <form onSubmit={handleSubmit}>
@@ -181,6 +184,7 @@ export default function EditPermintaanLapangan() {
           </button>
         </div>
       </form>
+    </div>
     </div>
   );
 }
