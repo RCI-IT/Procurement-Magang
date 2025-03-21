@@ -3,10 +3,13 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Sidebar from "../../../component/sidebar.js";
+import Header from "../../../component/Header.js";
 
 export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddForm }) {
   const router = useRouter();
-  const [materials, setMaterials] = useState([]); 
+  const [materials, setMaterials] = useState([]);
+  const [username, setUsername] = useState(""); 
   const [formData, setFormData] = useState({
     nomor: "",
     tanggal: { day: "", month: "", year: "" },
@@ -17,6 +20,13 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
       { id: Date.now(), materialId: "", qty: "", satuan: "", mention: "", code: "", keterangan: "" }, 
     ],
   });
+
+      useEffect(() => {
+        const storedUsername = localStorage.getItem("username");
+        if (storedUsername) {
+          setUsername(storedUsername);
+        }
+      }, []);
 
   useEffect(() => {
     fetch("http://192.168.110.204:5000/materials")
@@ -119,7 +129,9 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
 
   return (
 <div className="flex px-10 py-6 w-full">
+  <Sidebar />
 <div className="w-full max-w-10xl p-8 bg-white-100 rounded-lg shadow-md overflow-x-auto">
+  <Header username={username} />
       <h1 className="text-3xl font-bold mb-6">Tambah Permintaan Lapangan</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-2 gap-6">
