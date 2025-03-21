@@ -5,6 +5,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AddPermintaanLapanganForm from "./add/page";  
 import Sidebar from "../../component/sidebar";
+import Header from "../../component/Header.js";
+
 const months = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
   "Juli", "Agustus", "September", "Oktober", "November", "Desember"
@@ -16,6 +18,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
   const [isAddFormVisible, setIsAddFormVisible] = useState(false);
   const [updatedData, setUpdatedData] = useState([]);
   const router = useRouter();
+  const [username, setUsername] = useState("");
 
   const getMonthName = (monthNumber) => months[monthNumber - 1];
 
@@ -31,6 +34,13 @@ export default function PermintaanLapangan({ setActiveContent }) {
     setUpdatedData((prevData) => [...prevData, newData]);
     setActiveContent("permintaan-lapangan");
   };
+
+    useEffect(() => {
+      const storedUsername = localStorage.getItem("username");
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+    }, []);
 
   useEffect(() => {
     const fetchPermintaanLapangan = async () => {
@@ -136,10 +146,13 @@ export default function PermintaanLapangan({ setActiveContent }) {
 
   return (
     <div className="flex h-screen">
-       <Sidebar />
+     <Sidebar />
     <div className={`p-6 bg-white flex-1 h-screen shadow-md rounded-lg transition-all duration-300 ${isAddFormVisible ? 'min-h-screen' : 'h-auto'}`}>
+    <div>
+    <Header username={username} />
+    </div>
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold">Permintaan Lapangan</h1>
+        <h1 className="text-3xl font-bold">Permintaan Lapangan</h1>  
         <div className="flex space-x-4">
           <input
             type="text"
