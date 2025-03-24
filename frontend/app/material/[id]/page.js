@@ -23,12 +23,12 @@ export default function MaterialPage() {
       return;
     }
 
-    useEffect(() => {
+ 
       const storedUsername = localStorage.getItem("username");
       if (storedUsername) {
         setUsername(storedUsername);
       }
-    }, []);
+
 
     const fetchMaterialDetails = async () => {
       setLoading(true);
