@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import html2pdf from "html2pdf.js";
 import "../../../styles/globals.css";
 import Sidebar from "../../../component/sidebar";
-import Header from "../../../component/Header";
+import Header from "../../../component/Header.js"
 
 
 export default function DetailPermintaanLapangan() {
@@ -106,8 +106,9 @@ export default function DetailPermintaanLapangan() {
     <div className="flex h-screen">
        <Sidebar />
     <div className="flex-1 p-6">
+    <div>
     <Header username={username} />
-      {/* Tombol harus tidak dicetak */}
+    </div>
       <div className="flex justify-end space-x-2 no-print">
         <button onClick={handleEdit} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32">
           Edit

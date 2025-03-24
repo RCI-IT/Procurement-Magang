@@ -25,6 +25,7 @@ export default function MaterialPage() {
       return;
     }
 
+ 
       const storedUsername = localStorage.getItem("username");
       if (storedUsername) {
         setUsername(storedUsername);
