@@ -14,13 +14,6 @@ export default function DetailPermintaanLapangan() {
   const [data, setData] = useState(null);
   const [username, setUsername] = useState("");
 
-  useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
-  }, []);
-
   const parseDate = (dateString) => {
     if (!dateString) return { day: "-", month: "-", year: "-" };
     const date = new Date(dateString);
@@ -55,10 +48,8 @@ export default function DetailPermintaanLapangan() {
         return;
       }
   
-      // Sembunyikan tombol kembali sebelum generate PDF
       if (backButton) backButton.style.visibility = "hidden";
   
-      // Tambahkan class untuk merapikan PDF sebelum generate
       element.classList.add("pdf-format");
   
       html2pdf()
@@ -81,7 +72,12 @@ export default function DetailPermintaanLapangan() {
     }, 500);
   };
   
-
+    useEffect(() => {
+      const storedUsername = localStorage.getItem("username");
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+    }, []);
   useEffect(() => {
     if (!id) return;
     const fetchData = async () => {
