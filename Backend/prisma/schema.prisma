@@ -1,10 +1,11 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
 }
 
 model PermintaanLapangan {
@@ -19,9 +20,9 @@ model PermintaanLapangan {
   isConfirmed     Boolean             @default(false)
   isReceived      Boolean             @default(false)
   keterangan      String?
+  purchaseOrderId Int?                @unique
   detail          PermintaanDetails[]
   purchaseOrder   PurchaseOrder?      @relation(fields: [purchaseOrderId], references: [id])
-  purchaseOrderId Int?                @unique
 }
 
 model PurchaseOrder {
@@ -33,48 +34,27 @@ model PurchaseOrder {
   lokasiPO   String
   keterangan String?
   status     POStatus            @default(PENDING)
-  permintaan PermintaanLapangan?
   poDetails  PODetails[]
+  permintaan PermintaanLapangan?
 }
 
 model PODetails {
-  id                  Int                 @id @default(autoincrement())
-  purchaseOrder       PurchaseOrder       @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
-  purchaseOrderId     Int
-  permintaanDetail    PermintaanDetails   @relation(fields: [permintaanDetailId], references: [id], onDelete: Cascade)
-  permintaanDetailId  Int
-  qty                 Int
-  satuan              String
-  code                String
-  keterangan          String?
-}
-
-
-enum PermintaanStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  PROCESSING
-  COMPLETED
-  CANCELLED
-}
-
-enum POStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  PROCESSING
-  COMPLETED
-  CANCELLED
+  id                 Int               @id @default(autoincrement())
+  purchaseOrderId    Int
+  permintaanDetailId Int
+  qty                Int
+  code               String
+  keterangan         String?
+  satuan             String
+  permintaanDetail   PermintaanDetails @relation(fields: [permintaanDetailId], references: [id], onDelete: Cascade)
+  purchaseOrder      PurchaseOrder     @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
 }
 
 model PermintaanDetails {
   id           Int                @id @default(autoincrement())
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
-  permintaan   PermintaanLapangan @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
   permintaanId Int
-  material     Materials          @relation(fields: [materialId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   materialId   Int
   qty          Int
   satuan       String
@@ -82,6 +62,8 @@ model PermintaanDetails {
   code         String
   keterangan   String?
   poDetails    PODetails[]
+  material     Materials          @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  permintaan   PermintaanLapangan @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
 }
 
 model Materials {
@@ -92,10 +74,10 @@ model Materials {
   name        String
   description String
   price       Int
-  category    Categories          @relation(fields: [categoryId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   categoryId  Int
-  vendor      Vendors             @relation(fields: [vendorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   vendorId    Int
+  category    Categories          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  vendor      Vendors             @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   permintaan  PermintaanDetails[]
 }
 
@@ -127,6 +109,24 @@ model User {
   email     String   @unique
   fullName  String
   role      UserRole @default(USER_LAPANGAN)
+}
+
+enum PermintaanStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum POStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+  CANCELLED
 }
 
 enum UserRole {

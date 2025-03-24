@@ -1,63 +1,72 @@
 import { Request, Response } from 'express';
-import { PermintaanStatus, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const approvePermintaan = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-
-    // Pastikan ID valid
-    const parsedId = Number(id);
-    if (isNaN(parsedId)) {
-      res.status(400).json({ error: "Invalid ID format" });
-      return;
-    }
-
-    // Pastikan permintaan ada di database
-    const existingPermintaan = await prisma.permintaanLapangan.findUnique({
-      where: { id: parsedId },
-    });
-
-    if (!existingPermintaan) {
-      res.status(404).json({ error: "Permintaan tidak ditemukan" });
-      return;
-    }
-
-    // Update status menjadi APPROVED menggunakan ENUM
-    const updatedPermintaan = await prisma.permintaanLapangan.update({
-      where: { id: parsedId },
-      data: { status: PermintaanStatus.APPROVED }, // ✅ Pakai ENUM, bukan string biasa
-    });
-
-    res.status(200).json({ message: "Permintaan telah disetujui", updatedPermintaan });
-  } catch (error) {
-    console.error("Gagal approve permintaan:", error);
-    res.status(500).json({ error: "Terjadi kesalahan saat menyetujui permintaan" });
-  }
-};
+const PermintaanStatus = {
+  PENDING: "PENDING",
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED",
+  PROCESSING: "PROCESSING",
+  COMPLETED: "COMPLETED",
+  CANCELLED: "CANCELLED",
+} as const;
 
 export const createPermintaanLapangan = async (req: Request, res: Response) => {
   try {
     const { nomor, tanggal, lokasi, picLapangan, keterangan, detail } = req.body;
 
+    // ✅ Validasi input agar tidak ada data yang kosong atau tidak sesuai
+    if (!nomor || !tanggal || !lokasi || !picLapangan || !Array.isArray(detail)) {
+      res.status(400).json({ error: "Harap isi semua field yang diperlukan" });
+      return;
+    }
+
+    // ✅ Pastikan `detail` berisi array dengan objek yang memiliki properti yang benar
+    const isDetailValid = detail.every((item: any) =>
+      item.materialId && item.qty && item.satuan
+    );
+
+    if (!isDetailValid) {
+      res.status(400).json({ error: "Detail material tidak valid" });
+      return;
+    }
+
+    // ✅ Membuat permintaan lapangan baru
     const newPermintaan = await prisma.permintaanLapangan.create({
       data: {
         nomor,
-        tanggal: new Date(tanggal),
+        tanggal: new Date(tanggal), // Pastikan format tanggal benar
         lokasi,
         picLapangan,
         keterangan,
         detail: {
-          create: detail
-        }
+          create: detail.map((item: any) => ({
+            materialId: item.materialId,
+            qty: item.qty,
+            satuan: item.satuan,
+            mention: item.mention || null, // Bisa null jika tidak diisi
+            code: item.code || "", // Default string kosong jika tidak ada
+            keterangan: item.keterangan || null,
+          })),
+        },
       },
     });
 
-    res.status(201).json(newPermintaan);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Gagal membuat permintaan lapangan' });
+    res.status(201).json({
+      message: "Permintaan lapangan berhasil dibuat",
+      data: newPermintaan,
+    });
+  } catch (error: any) {
+    console.error("Error saat membuat permintaan lapangan:", error);
+
+    // ✅ Tangani error Prisma (misalnya duplikasi nomor)
+    if (error.code === "P2002") {
+      res.status(400).json({ error: "Nomor permintaan sudah ada" });
+      return;
+    }
+
+    res.status(500).json({ error: "Gagal membuat permintaan lapangan" });
   }
 };
 export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
@@ -79,11 +88,12 @@ export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
 
     // **Filter hanya PL yang masih memiliki barang yang belum masuk PO**
     const filteredPermintaanList = permintaanList
-      .map((pl) => ({
-        ...pl,
-        detail: pl.detail.filter((item) => item.poDetails.length === 0), // Hanya barang yang belum masuk PO
-      }))
-      .filter((pl) => pl.detail.length > 0); // Hanya PL yang masih punya barang
+    .map((pl: any) => ({
+      ...pl,
+      detail: pl.detail.filter((item: any) => item.poDetails.length === 0),
+    }))
+    .filter((pl: any) => pl.detail.length > 0);
+    
 
     res.status(200).json(filteredPermintaanList);
   } catch (error) {

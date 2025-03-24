@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  backend:
+    build: .
+    container_name: backend_container
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://postgres:1234@192.168.110.204:5432/Backend
+    volumes:
+      - .:/app
+    command: ["npm", "run", "dev"]
