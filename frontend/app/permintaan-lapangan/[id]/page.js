@@ -5,12 +5,14 @@ import { useEffect, useState } from "react";
 import html2pdf from "html2pdf.js";
 import "../../../styles/globals.css";
 import Sidebar from "../../../component/sidebar";
+import Header from "../../../component/Header";
 
 
 export default function DetailPermintaanLapangan() {
   const { id } = useParams();
   const router = useRouter();
   const [data, setData] = useState(null);
+  const [username, setUsername] = useState("");
 
   const parseDate = (dateString) => {
     if (!dateString) return { day: "-", month: "-", year: "-" };
@@ -46,10 +48,8 @@ export default function DetailPermintaanLapangan() {
         return;
       }
   
-      // Sembunyikan tombol kembali sebelum generate PDF
       if (backButton) backButton.style.visibility = "hidden";
   
-      // Tambahkan class untuk merapikan PDF sebelum generate
       element.classList.add("pdf-format");
   
       html2pdf()
@@ -72,7 +72,12 @@ export default function DetailPermintaanLapangan() {
     }, 500);
   };
   
-
+    useEffect(() => {
+      const storedUsername = localStorage.getItem("username");
+      if (storedUsername) {
+        setUsername(storedUsername);
+      }
+    }, []);
   useEffect(() => {
     if (!id) return;
     const fetchData = async () => {
@@ -101,6 +106,7 @@ export default function DetailPermintaanLapangan() {
     <div className="flex h-screen">
        <Sidebar />
     <div className="flex-1 p-6">
+    <Header username={username} />
       {/* Tombol harus tidak dicetak */}
       <div className="flex justify-end space-x-2 no-print">
         <button onClick={handleEdit} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32">

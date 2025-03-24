@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+ 
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -23,12 +25,11 @@ export default function MaterialPage() {
       return;
     }
 
-    useEffect(() => {
       const storedUsername = localStorage.getItem("username");
       if (storedUsername) {
         setUsername(storedUsername);
       }
-    }, []);
+
 
     const fetchMaterialDetails = async () => {
       setLoading(true);
