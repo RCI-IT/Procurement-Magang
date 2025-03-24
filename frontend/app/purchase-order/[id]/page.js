@@ -6,6 +6,7 @@ import "../../../styles/globals.css";
 import html2pdf from "html2pdf.js";
 import Sidebar from "../../../component/sidebar";
 import { useRouter } from "next/navigation";
+import Header from "../../../component/Header.js"
 
 export default function PurchaseOrderDetail() {
   const { id } = useParams();
@@ -13,6 +14,8 @@ export default function PurchaseOrderDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const [username, setUsername] = useState("");
+
 
   const handlePrint = () => {
     window.print();
@@ -76,6 +79,14 @@ const terbilang = (angka) => {
   return hasil.trim() + " Rupiah";
 };
 
+useEffect(() => {
+  const storedUsername = localStorage.getItem("username");
+  if (storedUsername) {
+    setUsername(storedUsername);
+  }
+}, []);
+
+
   useEffect(() => {
     if (!id) return;
 
@@ -110,6 +121,9 @@ const terbilang = (angka) => {
     <div className="flex h-screen">
       <Sidebar / >
       <div className="w-full max-w-6xl mx-auto px-8">
+              <div>
+            <Header username={username} />
+            </div>
       <div className="text-right space-x-2">
           <button className="no-print bg-blue-500 text-white px-4 py-2 rounded">Edit</button>
           <button onClick={handlePrint} className="no-print bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">

@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../../component/sidebar";
+import Header from "../../../component/Header.js"
 
 export default function AddPurchaseOrder() {
   const [formData, setFormData] = useState({
@@ -21,6 +22,7 @@ export default function AddPurchaseOrder() {
   const [vendors, setVendors] = useState([]);
   const [tanggalPL, setTanggalPL] = useState("");
   const router = useRouter();
+  const [username, setUsername] = useState("");
 
   // Fetch data Permintaan Lapangan
   useEffect(() => {
@@ -62,6 +64,13 @@ export default function AddPurchaseOrder() {
       setFormData((prev) => ({ ...prev, idVendor: "" }));
     }
   }, [formData.idPL, permintaanLapangan]);
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
 
   // Filter barang berdasarkan vendor yang dipilih
   useEffect(() => {
@@ -149,6 +158,9 @@ export default function AddPurchaseOrder() {
     <div className="flex h-screen">
       <Sidebar/>
       <div className="flex-1 p-6">
+      <div>
+    <Header username={username} />
+    </div>
         <h1 className="text-2xl font-bold mb-6">Tambah Purchase Order</h1>
         <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 shadow-md rounded-lg">
           <div className="grid grid-cols-2 gap-4 border-b pb-4">

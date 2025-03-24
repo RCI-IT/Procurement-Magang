@@ -2,6 +2,8 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Sidebar from "../../../component/Header.js"
+import Header from "../../../component/Header.js"
 
 export default function VendorPage() {
   const params = useParams();
@@ -11,6 +13,13 @@ export default function VendorPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchVendorAndMaterials = async () => {
@@ -52,7 +61,11 @@ export default function VendorPage() {
 
   return (
     <div className="flex h-screen bg-gray-100">
+          <Sidebar/>
       <div className="flex-1 p-6">
+                      <div>
+                    <Header username={username} />
+                    </div>
         <div className="bg-white shadow-md p-6 rounded-md mb-6">
           <h1 className="text-3xl font-bold">{vendor?.name}</h1>
           <p className="text-gray-600 mt-2">{vendor?.address || "Alamat tidak tersedia"}</p>

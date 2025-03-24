@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/component/sidebar";
+import Header from "../../component/Header.js"
 
 const PurchaseOrderTable = () => {
   const [data, setData] = useState([]); // Data dari API
@@ -11,6 +12,7 @@ const PurchaseOrderTable = () => {
   const [loading, setLoading] = useState(true); // State loading
   const [error, setError] = useState(null); // State error
   const router = useRouter();
+  const [username, setUsername] = useState("");
 
   // Fetch data dari API saat pertama kali komponen dimuat
   useEffect(() => {
@@ -33,6 +35,13 @@ const PurchaseOrderTable = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
+
   // Filter data berdasarkan pencarian
   useEffect(() => {
     const filtered = data.filter((po) =>
@@ -45,6 +54,9 @@ const PurchaseOrderTable = () => {
     <div className="flex h-screen">
       <Sidebar />
     <div className="p-4 flex-1 bg-white shadow-md rounded-md">
+    <div>
+    <Header username={username} />
+    </div>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">Purchase Order</h1>
         <div className="flex gap-2">
