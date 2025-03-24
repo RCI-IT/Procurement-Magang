@@ -1,20 +1,15 @@
-# Gunakan image Node.js versi terbaru dengan Alpine untuk ukuran yang lebih kecil
-FROM node:18-alpine 
+# Gunakan Node.js 20 agar kompatibel dengan React Router 7
+FROM node:20-alpine
 
-# Set direktori kerja dalam container
 WORKDIR /app
 
-# Salin file package.json dan package-lock.json untuk menginstal dependencies terlebih dahulu
 COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm install
+# Gunakan --ignore-engines agar tidak error pada perbedaan versi Node.js
+RUN npm install --ignore-engines
 
-# Salin semua file proyek ke dalam container
 COPY . .
 
-# Expose port yang digunakan Next.js
 EXPOSE 3000
 
-# Jalankan aplikasi dalam mode development
 CMD ["npm", "run", "dev"]
