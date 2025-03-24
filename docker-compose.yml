@@ -2,6 +2,7 @@ services:
   backend:
     build: ./Backend
     container_name: ProcurementBackend
+    hostname: Backend
     ports:
       - "5000:5000"
     environment:
@@ -13,10 +14,11 @@ services:
   frontend:
     build: ./frontend
     container_name: ProcurementFrontend
+    hostname: procurement
     ports:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://192.168.110.204:5000
     volumes:
       - ./frontend:/app
-    command: ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
+    command: ["npm", "run", "dev"]
