@@ -50,12 +50,10 @@ export default function EditMaterial() {
       }
     };
 
-    useEffect(() => {
       const storedUsername = localStorage.getItem("username");
       if (storedUsername) {
         setUsername(storedUsername);
       }
-    }, []);
 
     fetchData();
   }, [id]);
