@@ -105,22 +105,42 @@ export const getPurchaseOrderById = async (req: Request, res: Response) => {
 export const updatePurchaseOrder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { nomorPO, tanggalPO, lokasiPO, status } = req.body;
+    const { nomorPO, tanggalPO, lokasiPO, status, poDetails } = req.body;
 
-    // Update PO
+    // Update PO utama
     const updatedPO = await prisma.purchaseOrder.update({
       where: { id: Number(id) },
       data: {
         nomorPO,
-        tanggalPO,
+        tanggalPO: new Date(tanggalPO),
         lokasiPO,
         status,
+        poDetails: {
+          // Loop update tiap PO Details
+          upsert: poDetails.map((detail: any) => ({
+            where: { id: detail.id ?? 0 }, // Jika id ada, update. Jika tidak, tambahkan.
+            update: {
+              qty: detail.qty,
+              satuan: detail.satuan,
+              keterangan: detail.keterangan,
+            },
+            create: {
+              purchaseOrderId: Number(id),
+              permintaanDetailId: detail.permintaanDetailId,
+              qty: detail.qty,
+              code: detail.code,
+              satuan: detail.satuan,
+              keterangan: detail.keterangan,
+            },
+          })),
+        },
       },
+      include: { poDetails: true }, // Return PO Details setelah update
     });
 
     res.status(200).json(updatedPO);
   } catch (error) {
-    console.error(error);
+    console.error("Error updating PO:", error);
     res.status(500).json({ message: "Terjadi kesalahan", error });
   }
 };
