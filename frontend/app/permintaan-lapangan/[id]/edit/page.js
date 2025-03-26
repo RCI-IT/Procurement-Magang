@@ -73,7 +73,7 @@ export default function EditPermintaanLapangan() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}/edit`, {
+      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

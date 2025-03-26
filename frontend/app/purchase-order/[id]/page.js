@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import "../../../styles/globals.css";
 import html2pdf from "html2pdf.js";
-import Sidebar from "../../../component/sidebar";
+import Sidebar from "../../../component/sidebar.js";
 import { useRouter } from "next/navigation";
 import Header from "../../../component/Header.js"
 
@@ -125,7 +125,14 @@ useEffect(() => {
             <Header username={username} />
             </div>
       <div className="text-right space-x-2">
-          <button className="no-print bg-blue-500 text-white px-4 py-2 rounded">Edit</button>
+      <button
+  onClick={() => router.push(`/purchase-order/${id}/edit`)}
+  className="no-print bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+>
+  Edit
+</button>
+
+
           <button onClick={handlePrint} className="no-print bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
           Cetak
           </button>
