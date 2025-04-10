@@ -1,49 +1,39 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Sidebar from "../../../component/Header.js"
-import Header from "../../../component/Header.js"
+import Sidebar from "../../../component/sidebar"; // aslinya ini sidebar kan?
+import Header from "../../../component/Header";
 
 export default function VendorPage() {
-  const params = useParams();
-  const vendorId = params.id; // 🔍  
+  const { id: vendorId } = useParams();
+  const router = useRouter();
+
   const [vendor, setVendor] = useState(null);
+  const [username, setUsername] = useState("");
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const router = useRouter();
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
+    if (storedUsername) setUsername(storedUsername);
   }, []);
 
   useEffect(() => {
-    const fetchVendorAndMaterials = async () => {
+    const fetchVendorData = async () => {
       try {
-        console.log("🔍 Vendor ID dari URL:", vendorId); 
-  
         const resVendor = await fetch(`http://192.168.110.204:5000/vendors/${vendorId}`);
         if (!resVendor.ok) throw new Error("Gagal mengambil data vendor");
         const vendorData = await resVendor.json();
-  
+
         const resMaterials = await fetch(`http://192.168.110.204:5000/materials`);
         if (!resMaterials.ok) throw new Error("Gagal mengambil daftar material");
         const allMaterials = await resMaterials.json();
-  
-        console.log("✅ Semua Data Material:", allMaterials); 
 
-        const filteredMaterials = allMaterials.filter(material => String(material.vendorId) === String(vendorId));
-  
-        console.log("🎯 Filtered Materials:", filteredMaterials); 
+        const filteredMaterials = allMaterials.filter((item) => String(item.vendorId) === String(vendorId));
 
-        filteredMaterials.forEach(material => {
-          console.log(`📌 Material: ${material.name}, Category:`, material.category);
-        });
-  
         setVendor(vendorData);
         setMaterials(filteredMaterials);
       } catch (err) {
@@ -52,30 +42,31 @@ export default function VendorPage() {
         setLoading(false);
       }
     };
-  
-    if (vendorId) fetchVendorAndMaterials();
+
+    if (vendorId) fetchVendorData();
   }, [vendorId]);
-  
+
   if (loading) return <p className="text-center text-blue-500">Loading...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
   return (
-    <div className="flex h-screen bg-gray-100">
-          <Sidebar/>
-      <div className="flex-1 p-6">
-                      <div>
-                    <Header username={username} />
-                    </div>
-        <div className="bg-white shadow-md p-6 rounded-md mb-6">
+    <div className="flex min-h-screen bg-gray-100">
+      <Sidebar />
+      <div className="flex-1 p-6 space-y-6">
+        <Header username={username} />
+
+        <div className="bg-white shadow-md p-6 rounded-md">
           <h1 className="text-3xl font-bold">{vendor?.name}</h1>
           <p className="text-gray-600 mt-2">{vendor?.address || "Alamat tidak tersedia"}</p>
           <p className="text-lg mt-2">📞 {vendor?.phone || "Tidak tersedia"}</p>
         </div>
+
         <div className="bg-white shadow-md p-6 rounded-md">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Material</h2>
           </div>
-          <table className="w-full border-collapse border border-gray-200">
+
+          <table className="w-full border-collapse border border-gray-300">
             <thead className="bg-blue-600 text-white">
               <tr>
                 <th className="p-2 border">No.</th>
@@ -103,18 +94,26 @@ export default function VendorPage() {
                       )}
                     </td>
                     <td className="p-2 border">Rp {material.price.toLocaleString("id-ID")}</td>
-                    <td className="text-gray-700">{material.category || "Tidak ada kategori"}</td>
+                    <td className="p-2 border">{material.category ? material.category.name : "Tidak ada kategori"}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center text-gray-500 p-4">Tidak ada material tersedia.</td>
+                  <td colSpan="5" className="text-center text-gray-500 p-4">
+                    Tidak ada material tersedia.
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-        <button onClick={() => router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">Kembali</button>
+
+        <button
+          onClick={() => router.back()}
+          className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded"
+        >
+          Kembali
+        </button>
       </div>
     </div>
   );
