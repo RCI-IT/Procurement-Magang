@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { FaUserCircle } from "react-icons/fa"; // Ikon user dari react-icons
 
 export default function Header({ username }) {
   const router = useRouter();
@@ -15,7 +16,6 @@ export default function Header({ username }) {
     router.push("/login");
   };
 
-  // Definisi nama untuk menu utama
   const breadcrumbMap = {
     "permintaan-lapangan": "Permintaan Lapangan",
     "purchase-order": "Purchase Order",
@@ -23,19 +23,15 @@ export default function Header({ username }) {
     "vendor": "Vendor",
   };
 
-  // Ambil path sebagai array
   const pathSegments = pathname.split("/").filter((segment) => segment);
-
-  // Buat breadcrumbs
-  let breadcrumbs = [{ label: "Home", path: "/home" }];
+  let breadcrumbs = [];
   let currentPath = "";
 
   pathSegments.forEach((segment, index) => {
     currentPath += `/${segment}`;
-
     let label = breadcrumbMap[segment] || segment;
 
-    // Jika ini adalah halaman utama, pastikan ditampilkan di breadcrumb
+    // Menambahkan segment breadcrumb ke array breadcrumbs
     if (breadcrumbMap[segment]) {
       breadcrumbs.push({ label, path: currentPath });
     } else if (segment.match(/^\d+$/)) {
@@ -47,45 +43,52 @@ export default function Header({ username }) {
     } else if (segment === "add") {
       label = "Tambah";
       breadcrumbs.push({ label, path: currentPath });
+    } else {
+      breadcrumbs.push({ label, path: currentPath });
     }
   });
 
   return (
     <div className="w-full flex flex-col p-4 shadow-md bg-white">
       {/* Breadcrumb */}
-      <nav className="flex items-center text-sm text-gray-600 mb-2">
-        {breadcrumbs.map((crumb, index) => (
-          <span key={index} className="flex items-center">
-            {index > 0 && <span className="mx-2">/</span>}
-            <button onClick={() => router.push(crumb.path)} className="hover:underline">
-              {crumb.label}
-            </button>
-          </span>
-        ))}
-      </nav>
+      <nav className="flex items-center justify-between text-lg text-gray-800 font-semibold mb-4">
+        <div className="flex items-center">
+          {/* Menampilkan breadcrumb sesuai alamat halaman saat ini */}
+          {breadcrumbs.map((crumb, index) => (
+            <span key={index} className="flex items-center">
+              {index > 0 && <span className="mx-2 text-gray-500">/</span>}
+              <button
+                onClick={() => router.push(crumb.path)}
+                className="text-blue-600 hover:underline"
+              >
+                {crumb.label}
+              </button>
+            </span>
+          ))}
+        </div>
 
-      {/* User Dropdown */}
-      <div className="flex justify-end">
+        {/* User Dropdown */}
         <div className="relative">
           <button
-            className="flex items-center bg-white p-2 rounded-2xl shadow-md hover:bg-gray-100"
+            className="flex items-center bg-blue-600 p-3 rounded-2xl shadow-md hover:bg-blue-700 text-white transition-colors duration-200 ease-in-out"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
+            <FaUserCircle size={24} className="mr-2" />
             <span className="mr-2 font-semibold">{username || "User"}</span>
             <span>▼</span>
           </button>
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 bg-white rounded-md shadow-md min-w-[150px] z-10 border">
+            <div className="absolute right-0 mt-2 bg-white rounded-md shadow-md min-w-[150px] z-10 border border-gray-300">
               <button
                 onClick={handleLogout}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-600 hover:text-white rounded-md transition"
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-600 hover:text-white rounded-md transition-colors duration-200"
               >
                 Logout
               </button>
             </div>
           )}
         </div>
-      </div>
+      </nav>
     </div>
   );
 }
