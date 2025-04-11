@@ -37,8 +37,11 @@ export default function Sidebar() {
               { id: "home", label: "Home", icon: "🏠", page: "home" },
               { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "permintaan-lapangan" },
               { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "purchase-order" },
-              //{ id: "confirmation-order", label: "Confirmation Order", icon: "✔️", page: "confirmation-order" },
-              { id: "material", label: "Material", icon: "📦", page: "material" }
+              { id: "confirmation-order", label: "Confirmation Order", icon: "✔️", page: "confirmation-order" },
+              { id: "material", label: "Material", icon: "📦", page: "material" },
+              { id: "Vendor", label: "Vendor", icon: "🏭", page: "vendor" },
+              { id: "Kategori", label: "Kategori", icon: "🏷️", page: "kategori" },
+              { id: "User", label: "Users Control", icon: "👤", page: "user-control" },
             ].map((menu) => (
               <li key={menu.id}>
                 <button

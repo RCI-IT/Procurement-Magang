@@ -7,6 +7,9 @@ import PurchaseOrder from "./purchase-order/page";
 import Material from "./material/page";
 import Setting from "./Setting";
 import AddPermintaanLapanganForm from "./permintaan-lapangan/add/page";
+import UserControl from "./usercontrol/page";
+import Vendor from "./vendor/page";
+import Kategori from "./kategori/page";
 import { useData } from "../context/DataContext";
 import { useSearchParams } from "next/navigation";
 
@@ -50,6 +53,12 @@ export default function MainPage() {
             setActiveContent={setActiveContent}
           />
         );
+        case "user-control":
+          return <UserControl />;
+          case "vendor":
+            return <Vendor />;
+          case "kategori":
+            return <Kategori />;
       default:
         return <Home />;
     }
