@@ -6,6 +6,7 @@ import materialsRoutes from "./routes/materials";
 import categoriesRoutes from "./routes/categories";
 import usersRoutes from "./routes/users";
 import purchaseRoutes from "./routes/purchase";
+import confirmationRoutes from './routes/confirmation'
 import path from "path";
 
 const app = express();
@@ -24,6 +25,7 @@ app.use("/vendors", vendorsRoutes);
 app.use("/materials", materialsRoutes);
 app.use("/categories", categoriesRoutes);
 app.use("/users", usersRoutes);
+app.use('/confirm', confirmationRoutes)
 app.use("/purchase", purchaseRoutes);
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
