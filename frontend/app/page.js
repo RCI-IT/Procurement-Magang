@@ -8,13 +8,14 @@ import PurchaseOrder from "./purchase-order/page";
 import Material from "./material/page";
 import Setting from "./Setting";
 import AddPermintaanLapanganForm from "./permintaan-lapangan/add/page";
-import ConfirmationOrder from "./confirmation-order/page"; // Import new page
+import ConfirmationOrder from "./confirmation-order/page";
 import { useData } from "../context/DataContext";
+import { useSearchParams } from "next/navigation";
 
 export default function MainPage() {
-  const router = useRouter();
-  const pathname = usePathname();  
-  const [page, setPage] = useState("home");  
+  const [setActiveContent] = useState("home");
+  const searchParams = useSearchParams();
+  const page = searchParams.get("page");
   const { permintaanLapanganData, setPermintaanLapanganData } = useData();
 
   const handleAddPermintaan = (newData) => {
@@ -22,15 +23,10 @@ export default function MainPage() {
   };
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const pageFromURL = params.get("page") || "home";  
-    setPage(pageFromURL);  
-  }, [pathname]);  
-
-  const handleNavigate = (newPage) => {
-    router.push(`/?page=${newPage}`);
-    setPage(newPage); 
-  };
+    if (!permintaanLapanganData) {
+      setPermintaanLapanganData([]); 
+    }
+  }, [permintaanLapanganData, setPermintaanLapanganData]);
 
   const renderContent = () => {
     switch (page) {
@@ -39,12 +35,14 @@ export default function MainPage() {
       case "permintaan-lapangan":
         return (
           <PermintaanLapangan
-            data={permintaanLapanganData || []}
-            setActiveContent={setPage}
+            data={permintaanLapanganData || []} 
+            setActiveContent={setActiveContent}
           />
         );
       case "purchase-order":
         return <PurchaseOrder />;
+        case "confirmation-order":
+        return <ConfirmationOrder />;
       case "material":
         return <Material />;
       case "setting":
@@ -53,7 +51,7 @@ export default function MainPage() {
         return (
           <AddPermintaanLapanganForm
             onAddPermintaan={handleAddPermintaan}
-            setActiveContent={setPage}
+            setActiveContent={setActiveContent}
           />
         );
       default:
