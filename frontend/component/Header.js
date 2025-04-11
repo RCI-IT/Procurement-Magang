@@ -27,7 +27,7 @@ export default function Header({ username }) {
   let breadcrumbs = [];
   let currentPath = "";
 
-  pathSegments.forEach((segment, index) => {
+  pathSegments.forEach((segment) => {
     currentPath += `/${segment}`;
     let label = breadcrumbMap[segment] || segment;
 
