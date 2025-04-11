@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";  
 import Home from "./home/page";
 import PermintaanLapangan from "./permintaan-lapangan/page";
 import PurchaseOrder from "./purchase-order/page";
 import Material from "./material/page";
 import Setting from "./Setting";
 import AddPermintaanLapanganForm from "./permintaan-lapangan/add/page";
+import ConfirmationOrder from "./confirmation-order/page";
 import UserControl from "./usercontrol/page";
 import Vendor from "./vendor/page";
 import Kategori from "./kategori/page";
@@ -42,11 +44,13 @@ export default function MainPage() {
         );
       case "purchase-order":
         return <PurchaseOrder />;
+        case "confirmation-order":
+        return <ConfirmationOrder />;
       case "material":
         return <Material />;
       case "setting":
         return <Setting />;
-      case "tambah-permintaan":
+            case "tambah-permintaan":
         return (
           <AddPermintaanLapanganForm
             onAddPermintaan={handleAddPermintaan}
@@ -65,6 +69,21 @@ export default function MainPage() {
   };
 
   return (
-    <div className="flex-1 p-6">{renderContent()}</div>
+    <div className="flex-1 p-6">
+      <nav className="flex items-center text-lg text-gray-800 font-semibold mb-4">
+        <div className="flex items-center">
+          {page && (
+            <button
+              onClick={() => handleNavigate("home")}
+              className="text-blue-600 hover:underline"
+            >
+              {page === "home" ? "Home" : page.replace(/-/g, " ")}
+            </button>
+          )}
+        </div>
+      </nav>
+
+      {renderContent()}
+    </div>
   );
 }

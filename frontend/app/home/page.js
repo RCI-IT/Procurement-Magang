@@ -6,10 +6,12 @@ import Link from "next/link";
 import LoadingIcon from "../../component/LoadingIcon";
 import Header from "../../component/Header"; // Import Header
 
+// Update navigationItems to include "Confirmation Order"
 const navigationItems = [
   { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "/?page=permintaan-lapangan" },
   { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "/?page=purchase-order" },
   { id: "material", label: "Material", icon: "📦", page: "/?page=material" },
+  { id: "confirmation-order", label: "Confirmation Order", icon: "✔️", page: "/?page=confirmation-order" }, // New menu
 ];
 
 export default function Home() {

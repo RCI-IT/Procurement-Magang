@@ -23,18 +23,17 @@
     display: none !important;
   }
   th {
-    background-color: #0d6efd !important; /* Warna biru */
-    color: white !important; /* Warna teks putih */
+    background-color: #0d6efd !important; 
+    color: white !important; 
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  /* Sembunyikan elemen sidebar dan tombol saat print */
+
   .no-print,
   .sidebar {
     display: none !important;
   }
-
-  /* Pastikan hanya konten utama yang dicetak */
+  
   body *:not(.print-area) {
     visibility: hidden;
     -webkit-print-color-adjust: exact;
@@ -64,7 +63,6 @@
     visibility: visible;
   }
 
-  /* Pastikan elemen yang dicetak tetap dalam layout yang baik */
   #permintaan-lapangan {
     position: absolute;
     left: 0;
@@ -93,9 +91,9 @@
   }
 }
 .pdf-format {
-  font-size: 12px; /* Ukuran font tetap, bisa disesuaikan */
+  font-size: 12px; 
   width: 100%;
-  padding: 10px; /* Tambah sedikit padding agar lebih rapi */
+  padding: 10px;
 }
 
 .pdf-format table {
