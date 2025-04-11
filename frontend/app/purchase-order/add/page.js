@@ -28,7 +28,7 @@ export default function AddPurchaseOrder() {
   useEffect(() => {
     const fetchPermintaanLapangan = async () => {
       try {
-        const response = await fetch("http://192.168.110.204:5000/permintaan");
+        const response = await fetch("http://localhost:5000/permintaan");
         const data = await response.json();
         setPermintaanLapangan(data);
       } catch (error) {
@@ -125,7 +125,7 @@ export default function AddPurchaseOrder() {
     
   
     try {
-      const response = await fetch("http://192.168.110.204:5000/purchase", {
+      const response = await fetch("http://localhost:5000/purchase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

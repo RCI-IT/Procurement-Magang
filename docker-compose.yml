@@ -1,24 +1,40 @@
+version: "3.8"
+
 services:
   backend:
     build: ./Backend
-    container_name: ProcurementBackend
-    hostname: Backend
+    container_name: procurementbackend
+    hostname: backend
     ports:
       - "5000:5000"
     environment:
       DATABASE_URL: postgresql://postgres:1234@192.168.110.204:5432/Backend
     volumes:
-      - ./backend:/app
+      - ./Backend:/app
     command: ["npm", "run", "dev"]
 
   frontend:
-    build: ./frontend
-    container_name: ProcurementFrontend
-    hostname: procurement
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: procurementfrontend
+    restart: unless-stopped
     ports:
       - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://192.168.110.204:5000
     volumes:
       - ./frontend:/app
-    command: ["npm", "run", "dev"]
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NEXT_PUBLIC_API_URL=http://procurement.rci/api
+
+  nginx:
+    image: nginx:latest
+    container_name: procurementnginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - backend
+      - frontend

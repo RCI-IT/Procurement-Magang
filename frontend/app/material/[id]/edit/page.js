@@ -25,9 +25,9 @@ export default function EditMaterial() {
     const fetchData = async () => {
       try {
         const [materialRes, vendorRes, categoryRes] = await Promise.all([
-          fetch(`http://192.168.110.204:5000/materials/${id}`),
-          fetch("http://192.168.110.204:5000/vendors"),
-          fetch("http://192.168.110.204:5000/categories"),
+          fetch(`http://localhost:5000/materials/${id}`),
+          fetch("http://localhost:5000/vendors"),
+          fetch("http://localhost:5000/categories"),
         ]);
 
         if (!materialRes.ok || !vendorRes.ok || !categoryRes.ok) {
@@ -75,7 +75,7 @@ export default function EditMaterial() {
     }
 
     try {
-      const response = await fetch(`http://192.168.110.204:5000/materials/${id}`, {
+      const response = await fetch(`http://localhost:5000/materials/${id}`, {
         method: "PUT",
         body: formData,
       });

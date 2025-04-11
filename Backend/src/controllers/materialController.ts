@@ -54,7 +54,8 @@ export const getAllMaterials = async (req: Request, res: Response): Promise<void
   try {
     const materials = await prisma.materials.findMany({
       include: {
-        vendor: true, // Ambil data vendor terkait
+        vendor: true,
+        category: true,
       },
     });
 
