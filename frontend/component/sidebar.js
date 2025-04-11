@@ -1,7 +1,7 @@
-"use client";
+"use client"; 
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 
 export default function Sidebar() {
   const [isMinimized, setIsMinimized] = useState(false);
@@ -33,12 +33,12 @@ export default function Sidebar() {
           </div>
 
           <ul className="space-y-1 mt-2">
-            {[
+            {[ 
               { id: "home", label: "Home", icon: "🏠", page: "home" },
               { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "permintaan-lapangan" },
               { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "purchase-order" },
-              //{ id: "confirmation-order", label: "Confirmation Order", icon: "✔️", page: "confirmation-order" },
-              { id: "material", label: "Material", icon: "📦", page: "material" }
+              { id: "material", label: "Material", icon: "📦", page: "material" },
+              { id: "confirmation-order", label: "Confirmation Order", icon: "✔️", page: "confirmation-order" }  // New Menu Added
             ].map((menu) => (
               <li key={menu.id}>
                 <button

@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { FaUserCircle } from "react-icons/fa"; // Ikon user dari react-icons
+import { FaUserCircle } from "react-icons/fa"; 
 
 export default function Header({ username }) {
   const router = useRouter();
-  const pathname = usePathname(); // Mendapatkan path dari URL
+  const pathname = usePathname(); 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   console.log("Current Path:", pathname);
@@ -50,16 +50,15 @@ export default function Header({ username }) {
 
   return (
     <div className="w-full flex flex-col p-4 shadow-md bg-white">
-      {/* Breadcrumb */}
       <nav className="flex items-center justify-between text-lg text-gray-800 font-semibold mb-4">
         <div className="flex items-center">
-          {/* Menampilkan breadcrumb sesuai alamat halaman saat ini */}
           {breadcrumbs.map((crumb, index) => (
             <span key={index} className="flex items-center">
               {index > 0 && <span className="mx-2 text-gray-500">/</span>}
               <button
                 onClick={() => router.push(crumb.path)}
                 className="text-blue-600 hover:underline"
+                disabled={pathname === crumb.path}  // Disable button if already on this page
               >
                 {crumb.label}
               </button>
@@ -67,7 +66,6 @@ export default function Header({ username }) {
           ))}
         </div>
 
-        {/* User Dropdown */}
         <div className="relative">
           <button
             className="flex items-center bg-blue-600 p-3 rounded-2xl shadow-md hover:bg-blue-700 text-white transition-colors duration-200 ease-in-out"
