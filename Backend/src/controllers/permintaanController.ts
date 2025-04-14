@@ -121,9 +121,6 @@ export const getPermintaanById = async (req: Request, res: Response): Promise<vo
             material: true,
             poDetails: true, // Tambahkan untuk mengecek apakah sudah masuk PO
           },
-          where: {
-            poDetails: { none: {} }, // Filter hanya barang yang belum masuk PO
-          },
         },
       },
     });

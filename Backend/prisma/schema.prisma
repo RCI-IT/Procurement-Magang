@@ -1,5 +1,5 @@
 generator client {
-  provider      = "prisma-client-js"
+  provider = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -9,28 +9,51 @@ datasource db {
 }
 
 model PermintaanLapangan {
-  id                Int                 @id @default(autoincrement())
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  nomor             String              @unique
-  tanggal           DateTime
-  lokasi            String
-  picLapangan       String
-  status            PermintaanStatus    @default(PENDING)
-  statusPL          PLStatus            @default(UNREAD)
-  isConfirmed       Boolean             @default(false)
-  isReceived        Boolean             @default(false)
-  keterangan        String?
-  purchaseOrderId   Int?                @unique
-  detail            PermintaanDetails[]
-  purchaseOrders    PurchaseOrder[]
-  confirmationOrder ConfirmationOrder?
+  id              Int                 @id @default(autoincrement())
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  nomor           String              @unique
+  tanggal         DateTime
+  lokasi          String
+  picLapangan     String
+  status          PermintaanStatus    @default(PENDING)
+  isConfirmed     Boolean             @default(false)
+  isReceived      Boolean             @default(false)
+  keterangan      String?
+  purchaseOrderId Int?                @unique
+  detail          PermintaanDetails[]
+  purchaseOrder   PurchaseOrder?      @relation(fields: [purchaseOrderId], references: [id])
+}
+
+model PurchaseOrder {
+  id         Int                 @id @default(autoincrement())
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  nomorPO    String              @unique
+  tanggalPO  DateTime
+  lokasiPO   String
+  keterangan String?
+  status     POStatus            @default(PENDING)
+  poDetails  PODetails[]
+  permintaan PermintaanLapangan?
+}
+
+model PODetails {
+  id                 Int               @id @default(autoincrement())
+  purchaseOrderId    Int
+  permintaanDetailId Int
+  qty                Int
+  code               String
+  keterangan         String?
+  satuan             String
+  permintaanDetail   PermintaanDetails @relation(fields: [permintaanDetailId], references: [id], onDelete: Cascade)
+  purchaseOrder      PurchaseOrder     @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
 }
 
 model PermintaanDetails {
-  id           Int          @id @default(autoincrement())
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id           Int                @id @default(autoincrement())
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
   permintaanId Int
   materialId   Int
   qty          Int
@@ -38,99 +61,42 @@ model PermintaanDetails {
   mention      String?
   code         String
   keterangan   String?
-  statusDetail DetailStatus @default(PENDING)
-
-  poDetails           PODetails[]
-  confirmationDetails ConfirmationDetails[]
-
-  material   Materials          @relation(fields: [materialId], references: [id], onDelete: Cascade)
-  permintaan PermintaanLapangan @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
-}
-
-model PurchaseOrder {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  nomorPO       String   @unique
-  tanggalPO     DateTime
-  lokasiPO      String
-  keterangan    String?
-  status        POStatus @default(PENDING)
-
-  poDetails     PODetails[]
-  permintaanId  Int
-  permintaan    PermintaanLapangan @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
-}
-
-model PODetails {
-  id                 Int     @id @default(autoincrement())
-  purchaseOrderId    Int
-  permintaanDetailId Int
-  qty                Int
-  code               String
-  keterangan         String?
-  satuan             String
-
-  purchaseOrder    PurchaseOrder     @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
-  permintaanDetail PermintaanDetails @relation(fields: [permintaanDetailId], references: [id], onDelete: Cascade)
-}
-
-model ConfirmationOrder {
-  id           Int      @id @default(autoincrement())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  permintaanId Int      @unique
-  note         String?
-
-  permintaan PermintaanLapangan    @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
-  details    ConfirmationDetails[]
-}
-
-model ConfirmationDetails {
-  id                  Int          @id @default(autoincrement())
-  confirmationOrderId Int
-  permintaanDetailId  Int
-  statusDetail        DetailStatus
-  note                String?
-
-  confirmationOrder ConfirmationOrder @relation(fields: [confirmationOrderId], references: [id], onDelete: Cascade)
-  permintaanDetail  PermintaanDetails @relation(fields: [permintaanDetailId], references: [id], onDelete: Cascade)
+  poDetails    PODetails[]
+  material     Materials          @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  permintaan   PermintaanLapangan @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
 }
 
 model Materials {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          Int                 @id @default(autoincrement())
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
   image       String?
   name        String
   description String
   price       Int
   categoryId  Int
   vendorId    Int
-
-  category   Categories          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  vendor     Vendors             @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  permintaan PermintaanDetails[]
+  category    Categories          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  vendor      Vendors             @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  permintaan  PermintaanDetails[]
 }
 
 model Categories {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  name      String   @unique
-
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  name      String      @unique
   materials Materials[]
 }
 
 model Vendors {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
   name      String
   address   String?
   city      String?
   phone     String?
-
   materials Materials[]
 }
 
@@ -152,19 +118,6 @@ enum PermintaanStatus {
   PROCESSING
   COMPLETED
   CANCELLED
-}
-
-enum DetailStatus {
-  PENDING
-  ACC
-  REJECTED
-}
-
-enum PLStatus {
-  UNREAD
-  READ
-  ON_PROGRESS
-  CLOSED
 }
 
 enum POStatus {

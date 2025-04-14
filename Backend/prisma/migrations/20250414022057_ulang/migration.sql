@@ -2,12 +2,6 @@
 CREATE TYPE "PermintaanStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'PROCESSING', 'COMPLETED', 'CANCELLED');
 
 -- CreateEnum
-CREATE TYPE "DetailStatus" AS ENUM ('PENDING', 'ACC', 'REJECTED');
-
--- CreateEnum
-CREATE TYPE "PLStatus" AS ENUM ('UNREAD', 'READ', 'ON_PROGRESS', 'CLOSED');
-
--- CreateEnum
 CREATE TYPE "POStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'PROCESSING', 'COMPLETED', 'CANCELLED');
 
 -- CreateEnum
@@ -23,30 +17,12 @@ CREATE TABLE "PermintaanLapangan" (
     "lokasi" TEXT NOT NULL,
     "picLapangan" TEXT NOT NULL,
     "status" "PermintaanStatus" NOT NULL DEFAULT 'PENDING',
-    "statusPL" "PLStatus" NOT NULL DEFAULT 'UNREAD',
     "isConfirmed" BOOLEAN NOT NULL DEFAULT false,
     "isReceived" BOOLEAN NOT NULL DEFAULT false,
     "keterangan" TEXT,
     "purchaseOrderId" INTEGER,
 
     CONSTRAINT "PermintaanLapangan_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "PermintaanDetails" (
-    "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "permintaanId" INTEGER NOT NULL,
-    "materialId" INTEGER NOT NULL,
-    "qty" INTEGER NOT NULL,
-    "satuan" TEXT NOT NULL,
-    "mention" TEXT,
-    "code" TEXT NOT NULL,
-    "keterangan" TEXT,
-    "statusDetail" "DetailStatus" NOT NULL DEFAULT 'PENDING',
-
-    CONSTRAINT "PermintaanDetails_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -77,25 +53,19 @@ CREATE TABLE "PODetails" (
 );
 
 -- CreateTable
-CREATE TABLE "ConfirmationOrder" (
+CREATE TABLE "PermintaanDetails" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "permintaanId" INTEGER NOT NULL,
-    "note" TEXT,
+    "materialId" INTEGER NOT NULL,
+    "qty" INTEGER NOT NULL,
+    "satuan" TEXT NOT NULL,
+    "mention" TEXT,
+    "code" TEXT NOT NULL,
+    "keterangan" TEXT,
 
-    CONSTRAINT "ConfirmationOrder_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "ConfirmationDetails" (
-    "id" SERIAL NOT NULL,
-    "confirmationOrderId" INTEGER NOT NULL,
-    "permintaanDetailId" INTEGER NOT NULL,
-    "statusDetail" "DetailStatus" NOT NULL,
-    "note" TEXT,
-
-    CONSTRAINT "ConfirmationDetails_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "PermintaanDetails_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -160,9 +130,6 @@ CREATE UNIQUE INDEX "PermintaanLapangan_purchaseOrderId_key" ON "PermintaanLapan
 CREATE UNIQUE INDEX "PurchaseOrder_nomorPO_key" ON "PurchaseOrder"("nomorPO");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ConfirmationOrder_permintaanId_key" ON "ConfirmationOrder"("permintaanId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Categories_name_key" ON "Categories"("name");
 
 -- CreateIndex
@@ -175,25 +142,16 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 ALTER TABLE "PermintaanLapangan" ADD CONSTRAINT "PermintaanLapangan_purchaseOrderId_fkey" FOREIGN KEY ("purchaseOrderId") REFERENCES "PurchaseOrder"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PermintaanDetails" ADD CONSTRAINT "PermintaanDetails_materialId_fkey" FOREIGN KEY ("materialId") REFERENCES "Materials"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "PermintaanDetails" ADD CONSTRAINT "PermintaanDetails_permintaanId_fkey" FOREIGN KEY ("permintaanId") REFERENCES "PermintaanLapangan"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "PODetails" ADD CONSTRAINT "PODetails_permintaanDetailId_fkey" FOREIGN KEY ("permintaanDetailId") REFERENCES "PermintaanDetails"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PODetails" ADD CONSTRAINT "PODetails_purchaseOrderId_fkey" FOREIGN KEY ("purchaseOrderId") REFERENCES "PurchaseOrder"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PODetails" ADD CONSTRAINT "PODetails_permintaanDetailId_fkey" FOREIGN KEY ("permintaanDetailId") REFERENCES "PermintaanDetails"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "PermintaanDetails" ADD CONSTRAINT "PermintaanDetails_materialId_fkey" FOREIGN KEY ("materialId") REFERENCES "Materials"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ConfirmationOrder" ADD CONSTRAINT "ConfirmationOrder_permintaanId_fkey" FOREIGN KEY ("permintaanId") REFERENCES "PermintaanLapangan"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ConfirmationDetails" ADD CONSTRAINT "ConfirmationDetails_confirmationOrderId_fkey" FOREIGN KEY ("confirmationOrderId") REFERENCES "ConfirmationOrder"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ConfirmationDetails" ADD CONSTRAINT "ConfirmationDetails_permintaanDetailId_fkey" FOREIGN KEY ("permintaanDetailId") REFERENCES "PermintaanDetails"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "PermintaanDetails" ADD CONSTRAINT "PermintaanDetails_permintaanId_fkey" FOREIGN KEY ("permintaanId") REFERENCES "PermintaanLapangan"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Materials" ADD CONSTRAINT "Materials_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Categories"("id") ON DELETE CASCADE ON UPDATE CASCADE;
