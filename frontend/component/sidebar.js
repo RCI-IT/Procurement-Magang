@@ -40,7 +40,6 @@ export default function Sidebar() {
               { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "purchase-order" },
               { id: "material", label: "Material", icon: "📦", page: "material" },
               { id: "confirmation-order", label: "Confirmation Order", icon: "✔️", page: "confirmation-order" },  // New Menu Added
-              { id: "material", label: "Material", icon: "📦", page: "material" },
               { id: "Vendor", label: "Vendor", icon: "🏭", page: "vendor" },
               { id: "Kategori", label: "Kategori", icon: "🏷️", page: "kategori" },
               { id: "User", label: "Users Control", icon: "👤", page: "user-control" },
