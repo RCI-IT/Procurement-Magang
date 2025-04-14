@@ -24,11 +24,11 @@ export default function VendorPage() {
   useEffect(() => {
     const fetchVendorData = async () => {
       try {
-        const resVendor = await fetch(`http://192.168.110.204:5000/vendors/${vendorId}`);
+        const resVendor = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`);
         if (!resVendor.ok) throw new Error("Gagal mengambil data vendor");
         const vendorData = await resVendor.json();
 
-        const resMaterials = await fetch(`http://192.168.110.204:5000/materials`);
+        const resMaterials = await  fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials`);
         if (!resMaterials.ok) throw new Error("Gagal mengambil daftar material");
         const allMaterials = await resMaterials.json();
 
@@ -85,7 +85,7 @@ export default function VendorPage() {
                     <td className="p-2 border">
                       {material.image ? (
                         <img
-                          src={`http://192.168.110.204:5000/uploads/${material.image}`}
+                          src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${material.image}`}
                           alt={material.name}
                           className="w-16 h-16 object-cover mx-auto"
                         />

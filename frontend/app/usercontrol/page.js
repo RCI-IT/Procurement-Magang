@@ -15,7 +15,7 @@ export default function User() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userRes = await fetch("http://192.168.110.204:5000/users");
+        const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`);
 
         if (!userRes.ok) throw new Error("Gagal mengambil data");
 
@@ -40,7 +40,7 @@ export default function User() {
     if (!window.confirm("Yakin ingin menghapus user ini?")) return;
 
     try {
-      const response = await fetch(`http://192.168.110.204:5000/users/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });

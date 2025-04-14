@@ -18,8 +18,8 @@ export default function Material() {
     const fetchData = async () => {
       try {
         const [materialRes, vendorRes] = await Promise.all([
-          fetch("http://192.168.110.204:5000/materials"),
-          fetch("http://192.168.110.204:5000/vendors"),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`),
         ]);
 
         if (!materialRes.ok || !vendorRes.ok) throw new Error("Gagal mengambil data");
@@ -61,7 +61,7 @@ export default function Material() {
     if (!window.confirm("Yakin ingin menghapus material ini?")) return;
 
     try {
-      const response = await fetch(`http://192.168.110.204:5000/materials/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
@@ -126,7 +126,7 @@ export default function Material() {
                         <td className="border px-4 py-2">
                           <div className="flex justify-center items-center">
                             <img
-                              src={`http://192.168.110.204:5000/uploads/${material.image}`}
+                              src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${material.image}`}
                               alt={material.image}
                               className="w-16 h-16 object-cover"
                             />

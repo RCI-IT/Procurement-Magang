@@ -45,7 +45,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
   useEffect(() => {
     const fetchPermintaanLapangan = async () => {
       try {
-        const response = await fetch("http://192.168.110.204:5000/permintaan");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan`);
         const data = await response.json();
         setUpdatedData(data);
       } catch (error) {
@@ -60,7 +60,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
     if (!confirmPending) return;
   
     try {
-      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -91,7 +91,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
     try {
       console.log("Mengirim request ke backend dengan ID:", id);
   
-      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -120,7 +120,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
     if (!window.confirm("Apakah Anda yakin ingin menghapus permintaan ini?")) return;
 
     try {
-      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`, {
         method: "DELETE",
       });
 

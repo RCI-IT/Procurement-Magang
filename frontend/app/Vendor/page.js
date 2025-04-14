@@ -19,7 +19,7 @@ export default function VendorPage() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch("http://192.168.110.204:5000/vendors");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`);
       if (!res.ok) throw new Error("Gagal fetch vendor");
       const data = await res.json();
       setVendors(data);
@@ -43,7 +43,7 @@ export default function VendorPage() {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`http://192.168.110.204:5000/vendors/${vendorId}`, {
+      const res = await  fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Gagal hapus vendor");

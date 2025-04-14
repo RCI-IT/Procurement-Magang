@@ -29,7 +29,7 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
       }, []);
 
   useEffect(() => {
-    fetch("http://192.168.110.204:5000/materials")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials`)
       .then((res) => res.json())
       .then((data) => setMaterials(data))
       .catch((error) => console.error("Gagal mengambil data material:", error));
@@ -98,7 +98,7 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
     };
 
     try {
-      const response = await fetch("http://192.168.110.204:5000/permintaan", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(finalData),

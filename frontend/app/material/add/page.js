@@ -23,8 +23,8 @@ export default function AddMaterialPage() {
     const fetchData = async () => {
       try {
         const [vendorRes, categoryRes] = await Promise.all([
-          fetch("http://192.168.110.204:5000/vendors"),
-          fetch("http://192.168.110.204:5000/categories"),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`),
         ]);
 
         if (!vendorRes.ok || !categoryRes.ok) {
@@ -71,7 +71,7 @@ export default function AddMaterialPage() {
     }
 
     try {
-      const response = await fetch("http://192.168.110.204:5000/materials", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials`, {
         method: "POST",
         body: formData,
       });

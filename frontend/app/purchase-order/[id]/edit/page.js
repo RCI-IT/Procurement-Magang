@@ -24,7 +24,7 @@ export default function EditPurchaseOrder() {
 
     const fetchPO = async () => {
       try {
-        const res = await fetch(`http://192.168.110.204:5000/purchase/${id}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`);
         if (!res.ok) throw new Error("Gagal mengambil data");
         const data = await res.json();
 
@@ -103,7 +103,7 @@ export default function EditPurchaseOrder() {
     
   
     try {
-      const response = await fetch(`http://192.168.110.204:5000/purchase/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bodyData),

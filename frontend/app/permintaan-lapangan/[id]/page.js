@@ -82,7 +82,7 @@ export default function DetailPermintaanLapangan() {
     if (!id) return;
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`);
         const result = await response.json();
         if (result) {
           setData(result);

@@ -27,7 +27,7 @@ export default function EditPermintaanLapangan() {
 
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`);
         const result = await response.json();
         if (result) {
           setFormData(result);
@@ -45,7 +45,7 @@ export default function EditPermintaanLapangan() {
 
   const fetchMaterialNames = async (details) => {
     try {
-      const response = await fetch("http://192.168.110.204:5000/materials");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials`);
       const data = await response.json();
       const materialMap = data.reduce((acc, material) => {
         acc[material.id] = material.name;
@@ -74,7 +74,7 @@ export default function EditPermintaanLapangan() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://192.168.110.204:5000/permintaan/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

@@ -35,7 +35,7 @@ export default function MaterialPage() {
     const fetchMaterialDetails = async () => {
       setLoading(true);
       try {
-        const resMaterial = await fetch(`http://192.168.110.204:5000/materials/${id}`);
+        const resMaterial = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`);
         if (!resMaterial.ok) throw new Error("Material tidak ditemukan");
         const materialData = await resMaterial.json();
 
@@ -45,12 +45,12 @@ export default function MaterialPage() {
         let searchVendorId = null;
         if (materialData.vendorId) {
           searchVendorId = Number(materialData.vendorId);
-          const resVendor = await fetch(`http://192.168.110.204:5000/vendors/${searchVendorId}`);
+          const resVendor = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${searchVendorId}`);
           if (resVendor.ok) vendorData = await resVendor.json();
         } else if (materialData.vendor) {
           const vendorName = materialData.vendor;
           const resVendor = await fetch(
-            `http://192.168.110.204:5000/vendors?name=${encodeURIComponent(vendorName)}`
+            `${process.env.NEXT_PUBLIC_API_URL}/vendors?name=${encodeURIComponent(vendorName)}`
           );
           if (resVendor.ok) {
             const vendorList = await resVendor.json();
@@ -63,7 +63,7 @@ export default function MaterialPage() {
 
         if (searchVendorId) {
           const resRelated = await fetch(
-            `http://192.168.110.204:5000/materials?vendorId=${searchVendorId}`
+            `${process.env.NEXT_PUBLIC_API_URL}/materials?vendorId=${searchVendorId}`
           );
           if (resRelated.ok) {
             const allMaterials = await resRelated.json();
@@ -114,7 +114,7 @@ export default function MaterialPage() {
 
   const materialImage = material?.imageUrl
     ? material.imageUrl
-    : "http://192.168.110.204:5000/uploads/default-image.jpg";
+    : `${process.env.NEXT_PUBLIC_API_URL}/uploads/default-image.jpg`;
 
   return (
     <div className="flex">
@@ -178,7 +178,7 @@ export default function MaterialPage() {
             {relatedMaterials.map((item) => {
               const relatedImage = item.image?.startsWith("http")
                 ? item.image
-                : `http://192.168.110.204:5000/uploads/${item.image || "default-image.jpg"}`;
+                : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${item.image || "default-image.jpg"}`;
               return (
                 <div key={item.id} className="border rounded p-4 text-center bg-white text-sm w-40 h-48 flex flex-col items-center shadow">
                   <img src={relatedImage} alt={item.name} className="mb-2 w-20 h-20 object-cover" />

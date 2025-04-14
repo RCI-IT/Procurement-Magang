@@ -11,7 +11,7 @@ export default function Login() {
 
   useEffect(() => {
     // Ambil data user dari backend
-    fetch("http://192.168.110.204:5000/users")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`)
       .then(response => response.json())
       .then(data => setUsers(data))
       .catch(error => console.error("Error fetching users:", error));

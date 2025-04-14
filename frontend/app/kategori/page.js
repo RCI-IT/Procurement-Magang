@@ -15,7 +15,7 @@ export default function KategoriPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("http://192.168.110.204:5000/categories");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`);
         if (!res.ok) throw new Error("Gagal fetch kategori");
         const data = await res.json();
         setCategories(data);

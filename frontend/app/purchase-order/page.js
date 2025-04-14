@@ -20,7 +20,7 @@ const PurchaseOrderTable = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://192.168.110.204:5000/purchase");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase`);
         if (!response.ok) {
           throw new Error(`Gagal mengambil data: ${response.statusText}`);
         }
@@ -59,7 +59,7 @@ const PurchaseOrderTable = () => {
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch(`http://192.168.110.204:5000/purchase/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) {
