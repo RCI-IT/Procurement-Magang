@@ -91,7 +91,7 @@ export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
     const filteredPermintaanList = permintaanList
       .map((pl: any) => ({
         ...pl,
-        detail: pl.detail.filter((item: any) => item.poDetails.length === 0),
+        detail: pl.detail.filter((item: any) => item.confirmationDetails.length === 0),
       }))
       .filter((pl: any) => pl.detail.length > 0);
 

@@ -6,12 +6,12 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../../../component/sidebar";
 import Header from "../../../component/Header.js"
 
-export default function AddPurchaseOrder() {
+export default function AddConfirmationOrder() { // UBAH NAMA FUNGSI
   const [formData, setFormData] = useState({
-    nomorPO: "",
-    proyek: "",
+    nomorCO: "",
+    lokasiCO: "",
     idPL: "",
-    tanggalPO: "",
+    tanggalCO: "",
     idVendor: "",
   });
 
@@ -24,13 +24,12 @@ export default function AddPurchaseOrder() {
   const router = useRouter();
   const [username, setUsername] = useState("");
 
-  // Fetch data Permintaan Lapangan
   useEffect(() => {
     const fetchPermintaanLapangan = async () => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan`);
         const data = await response.json();
-        setPermintaanLapangan(data);
+        setPermintaanLapangan(data.data || []);
       } catch (error) {
         console.error("Gagal mengambil data PL:", error);
       }
@@ -39,7 +38,6 @@ export default function AddPurchaseOrder() {
     fetchPermintaanLapangan();
   }, []);
 
-  // Update daftar barang dan vendor berdasarkan PL yang dipilih
   useEffect(() => {
     if (formData.idPL) {
       const selectedPL = permintaanLapangan.find((pl) => pl.id === parseInt(formData.idPL));
@@ -72,7 +70,6 @@ export default function AddPurchaseOrder() {
     }
   }, []);
 
-  // Filter barang berdasarkan vendor yang dipilih
   useEffect(() => {
     if (formData.idVendor) {
       const filtered = allItems.filter((item) => item.material.vendor.id === parseInt(formData.idVendor));
@@ -89,27 +86,27 @@ export default function AddPurchaseOrder() {
       [name]: value,
     }));
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.nomorPO || !formData.proyek || !formData.tanggalPO || !formData.idPL || !formData.idVendor) {
+
+    if (!formData.nomorCO || !formData.lokasiCO || !formData.tanggalCO || !formData.idPL || !formData.idVendor) {
       alert("Semua kolom harus diisi!");
       return;
     }
-  
+
     if (selectedItems.length === 0) {
       alert("Pilih minimal 1 barang!");
       return;
     }
-  
-    // Pastikan hanya item yang dipilih yang dikirim ke backend
+
     const payload = {
-      nomorPO: formData.nomorPO,
-      tanggalPO: new Date(formData.tanggalPO).toISOString(),
-      lokasiPO: formData.proyek,
+      nomorCO: formData.nomorCO,
+      tanggalCO: new Date(formData.tanggalCO).toISOString(),
+      lokasiCO: formData.lokasiCO,
       permintaanId: parseInt(formData.idPL, 10),
       items: selectedItems.map(({ id, material, code, qty, satuan }) => ({
-        permintaanDetailId: id,  // Hanya ID dari selectedItems
+        permintaanDetailId: id,
         kodeBarang: code,
         namaBarang: material?.name ?? "Tidak Diketahui",
         harga: material?.price ?? 0,
@@ -117,38 +114,38 @@ export default function AddPurchaseOrder() {
         satuan,
       })),
     };
-  
+
     console.log("Selected Items:", selectedItems);
     console.log("Payload yang dikirim ke backend:", JSON.stringify(payload, null, 2));
     console.log("🛠 Items yang akan dikirim:", JSON.stringify(selectedItems, null, 2));
 
-    
-  
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation`, { // ENDPOINT SUDAH BENAR UNTUK CO
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-  
+
       if (response.ok) {
-        alert("Purchase Order berhasil ditambahkan!");
+        alert("Confirmation Order berhasil ditambahkan!"); // PESAN SUDAH SESUAI
         router.back();
       } else {
         const errorData = await response.json();
-        console.error("Gagal menambah PO:", errorData);
+        console.error("Gagal menambah Confirmation Order:", errorData); // LOG DISESUAIKAN
       }
     } catch (error) {
-      console.error("Gagal menambah PO:", error);
+      console.error("Gagal menambah Confirmation Order:", error); // LOG DISESUAIKAN
     }
   };
+
   const toggleItemSelection = (item) => {
     setSelectedItems((prevSelected) =>
       prevSelected.some((i) => i.id === item.id)
-        ? prevSelected.filter((i) => i.id !== item.id) // Hapus jika sudah dipilih
-        : [...prevSelected, item] // Tambahkan jika belum dipilih
+        ? prevSelected.filter((i) => i.id !== item.id)
+        : [...prevSelected, item]
     );
   };
+
   const totalHarga = selectedItems.reduce(
     (total, item) => total + (item.material?.price || 0) * item.qty,
     0
@@ -156,29 +153,26 @@ export default function AddPurchaseOrder() {
 
   return (
     <div className="flex h-screen">
-      <Sidebar/>
+      <Sidebar />
       <div className="flex-1 p-6">
-      <div>
-    <Header username={username} />
-    </div>
-        <h1 className="text-2xl font-bold mb-6">Tambah Purchase Order</h1>
+        <div>
+          <Header username={username} />
+        </div>
+        <h1 className="text-2xl font-bold mb-6">Tambah Confirmation Order</h1> {/* JUDUL DIUBAH */}
         <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 shadow-md rounded-lg">
           <div className="grid grid-cols-2 gap-4 border-b pb-4">
             <div>
-              <label className="block font-medium">Nomor PO:</label>
-              <input type="text" name="nomorPO" value={formData.nomorPO} onChange={handleChange} className="border px-4 py-2 w-full" required />
+              <label className="block font-medium">Nomor CO:</label>
+              <input type="text" name="nomorCO" value={formData.nomorCO} onChange={handleChange} className="border px-4 py-2 w-full" required />
             </div>
-
             <div>
-              <label className="block font-medium">Proyek:</label>
-              <input type="text" name="proyek" value={formData.proyek} onChange={handleChange} className="border px-4 py-2 w-full" required />
+              <label className="block font-medium">lokasi CO:</label>
+              <input type="text" name="lokasiCO" value={formData.lokasiCO} onChange={handleChange} className="border px-4 py-2 w-full" required />
             </div>
-
             <div>
-              <label className="block font-medium">Tanggal PO:</label>
-              <input type="date" name="tanggalPO" value={formData.tanggalPO} onChange={handleChange} className="border px-4 py-2 w-full" required />
+              <label className="block font-medium">Tanggal CO:</label>
+              <input type="date" name="tanggalCO" value={formData.tanggalCO} onChange={handleChange} className="border px-4 py-2 w-full" required />
             </div>
-
             <div>
               <label className="block font-medium">Pilih No PL:</label>
               <select name="idPL" value={formData.idPL} onChange={handleChange} className="border px-4 py-2 w-full" required>
@@ -188,7 +182,6 @@ export default function AddPurchaseOrder() {
                 ))}
               </select>
             </div>
-
             {formData.idPL && (
               <div>
                 <label className="block font-medium">Pilih Vendor:</label>
@@ -206,33 +199,34 @@ export default function AddPurchaseOrder() {
             <div className="border-b pb-4">
               <label className="block font-medium">Pilih Barang:</label>
               {filteredItems.length > 0 ? (
-  <ul>
-    {filteredItems.map((item) => (
-      <li key={item.id} className="flex items-center border p-2">
-        <input
-          type="checkbox"
-          checked={selectedItems.some((i) => i.id === item.id)}
-          onChange={() => toggleItemSelection(item)}
-          className="mr-2"
-        />
-        {item.material?.name} - Rp {item.material?.price.toLocaleString()}
-      </li>
-    ))}
-  </ul>
-) : (
-  <p className="text-gray-500">Tidak ada barang dari vendor ini</p>
-)}
-
+                <ul>
+                  {filteredItems.map((item) => (
+                    <li key={item.id} className="flex items-center border p-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.some((i) => i.id === item.id)}
+                        onChange={() => toggleItemSelection(item)}
+                        className="mr-2"
+                      />
+                      {item.material?.name} - Rp {item.material?.price.toLocaleString()}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500">Tidak ada barang dari vendor ini</p>
+              )}
             </div>
           )}
 
           <div className="text-xl font-semibold">Total Harga: Rp {totalHarga.toLocaleString()}</div>
+
           <button type="button"
-  onClick={() => router.back()} 
-  className="mt-6 bg-gray-500 text-white px-4 py-2 rounded"
->
-  Gak Jadi
-</button>
+            onClick={() => router.back()}
+            className="mt-6 bg-gray-500 text-white px-4 py-2 rounded"
+          >
+            Gak Jadi
+          </button>
+
           <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded w-40">Simpan</button>
         </form>
       </div>
