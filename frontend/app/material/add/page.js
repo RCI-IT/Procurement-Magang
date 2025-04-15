@@ -187,14 +187,14 @@ export default function AddMaterialPage() {
             <button
               type="button"
               onClick={() => window.history.back()}
-              className="bg-gray-500 text-white rounded px-4 py-2 w-40"
+              className="bg-red-500 text-white rounded px-4 py-2 w-40"
             >
-              Kembali
+              Batal
             </button>
 
             <button
               type="submit"
-              className="bg-blue-500 text-white rounded px-4 py-2 w-40"
+              className="bg-green-500 text-white rounded px-4 py-2 w-40"
               disabled={loading}
             >
               {loading ? "Menambahkan..." : "Tambah Material"}
