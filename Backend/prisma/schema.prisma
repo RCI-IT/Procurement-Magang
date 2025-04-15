@@ -27,6 +27,34 @@ model PermintaanLapangan {
   user                User?               @relation(fields: [userId], references: [id])
 }
 
+model PurchaseOrder {
+  id                  Int               @id @default(autoincrement())
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  nomorPO             String            @unique
+  tanggalPO           DateTime
+  lokasiPO            String
+  status              POStatus          @default(PENDING)
+  keterangan          String?
+  confirmationOrderId Int               @unique
+  confirmationOrder   ConfirmationOrder @relation("COToPO", fields: [confirmationOrderId], references: [id], onDelete: Cascade)
+  purchaseDetails     PurchaseDetails[]
+  userId              Int?
+  user                User?             @relation(fields: [userId], references: [id])
+}
+
+model PurchaseDetails {
+  id              Int           @id @default(autoincrement())
+  purchaseOrderId Int
+  materialId      Int
+  qty             Int
+  code            String
+  satuan          String
+  keterangan      String?
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  material        Materials     @relation(fields: [materialId], references: [id], onDelete: Cascade)
+}
+
 model ConfirmationOrder {
   id                  Int                   @id @default(autoincrement())
   createdAt           DateTime              @default(now())
@@ -40,6 +68,7 @@ model ConfirmationOrder {
   permintaan          PermintaanLapangan?
   userId              Int?
   user                User?                 @relation(fields: [userId], references: [id])
+  purchaseOrder       PurchaseOrder?        @relation("COToPO")
 }
 
 model ConfirmationDetails {
@@ -71,18 +100,19 @@ model PermintaanDetails {
 }
 
 model Materials {
-  id          Int                 @id @default(autoincrement())
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  image       String?
-  name        String
-  description String
-  price       Int
-  categoryId  Int
-  vendorId    Int
-  category    Categories          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  vendor      Vendors             @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  permintaan  PermintaanDetails[]
+  id              Int                 @id @default(autoincrement())
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  image           String?
+  name            String
+  description     String
+  price           Int
+  categoryId      Int
+  vendorId        Int
+  category        Categories          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  vendor          Vendors             @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  permintaan      PermintaanDetails[]
+  PurchaseDetails PurchaseDetails[]
 }
 
 model Categories {
@@ -115,24 +145,41 @@ model User {
   role               UserRole             @default(USER_LAPANGAN)
   permintaans        PermintaanLapangan[]
   confirmationOrders ConfirmationOrder[]
+  PurchaseOrder      PurchaseOrder[]
 }
 
 enum PermintaanStatus {
   PENDING
   APPROVED
   REJECTED
-  PROCESSING
-  COMPLETED
+  IN_PROGRESS
+  CLOSED
   CANCELLED
+  READ
 }
 
 enum COStatus {
   PENDING
+  CLOSED
   APPROVED
   REJECTED
   PROCESSING
   COMPLETED
   CANCELLED
+  IN_PROGRESS
+  READ
+}
+
+enum POStatus {
+  PENDING
+  CLOSED
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+  CANCELLED
+  IN_PROGRESS
+  READ
 }
 
 enum UserRole {
