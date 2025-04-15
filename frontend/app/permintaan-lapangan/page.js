@@ -204,6 +204,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
               <th className="border px-4 py-2">Nomor</th>
               <th className="border px-4 py-2">Tanggal</th>
               <th className="border px-4 py-2">Lokasi</th>
+              <th className="border px-4 py-2">Status</th>
               <th className="border px-4 py-2">Aksi</th>
             </tr>
           </thead>
@@ -219,6 +220,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
                       {day} {getMonthName(month)} {year}
                     </td>
                     <td className="border px-4 py-2">{item.lokasi}</td>
+                    <td className="border px-4 py-2"></td>
                     <td className="border px-4 py-2 flex justify-center gap-2">
                       <button
                         className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
