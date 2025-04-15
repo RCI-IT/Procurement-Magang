@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -18,6 +17,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
   const [isAddFormVisible, setIsAddFormVisible] = useState(false);
   const [updatedData, setUpdatedData] = useState([]);
   const router = useRouter();
+  const [userRole, setUserRole] = useState(null); 
   const [username, setUsername] = useState("");
 
   const getMonthName = (monthNumber) => months[monthNumber - 1];
@@ -35,12 +35,16 @@ export default function PermintaanLapangan({ setActiveContent }) {
     setActiveContent("permintaan-lapangan");
   };
 
-    useEffect(() => {
-      const storedUsername = localStorage.getItem("username");
-      if (storedUsername) {
-        setUsername(storedUsername);
-      }
-    }, []);
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    const storedRole = localStorage.getItem("role"); 
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+    if (storedRole) {
+      setUserRole(storedRole); 
+    }
+  }, []);
 
   useEffect(() => {
     const fetchPermintaanLapangan = async () => {
@@ -144,6 +148,13 @@ export default function PermintaanLapangan({ setActiveContent }) {
   };
   
 
+  const getStatus = (status) => {
+    if (userRole === "USER_PURCHASE") {
+      return "Read"; 
+    }
+    return status;
+  };
+
   return (
     <div className="flex h-screen">
      <Sidebar />
@@ -220,7 +231,9 @@ export default function PermintaanLapangan({ setActiveContent }) {
                       {day} {getMonthName(month)} {year}
                     </td>
                     <td className="border px-4 py-2">{item.lokasi}</td>
-                    <td className="border px-4 py-2"></td>
+                    <td className="border px-4 py-2">
+                        {getStatus(item.status)} 
+                      </td>
                     <td className="border px-4 py-2 flex justify-center gap-2">
                       <button
                         className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"

@@ -118,6 +118,7 @@ const ConfirmationOrderTable = () => {
                 <th className="border p-2">Nomor</th>
                 <th className="border p-2">Tanggal</th>
                 <th className="border p-2">Lokasi</th>
+                <th className="border p-2">Status</th>
                 <th className="border p-2">Aksi</th>
               </tr>
             </thead>
@@ -137,6 +138,7 @@ const ConfirmationOrderTable = () => {
                         : "N/A"}
                     </td>
                     <td className="border p-2">{co.lokasiCO}</td>
+                    <td className="border p-2"></td>
                     <td className="border p-2">
                       <ActionButtons
                         onView={() => router.push(`/confirmation-order/${co.id}`)}
