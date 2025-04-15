@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AddPermintaanLapanganForm from "./add/page";  
 import Sidebar from "../../component/sidebar";
 import Header from "../../component/Header.js";
+import { Eye, Trash2 } from "lucide-react";
 
 const months = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -239,13 +240,13 @@ export default function PermintaanLapangan({ setActiveContent }) {
                         className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
                         onClick={() => router.push(`/permintaan-lapangan/${item.id}`)}
                       >
-                       👁
+                       <Eye className="text-white" />
                       </button>
                       <button
                         className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600"
                         onClick={() => handleDelete(item.id)}
                       >
-                        🗑
+                        <Trash2 className="text-white" />
                       </button>
                     
                     </td>

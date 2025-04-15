@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../component/sidebar.js";
 import Header from "../../component/Header.js";
+import { Eye, Trash2 } from "lucide-react";
 
 export default function User() {
   const [users, setUsers] = useState([]);
@@ -109,7 +110,7 @@ export default function User() {
                           onClick={() => handleDelete(user.id)}
                           className="bg-red-500 text-white rounded px-2 py-1 ml-2"
                         >
-                          🗑
+                          <Trash2 className="text-white" />
                         </button>
                       </td>
                     </tr>

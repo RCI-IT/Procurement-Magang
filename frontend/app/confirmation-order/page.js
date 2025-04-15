@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"; // import useRouter dari next/navigation
 import Sidebar from "@/component/sidebar";
 import Header from "../../component/Header";
 import { Eye, Trash2 } from "lucide-react";
@@ -44,6 +43,7 @@ const ConfirmationOrderTable = () => {
       setUsername(storedUsername);
     }
   }, []); 
+
   // Fungsi hapus data
   const handleDelete = async (id) => {
     const confirmDelete = confirm("Yakin ingin menghapus data ini?");
@@ -62,6 +62,15 @@ const ConfirmationOrderTable = () => {
     }
   };
 
+  // Fungsi konfirmasi dan pindahkan data ke halaman purchase-order
+  const handleKonfirmasi = (co) => {
+    // Menyimpan data di localStorage (atau bisa menggunakan sessionStorage)
+    localStorage.setItem('selectedOrder', JSON.stringify(co));
+
+    // Navigasi ke halaman purchase-order
+    router.push('/purchase-order');
+  };
+
   // Komponen tombol aksi (lihat + hapus)
   const ActionButtons = ({ onView, onDelete }) => (
     <div className="flex justify-center gap-4">
@@ -69,13 +78,13 @@ const ConfirmationOrderTable = () => {
         onClick={onView}
         className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl w-12 h-12 flex items-center justify-center"
       >
-        👁
+        <Eye className="text-white" />
       </button>
       <button
         onClick={onDelete}
         className="bg-red-500 hover:bg-red-600 text-white rounded-xl w-12 h-12 flex items-center justify-center"
       >
-        🗑
+        <Trash2 className="text-white" />
       </button>
     </div>
   );
@@ -138,7 +147,14 @@ const ConfirmationOrderTable = () => {
                         : "N/A"}
                     </td>
                     <td className="border p-2">{co.lokasiCO}</td>
-                    <td className="border p-2"></td>
+                    <td className="border p-2">
+                      <button
+                        onClick={() => handleKonfirmasi(co)}  // Mengirimkan data
+                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                      >
+                        Konfirmasi
+                      </button>
+                    </td>
                     <td className="border p-2">
                       <ActionButtons
                         onView={() => router.push(`/confirmation-order/${co.id}`)}
@@ -149,7 +165,7 @@ const ConfirmationOrderTable = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center p-4">
+                  <td colSpan="6" className="text-center p-4">
                     Tidak ada data
                   </td>
                 </tr>

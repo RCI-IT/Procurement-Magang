@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../component/sidebar";
 import Header from "../../component/Header";
+import { Eye, Trash2 } from "lucide-react";
 
 export default function VendorPage() {
   const [vendors, setVendors] = useState([]);
@@ -101,13 +102,13 @@ export default function VendorPage() {
                         onClick={() => handleVendorClick(vendor.id)}
                         className="bg-blue-500 text-white rounded px-2 py-1"
                       >
-                        👁
+                        <Eye className="text-white" />
                       </button>
                       <button
                         onClick={() => handleDelete(vendor.id)}
                         className="bg-red-500 text-white rounded px-2 py-1 ml-2"
                       >
-                        🗑
+                        <Trash2 className="text-white" />
                       </button>
                     </td>
                   </tr>
