@@ -50,38 +50,53 @@ export const createConfirmationOrder = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Terjadi kesalahan", error });
   }
 };
+// GET ALL CONFIRMATION ORDERS
 export const getAllConfirmationOrders = async (req: Request, res: Response) => {
   try {
     const confirmationOrders = await prisma.confirmationOrder.findMany({
-      include: {
-        permintaan: true,
-        confirmationDetails: {
-          include: { permintaanDetail: true },
-        },
-      },
-    });
-    res.status(200).json(confirmationOrders);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Terjadi kesalahan", error });
-  }
-};
-export const getConfirmationOrderById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const confirmationOrder = await prisma.confirmationOrder.findUnique({
-      where: { id: Number(id) },
       include: {
         confirmationDetails: {
           include: {
             permintaanDetail: {
               include: {
-                permintaan: true,
                 material: {
                   include: {
                     vendor: true,
                   },
                 },
+                permintaan: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    res.status(200).json(confirmationOrders);
+  } catch (error) {
+    console.error("Error getAllConfirmationOrders:", error);
+    res.status(500).json({ message: "Terjadi kesalahan", error });
+  }
+};
+
+// GET CONFIRMATION ORDER BY ID
+export const getConfirmationOrderById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const confirmationOrder = await prisma.confirmationOrder.findUnique({
+      where: { id: Number(id) },
+      include:{
+        confirmationDetails: {
+          include: {
+            permintaanDetail: {
+              include: {
+                material: {
+                  include: {
+                    vendor: true,
+                  },
+                },
+                permintaan: true,
               },
             },
           },
@@ -95,7 +110,7 @@ export const getConfirmationOrderById = async (req: Request, res: Response) => {
 
     res.status(200).json(confirmationOrder);
   } catch (error) {
-    console.error(error);
+    console.error("Error getConfirmationOrderById:", error);
     res.status(500).json({ message: "Terjadi kesalahan", error });
   }
 };
@@ -110,35 +125,50 @@ export const updateConfirmationOrder = async (req: Request, res: Response) => {
         nomorCO,
         tanggalCO: new Date(tanggalCO),
         lokasiCO,
-        status,
-        confirmationDetails: {
-          upsert: confirmationDetails.map((detail: any) => ({
-            where: { id: detail.id ?? 0 },
-            update: {
-              qty: detail.qty,
-              satuan: detail.satuan,
-              keterangan: detail.keterangan,
-            },
-            create: {
-              confirmationOrderId: Number(id),
-              permintaanDetailId: detail.permintaanDetailId,
-              qty: detail.qty,
-              code: detail.code,
-              satuan: detail.satuan,
-              keterangan: detail.keterangan,
-            },
-          })),
-        },
+        status: status?.toUpperCase(), // pastikan enum valid
       },
-      include: { confirmationDetails: true },
     });
 
-    res.status(200).json(updatedCO);
+    // Hapus semua confirmationDetails lama
+    await prisma.confirmationDetails.deleteMany({
+      where: { confirmationOrderId: Number(id) },
+    });
+
+    // Masukkan ulang confirmationDetails baru
+    await prisma.confirmationDetails.createMany({
+      data: confirmationDetails.map((detail: any) => ({
+        confirmationOrderId: Number(id),
+        permintaanDetailId: detail.permintaanDetailId,
+        qty: detail.qty,
+        code: detail.code,
+        satuan: detail.satuan,
+        keterangan: detail.keterangan,
+      })),
+    });
+
+    // Ambil data updated termasuk relasi
+    const result = await prisma.confirmationOrder.findUnique({
+      where: { id: Number(id) },
+      include: {
+        confirmationDetails: {
+          include: {
+            permintaanDetail: {
+              include: {
+                material: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    res.status(200).json(result);
   } catch (error) {
     console.error("Error updating Confirmation Order:", error);
     res.status(500).json({ message: "Terjadi kesalahan", error });
   }
 };
+
 export const deleteConfirmationOrder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;

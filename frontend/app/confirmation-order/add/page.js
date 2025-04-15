@@ -29,7 +29,7 @@ export default function AddConfirmationOrder() { // UBAH NAMA FUNGSI
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan`);
         const data = await response.json();
-        setPermintaanLapangan(data.data || []);
+        setPermintaanLapangan(data);
       } catch (error) {
         console.error("Gagal mengambil data PL:", error);
       }

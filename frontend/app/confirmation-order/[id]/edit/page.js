@@ -10,11 +10,11 @@ export default function EditPurchaseOrder() {
   const { id } = useParams();
   const router = useRouter();
 
-  const [poData, setPoData] = useState({
-    nomorPO: "",
-    tanggalPO: "",
-    lokasiPO: "",
-    poDetails: [],
+  const [CoData, setCoData] = useState({
+    nomorCO: "",
+    tanggalCO: "",
+    lokasiCO: "",
+    confirmationDetails: [],
   });
 
   const [loading, setLoading] = useState(true);
@@ -24,18 +24,18 @@ export default function EditPurchaseOrder() {
 
     const fetchPO = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`);
         if (!res.ok) throw new Error("Gagal mengambil data");
         const data = await res.json();
 
-        setPoData({
-          nomorPO: data.nomorPO || "",
-          tanggalPO: data.tanggalPO ? data.tanggalPO.split("T")[0] : "",
-          lokasiPO: data.lokasiPO || "",
-          poDetails: Array.isArray(data.poDetails) ? data.poDetails : [],
+        setCoData({
+          nomorCO: data.nomorCO || "",
+          tanggalCO: data.tanggalCO ? data.tanggalCO.split("T")[0] : "",
+          lokasiCO: data.lokasiCO || "",
+          confirmationDetails: Array.isArray(data.confirmationDetails) ? data.confirmationDetails : [],
         });
       } catch (error) {
-        console.error("Error fetching PO:", error);
+        console.error("Error fetching CO:", error);
       } finally {
         setLoading(false);
       }
@@ -45,12 +45,12 @@ export default function EditPurchaseOrder() {
   }, [id]);
 
   const handleChange = (e, field) => {
-    setPoData((prev) => ({ ...prev, [field]: e.target.value }));
+    setCoData((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
   const handleItemChange = (index, field, value) => {
-    setPoData((prev) => {
-      const updatedItems = [...prev.poDetails];
+    setCoData((prev) => {
+      const updatedItems = [...prev.confirmationDetails];
   
       if (field === "material.price") {
         // Jika yang diubah adalah harga material
@@ -75,7 +75,7 @@ export default function EditPurchaseOrder() {
         };
       }
   
-      return { ...prev, poDetails: updatedItems };
+      return { ...prev, confirmationDetails: updatedItems };
     });
   };
   
@@ -85,11 +85,11 @@ export default function EditPurchaseOrder() {
     e.preventDefault();
     
     const bodyData = {
-      nomorPO: poData.nomorPO,
-      tanggalPO: poData.tanggalPO,
-      lokasiPO: poData.lokasiPO,
+      nomorCO: CoData.nomorCO,
+      tanggalCO: CoData.tanggalCO,
+      lokasiCO: CoData.lokasiCO,
       status: "Pending", // Sesuaikan dengan kebutuhan backend
-      poDetails: poData.poDetails.map((detail) => ({
+      confirmationDetails: CoData.confirmationDetails.map((detail) => ({
         id: detail.id, // Pastikan ID item tetap ada
         qty: detail.permintaanDetail.qty,
         satuan: detail.permintaanDetail.satuan,
@@ -103,7 +103,7 @@ export default function EditPurchaseOrder() {
     
   
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bodyData),
@@ -139,40 +139,40 @@ export default function EditPurchaseOrder() {
   
   
   if (loading) return <p className="text-center text-gray-600">Memuat data...</p>;
-  if (!poData.nomorPO) return <p className="text-center text-red-600">Data tidak ditemukan</p>;
+  if (!CoData.nomorCO) return <p className="text-center text-red-600">Data tidak ditemukan</p>;
 
   return (
     <div className="flex h-screen">
       <Sidebar />
       <div className="w-full max-w-4xl mx-auto px-8 py-6">
         <Header username="Admin" />
-        <h2 className="text-xl font-bold text-blue-900 mb-4">Edit Purchase Order</h2>
+        <h2 className="text-xl font-bold text-blue-900 mb-4">Edit Confirmation Order</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700">Nomor PO</label>
+            <label className="block text-gray-700">Nomor CO</label>
             <input
               type="text"
               className="w-full border rounded p-2"
-              value={poData.nomorPO}
-              onChange={(e) => handleChange(e, "nomorPO")}
+              value={CoData.nomorCO}
+              onChange={(e) => handleChange(e, "nomorCO")}
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Tanggal PO</label>
+            <label className="block text-gray-700">Tanggal CO</label>
             <input
               type="date"
               className="w-full border rounded p-2"
-              value={poData.tanggalPO}
-              onChange={(e) => handleChange(e, "tanggalPO")}
+              value={CoData.tanggalCO}
+              onChange={(e) => handleChange(e, "tanggalCO")}
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Lokasi PO</label>
+            <label className="block text-gray-700">Lokasi CO</label>
             <input
               type="text"
               className="w-full border rounded p-2"
-              value={poData.lokasiPO}
-              onChange={(e) => handleChange(e, "lokasiPO")}
+              value={CoData.lokasiCO}
+              onChange={(e) => handleChange(e, "lokasiCO")}
             />
           </div>
 
@@ -190,8 +190,8 @@ export default function EditPurchaseOrder() {
               </tr>
             </thead>
             <tbody>
-              {poData.poDetails.length > 0 ? (
-                poData.poDetails.map((poItem, index) => {
+              {CoData.confirmationDetails.length > 0 ? (
+                CoData.confirmationDetails.map((poItem, index) => {
                   const item = poItem.permintaanDetail;
                   const harga = item?.material?.price || 0;
                   const qty = item?.qty || 0;

@@ -8,9 +8,10 @@ import Sidebar from "../../../component/sidebar.js";
 import { useRouter } from "next/navigation";
 import Header from "../../../component/Header.js"
 
-export default function PurchaseOrderDetail() {
+export default function ConfirmationOrderDetail() {
   const { id } = useParams();
-  const [poDetail, setPoDetail] = useState(null);
+  const [ConfirmationDetails, setCoDetail] = useState(null);
+  const [ConfirmationDetail, setCoSDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function PurchaseOrderDetail() {
 
 const handleDownloadPDF = () => {
   setTimeout(() => {
-    const headerElement = document.getElementById("purchase-order");
+    const headerElement = document.getElementById("confirmation-order");
     const noPrintElements = document.querySelectorAll(".no-print");
 
     if (!headerElement) {
@@ -35,7 +36,7 @@ const handleDownloadPDF = () => {
     html2pdf()
       .set({
         margin: 10,
-        filename: `purchase-order${new Date().toISOString().slice(0, 10)}.pdf`,
+        filename: `confirmation-order${new Date().toISOString().slice(0, 10)}.pdf`,
         image: { type: "png", quality: 1 },
         html2canvas: { scale: 1 },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait", size:"69" },
@@ -92,11 +93,12 @@ useEffect(() => {
 
     const fetchData = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`);
         if (!response.ok) throw new Error("Gagal mengambil data dari server");
 
         const data = await response.json();
-        setPoDetail(data);
+        setCoDetail(data);
+        setCoSDetail(data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -111,8 +113,8 @@ useEffect(() => {
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
   const totalHarga =
-  poDetail?.poDetails?.reduce((sum, poItem) => {
-    const item = poItem.permintaanDetail; // Ambil permintaan detail dari poDetails
+  ConfirmationDetails?.confirmationDetails?.reduce((sum, coItem) => {
+    const item = coItem.permintaanDetail; // Ambil permintaan detail dari confirmationDetailss
     return sum + ((item.material?.price || 0) * (item.qty || 0));
   }, 0) || 0;
 
@@ -126,7 +128,7 @@ useEffect(() => {
             </div>
       <div className="text-right space-x-2">
       <button
-  onClick={() => router.push(`/purchase-order/${id}/edit`)}
+  onClick={() => router.push(`/confirmation-order/${id}/edit`)}
   className="no-print bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
 >
   Edit
@@ -146,20 +148,20 @@ useEffect(() => {
       <div id="purchase-order" className="border-t pb-4 flex items-center relative mt-4">
   <h2 className="text-lg font-bold text-blue-900 uppercase">COMPANY NAME</h2>
   <h2 className="text-lg font-bold text-blue-900 uppercase absolute left-1/2 transform -translate-x-1/2">
-    PURCHASE ORDER
+    CONFIRMATION ORDER
   </h2>
     <div className="ml-auto pt-6">
     <table className="border text-sm">
       <tbody>
         <tr className="border">
           <td className="border px-4 py-2 font-semibold">Nomor</td>
-          <td className="border px-4 py-2">{poDetail?.nomorPO || "N/A"}</td>
+          <td className="border px-4 py-2">{ConfirmationDetails?.nomorCO || "N/A"}</td>
         </tr>
         <tr className="border">
           <td className="border px-4 py-2 font-semibold">Tanggal</td>
           <td className="border px-4 py-2">
-            {poDetail?.tanggalPO
-              ? new Date(poDetail.tanggalPO).toLocaleDateString("id-ID", {
+            {ConfirmationDetail?.tanggalCO
+              ? new Date(ConfirmationDetails.tanggalCO).toLocaleDateString("id-ID", {
                   day: "2-digit",
                   month: "long",
                   year: "numeric",
@@ -169,13 +171,14 @@ useEffect(() => {
         </tr>
         <tr className="border">
           <td className="border px-4 py-2 font-semibold">Nomor PL</td>
-          <td className="border px-4 py-2">{poDetail?.poDetails?.[0]?.permintaanDetail?.permintaan?.nomor || "N/A"}</td>
+          <td className="border px-4 py-2">{ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.permintaan?.nomor || "N/A"}</td>
+
         </tr>
         <tr className="border">
           <td className="border px-4 py-2 font-semibold">Tanggal PL</td>
           <td className="border px-4 py-2">
-  {poDetail?.poDetails?.[0]?.permintaanDetail?.permintaan?.tanggal
-    ? new Date(poDetail.poDetails[0].permintaanDetail.permintaan.tanggal).toLocaleDateString("id-ID", {
+  {ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.permintaan?.tanggal
+    ? new Date(ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.permintaan.tanggal).toLocaleDateString("id-ID", {
         day: "2-digit",
         month: "long",
         year: "numeric",
@@ -186,7 +189,7 @@ useEffect(() => {
         </tr>
         <tr className="border">
           <td className="border px-4 py-2 font-semibold">Proyek</td>
-          <td className="border px-4 py-2">{poDetail?.lokasiPO || "N/A"}
+          <td className="border px-4 py-2">{ConfirmationDetails?.lokasiCO || "N/A"}
           </td>
         </tr>
       </tbody>
@@ -201,17 +204,17 @@ useEffect(() => {
   
   <div className="flex justify-between items-center">
   <p className="text-lg font-bold text-gray-900 flex-1">
-  {poDetail?.poDetails?.[0]?.permintaanDetail?.material?.vendor?.name || "Nama Vendor"}
+  {ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.material?.vendor?.name || "Nama Vendor"}
 </p>
     <div className="flex items-center space-x-6 text-gray-600 text-sm">
     <div className="flex flex-col items-end text-gray-600 text-sm">
     <div className="flex items-center space-x-1">
     <span className="text-green-500">📞</span>
-    <span>{poDetail?.poDetails?.[0]?.permintaanDetail?.material?.vendor?.phone || "-"}</span>
+    <span>{ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.material?.vendor?.phone || "-"}</span>
   </div>
   <div className="flex items-center space-x-1 mt-1">
     <span className="text-red-500">📍</span>
-    <span>{poDetail?.poDetails?.[0]?.permintaanDetail?.material?.vendor?.address || "Di goa"}</span>
+    <span>{ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.material?.vendor?.address || "Di goa"}</span>
   </div>
 </div>
 
@@ -235,30 +238,31 @@ useEffect(() => {
     </tr>
   </thead>
   <tbody>
-  {poDetail?.poDetails?.length > 0 ? (
-    poDetail.poDetails.map((poItem, index) => {
-      const item = poItem.permintaanDetail; // Ambil permintaan detail dari poDetails
-      return (
-        <tr key={index} className="border">
-          <td className="border p-2">{index + 1}</td>
-          <td className="border p-2">{item.code || "N/A"}</td>
-          <td className="border p-2 text-center">{item.material?.name || "N/A"}</td>
-          <td className="border p-2">Rp{item.material?.price?.toLocaleString() || "0"}</td>
-          <td className="border p-2">{item.qty || "0"}</td>
-          <td className="border p-2">{item.satuan || "N/A"}</td>
-          <td className="border p-2 font-bold text-right">
-            Rp{((item.material?.price || 0) * (item.qty || 0)).toLocaleString()}
-          </td>
-        </tr>
-      );
-    })
-  ) : (
-    <tr>
-      <td colSpan={7} className="text-center p-4 text-gray-500">
-        Tidak ada item
-      </td>
-    </tr>
-  )}
+  {ConfirmationDetail?.confirmationDetails?.length > 0 ? (
+  ConfirmationDetail.confirmationDetails.map((coItem, index) => {
+    const item = coItem.permintaanDetail;
+    return (
+      <tr key={index} className="border">
+        <td className="border p-2">{index + 1}</td>
+        <td className="border p-2">{item.code || "N/A"}</td>
+        <td className="border p-2 text-center">{item.material?.name || "N/A"}</td>
+        <td className="border p-2">Rp{item.material?.price?.toLocaleString() || "0"}</td>
+        <td className="border p-2">{item.qty || "0"}</td>
+        <td className="border p-2">{item.satuan || "N/A"}</td>
+        <td className="border p-2 font-bold text-right">
+          Rp{((item.material?.price || 0) * (item.qty || 0)).toLocaleString()}
+        </td>
+      </tr>
+    );
+  })
+) : (
+  <tr>
+    <td colSpan={7} className="text-center p-4 text-gray-500">
+      Tidak ada item
+    </td>
+  </tr>
+)}
+
     <tr className="font-semibold">
       <td colSpan="4" className="bg-blue-600 text-white p-2 text-left">Terbilang</td>
       <td colSpan="2" rowSpan={2} className="p-2 text-center border">TOTAL</td>

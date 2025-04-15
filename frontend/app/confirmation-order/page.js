@@ -43,16 +43,7 @@ const ConfirmationOrderTable = () => {
     if (storedUsername) {
       setUsername(storedUsername);
     }
-  }, []);
-
-  // Filter data berdasarkan pencarian
-  useEffect(() => {
-    const filtered = data.filter((po) =>
-      po.nomorPO.toLowerCase().includes(search.toLowerCase())
-    );
-    setFilteredData(filtered);
-  }, [search, data]);
-
+  }, []); 
   // Fungsi hapus data
   const handleDelete = async (id) => {
     const confirmDelete = confirm("Yakin ingin menghapus data ini?");
@@ -132,24 +123,24 @@ const ConfirmationOrderTable = () => {
             </thead>
             <tbody>
               {filteredData.length > 0 ? (
-                filteredData.map((po, index) => (
-                  <tr key={po.id} className="text-center border">
+                filteredData.map((co, index) => (
+                  <tr key={co.id} className="text-center border">
                     <td className="border p-2">{index + 1}</td>
-                    <td className="border p-2">{po.nomorPO}</td>
+                    <td className="border p-2">{co.nomorCO}</td>
                     <td className="border p-2">
-                      {po.tanggalPO
-                        ? new Date(po.tanggalPO).toLocaleDateString("id-ID", {
+                      {co.tanggalCO
+                        ? new Date(co.tanggalCO).toLocaleDateString("id-ID", {
                             day: "2-digit",
                             month: "long",
                             year: "numeric",
                           })
                         : "N/A"}
                     </td>
-                    <td className="border p-2">{po.lokasiPO}</td>
+                    <td className="border p-2">{co.lokasiCO}</td>
                     <td className="border p-2">
                       <ActionButtons
-                        onView={() => router.push(`/confirmation-order/${po.id}`)}
-                        onDelete={() => handleDelete(po.id)}
+                        onView={() => router.push(`/confirmation-order/${co.id}`)}
+                        onDelete={() => handleDelete(co.id)}
                       />
                     </td>
                   </tr>
