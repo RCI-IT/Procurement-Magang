@@ -289,7 +289,7 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
           <button
             type="button"
             onClick={addDetail}
-            className="bg-green-500 text-white px-4 py-2 rounded mt-4"
+            className="mt-6 bg-gray-500 text-white rounded px-4 py-2 rounded"
           >
             Tambah Detail
           </button>
@@ -312,12 +312,12 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
         <div className="flex justify-between mt-4">
         <button type="button"
   onClick={() => router.back()} 
-  className="mt-6 bg-gray-500 text-white px-4 py-2 rounded"
+  className="mt-6 bg-red-500 text-white px-4 py-2 rounded"
 >
-  Gak Jadi
+  Batal
 </button>
 
-          <button type="submit" className="bg-blue-500 text-white rounded px-6 py-2">
+          <button type="submit" className="mt-6 bg-green-500 text-white rounded px-4 py-2 rounded">
             Selesai
           </button>
         </div>
