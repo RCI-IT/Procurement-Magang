@@ -73,6 +73,7 @@ export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
   try {
     const permintaanList = await prisma.permintaanLapangan.findMany({
       include: {
+        user: true, // ⬅️ Tambahkan ini untuk menampilkan info user pembuat
         detail: {
           include: {
             material: {
@@ -80,20 +81,19 @@ export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
                 vendor: true,
               },
             },
-            poDetails: true, // Tambahkan ini untuk cek apakah barang sudah masuk PO
+            confirmationDetails: true, // ⬅️ Cek apakah sudah masuk PO
           },
         },
       },
     });
 
-    // **Filter hanya PL yang masih memiliki barang yang belum masuk PO**
+    // Filter PL yang masih punya barang belum masuk PO
     const filteredPermintaanList = permintaanList
-    .map((pl: any) => ({
-      ...pl,
-      detail: pl.detail.filter((item: any) => item.poDetails.length === 0),
-    }))
-    .filter((pl: any) => pl.detail.length > 0);
-    
+      .map((pl: any) => ({
+        ...pl,
+        detail: pl.detail.filter((item: any) => item.poDetails.length === 0),
+      }))
+      .filter((pl: any) => pl.detail.length > 0);
 
     res.status(200).json(filteredPermintaanList);
   } catch (error) {
@@ -112,14 +112,15 @@ export const getPermintaanById = async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    // Cari permintaan berdasarkan ID
+    // Cari permintaan berdasarkan ID, termasuk user
     const permintaan = await prisma.permintaanLapangan.findUnique({
       where: { id: parsedId },
       include: {
+        user: true,
         detail: {
           include: {
             material: true,
-            poDetails: true, // Tambahkan untuk mengecek apakah sudah masuk PO
+            confirmationDetails: true,
           },
         },
       },

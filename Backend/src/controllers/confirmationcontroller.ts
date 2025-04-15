@@ -3,14 +3,13 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export const createPurchaseOrder = async (req: Request, res: Response) => {
+export const createConfirmationOrder = async (req: Request, res: Response) => {
   try {
-    const { nomorPO, tanggalPO, lokasiPO, permintaanId } = req.body;
+    const { nomorCO, tanggalCO, lokasiCO, permintaanId, items } = req.body;
 
-    // Cek apakah Permintaan Lapangan ada
     const permintaan = await prisma.permintaanLapangan.findUnique({
       where: { id: permintaanId },
-      include: { detail: true }, // Ambil semua barang dari PL
+      include: { detail: true },
     });
 
     if (!permintaan) {
@@ -20,21 +19,20 @@ export const createPurchaseOrder = async (req: Request, res: Response) => {
     if (permintaan.detail.length === 0) {
       return res.status(400).json({ message: "Permintaan Lapangan tidak memiliki barang" });
     }
-    const { items } = req.body; // Ambil hanya items yang dipilih di frontend
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: "Tidak ada item yang dipilih" });
     }
-    
-    const purchaseOrder = await prisma.purchaseOrder.create({
+
+    const confirmationOrder = await prisma.confirmationOrder.create({
       data: {
-        nomorPO,
-        tanggalPO,
-        lokasiPO,
+        nomorCO,
+        tanggalCO,
+        lokasiCO,
         permintaan: {
           connect: { id: permintaanId },
         },
-        poDetails: {
+        confirmationDetails: {
           create: items.map((item) => ({
             permintaanDetailId: item.permintaanDetailId,
             qty: item.qty,
@@ -45,41 +43,40 @@ export const createPurchaseOrder = async (req: Request, res: Response) => {
         },
       },
     });
-    
 
-    res.status(201).json(purchaseOrder);
+    res.status(201).json(confirmationOrder);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Terjadi kesalahan", error });
   }
 };
-export const getAllPurchaseOrders = async (req: Request, res: Response) => {
+export const getAllConfirmationOrders = async (req: Request, res: Response) => {
   try {
-    const purchaseOrders = await prisma.purchaseOrder.findMany({
+    const confirmationOrders = await prisma.confirmationOrder.findMany({
       include: {
         permintaan: true,
-        poDetails: {
+        confirmationDetails: {
           include: { permintaanDetail: true },
         },
       },
     });
-    res.status(200).json(purchaseOrders);
+    res.status(200).json(confirmationOrders);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Terjadi kesalahan", error });
   }
 };
-export const getPurchaseOrderById = async (req: Request, res: Response) => {
+export const getConfirmationOrderById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const purchaseOrder = await prisma.purchaseOrder.findUnique({
+    const confirmationOrder = await prisma.confirmationOrder.findUnique({
       where: { id: Number(id) },
       include: {
-        poDetails: {
+        confirmationDetails: {
           include: {
             permintaanDetail: {
               include: {
-                permintaan: true, // Tambahkan ini untuk mendapatkan Nomor PL
+                permintaan: true,
                 material: {
                   include: {
                     vendor: true,
@@ -92,40 +89,38 @@ export const getPurchaseOrderById = async (req: Request, res: Response) => {
       },
     });
 
-    if (!purchaseOrder) {
-      return res.status(404).json({ message: "Purchase Order tidak ditemukan" });
+    if (!confirmationOrder) {
+      return res.status(404).json({ message: "Confirmation Order tidak ditemukan" });
     }
 
-    res.status(200).json(purchaseOrder);
+    res.status(200).json(confirmationOrder);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Terjadi kesalahan", error });
   }
 };
-export const updatePurchaseOrder = async (req: Request, res: Response) => {
+export const updateConfirmationOrder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { nomorPO, tanggalPO, lokasiPO, status, poDetails } = req.body;
+    const { nomorCO, tanggalCO, lokasiCO, status, confirmationDetails } = req.body;
 
-    // Update PO utama
-    const updatedPO = await prisma.purchaseOrder.update({
+    const updatedCO = await prisma.confirmationOrder.update({
       where: { id: Number(id) },
       data: {
-        nomorPO,
-        tanggalPO: new Date(tanggalPO),
-        lokasiPO,
+        nomorCO,
+        tanggalCO: new Date(tanggalCO),
+        lokasiCO,
         status,
-        poDetails: {
-          // Loop update tiap PO Details
-          upsert: poDetails.map((detail: any) => ({
-            where: { id: detail.id ?? 0 }, // Jika id ada, update. Jika tidak, tambahkan.
+        confirmationDetails: {
+          upsert: confirmationDetails.map((detail: any) => ({
+            where: { id: detail.id ?? 0 },
             update: {
               qty: detail.qty,
               satuan: detail.satuan,
               keterangan: detail.keterangan,
             },
             create: {
-              purchaseOrderId: Number(id),
+              confirmationOrderId: Number(id),
               permintaanDetailId: detail.permintaanDetailId,
               qty: detail.qty,
               code: detail.code,
@@ -135,24 +130,24 @@ export const updatePurchaseOrder = async (req: Request, res: Response) => {
           })),
         },
       },
-      include: { poDetails: true }, // Return PO Details setelah update
+      include: { confirmationDetails: true },
     });
 
-    res.status(200).json(updatedPO);
+    res.status(200).json(updatedCO);
   } catch (error) {
-    console.error("Error updating PO:", error);
+    console.error("Error updating Confirmation Order:", error);
     res.status(500).json({ message: "Terjadi kesalahan", error });
   }
 };
-export const deletePurchaseOrder = async (req: Request, res: Response) => {
+export const deleteConfirmationOrder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    
-    await prisma.purchaseOrder.delete({
+
+    await prisma.confirmationOrder.delete({
       where: { id: Number(id) },
     });
 
-    res.status(200).json({ message: "Purchase Order berhasil dihapus" });
+    res.status(200).json({ message: "Confirmation Order berhasil dihapus" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Terjadi kesalahan", error });

@@ -5,7 +5,7 @@ import vendorsRoutes from "./routes/vendors";
 import materialsRoutes from "./routes/materials";
 import categoriesRoutes from "./routes/categories";
 import usersRoutes from "./routes/users";
-import purchaseRoutes from "./routes/purchase";
+import confirmationRoutes from "./routes/confirmation";
 import path from "path";
 
 const app = express();
@@ -24,7 +24,7 @@ app.use("/vendors", vendorsRoutes);
 app.use("/materials", materialsRoutes);
 app.use("/categories", categoriesRoutes);
 app.use("/users", usersRoutes);
-app.use("/purchase", purchaseRoutes);
+app.use("/confirmation", confirmationRoutes);
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ error: "Internal Server Error", message: err.message });

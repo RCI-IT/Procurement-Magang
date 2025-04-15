@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -9,61 +9,65 @@ datasource db {
 }
 
 model PermintaanLapangan {
-  id              Int                 @id @default(autoincrement())
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-  nomor           String              @unique
-  tanggal         DateTime
-  lokasi          String
-  picLapangan     String
-  status          PermintaanStatus    @default(PENDING)
-  isConfirmed     Boolean             @default(false)
-  isReceived      Boolean             @default(false)
-  keterangan      String?
-  purchaseOrderId Int?                @unique
-  detail          PermintaanDetails[]
-  purchaseOrder   PurchaseOrder?      @relation(fields: [purchaseOrderId], references: [id])
+  id                  Int                 @id @default(autoincrement())
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  nomor               String              @unique
+  tanggal             DateTime
+  lokasi              String
+  picLapangan         String
+  status              PermintaanStatus    @default(PENDING)
+  isConfirmed         Boolean             @default(false)
+  isReceived          Boolean             @default(false)
+  keterangan          String?
+  confirmationOrderId Int?                @unique
+  detail              PermintaanDetails[]
+  confirmationOrder   ConfirmationOrder?  @relation(fields: [confirmationOrderId], references: [id])
+  userId              Int?
+  user                User?               @relation(fields: [userId], references: [id])
 }
 
-model PurchaseOrder {
-  id         Int                 @id @default(autoincrement())
-  createdAt  DateTime            @default(now())
-  updatedAt  DateTime            @updatedAt
-  nomorPO    String              @unique
-  tanggalPO  DateTime
-  lokasiPO   String
-  keterangan String?
-  status     POStatus            @default(PENDING)
-  poDetails  PODetails[]
-  permintaan PermintaanLapangan?
+model ConfirmationOrder {
+  id                  Int                   @id @default(autoincrement())
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  nomorCO             String                @unique
+  tanggalCO           DateTime
+  lokasiCO            String
+  keterangan          String?
+  status              COStatus              @default(PENDING)
+  confirmationDetails ConfirmationDetails[]
+  permintaan          PermintaanLapangan?
+  userId              Int?
+  user                User?                 @relation(fields: [userId], references: [id])
 }
 
-model PODetails {
-  id                 Int               @id @default(autoincrement())
-  purchaseOrderId    Int
-  permintaanDetailId Int
-  qty                Int
-  code               String
-  keterangan         String?
-  satuan             String
-  permintaanDetail   PermintaanDetails @relation(fields: [permintaanDetailId], references: [id], onDelete: Cascade)
-  purchaseOrder      PurchaseOrder     @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+model ConfirmationDetails {
+  id                  Int               @id @default(autoincrement())
+  confirmationOrderId Int
+  permintaanDetailId  Int
+  qty                 Int
+  code                String
+  keterangan          String?
+  satuan              String
+  permintaanDetail    PermintaanDetails @relation(fields: [permintaanDetailId], references: [id], onDelete: Cascade)
+  confirmationOrder   ConfirmationOrder @relation(fields: [confirmationOrderId], references: [id], onDelete: Cascade)
 }
 
 model PermintaanDetails {
-  id           Int                @id @default(autoincrement())
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  permintaanId Int
-  materialId   Int
-  qty          Int
-  satuan       String
-  mention      String?
-  code         String
-  keterangan   String?
-  poDetails    PODetails[]
-  material     Materials          @relation(fields: [materialId], references: [id], onDelete: Cascade)
-  permintaan   PermintaanLapangan @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
+  id                  Int                   @id @default(autoincrement())
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  permintaanId        Int
+  materialId          Int
+  qty                 Int
+  satuan              String
+  mention             String?
+  code                String
+  keterangan          String?
+  confirmationDetails ConfirmationDetails[]
+  material            Materials             @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  permintaan          PermintaanLapangan    @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
 }
 
 model Materials {
@@ -101,14 +105,16 @@ model Vendors {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  username  String   @unique
-  password  String
-  email     String   @unique
-  fullName  String
-  role      UserRole @default(USER_LAPANGAN)
+  id                 Int                  @id @default(autoincrement())
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  username           String               @unique
+  password           String
+  email              String               @unique
+  fullName           String
+  role               UserRole             @default(USER_LAPANGAN)
+  permintaans        PermintaanLapangan[]
+  confirmationOrders ConfirmationOrder[]
 }
 
 enum PermintaanStatus {
@@ -120,7 +126,7 @@ enum PermintaanStatus {
   CANCELLED
 }
 
-enum POStatus {
+enum COStatus {
   PENDING
   APPROVED
   REJECTED
