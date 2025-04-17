@@ -1,16 +1,36 @@
-/* eslint-disable @next/next/no-img-element */
-"use client"; 
+"use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Sidebar() {
   const [isMinimized, setIsMinimized] = useState(false);
+  const [userRole, setUserRole] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    if (role) setUserRole(role);
+  }, []);
 
   const handleNavigation = (page) => {
     router.push(`/?page=${page}`);
   };
+
+  // Menu items with role-based visibility
+  const menuItems = [
+    { id: "home", label: "Home", icon: "🏠", page: "home", roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"] },
+    { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "permintaan-lapangan", roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"] },
+    { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "purchase-order", roles: ["USER_PURCHASE", "ADMIN"] },
+    { id: "material", label: "Material", icon: "📦", page: "material", roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"] },
+    { id: "confirmation-order", label: "Confirmation Order", icon: "✔️", page: "confirmation-order", roles: ["USER_PURCHASE", "ADMIN", "USER_LAPANGAN"] },
+    { id: "vendor", label: "Vendor", icon: "🏭", page: "vendor", roles: ["USER_PURCHASE", "ADMIN"] },
+    { id: "kategori", label: "Kategori", icon: "🏷️", page: "kategori", roles: ["ADMIN", "USER_PURCHASE"] },
+    { id: "user-control", label: "Users Control", icon: "👤", page: "user-control", roles: ["ADMIN"] },
+  ];
+
+  // Filter menu based on user role
+  const filteredMenus = menuItems.filter((item) => item.roles.includes(userRole));
 
   return (
     <div className={`flex flex-col h-screen bg-gray-100 text-gray-800 shadow-lg transition-all duration-300 ease-in-out ${isMinimized ? "w-20" : "w-72"}`}>
@@ -27,23 +47,14 @@ export default function Sidebar() {
       <div className="flex-1 overflow-y-auto">
         <div className="mt-4 px-4">
           <div className="flex items-center justify-between border-b border-gray-300 pb-2">
-            {!isMinimized && <h2 className="text-xs font-bold text-gray-500">PROCUREMENT</h2>}
+            {!isMinimized && <h2 className="text-xs font-bold text-gray-500">MENU</h2>}
             <button onClick={() => setIsMinimized(!isMinimized)} className="p-1 rounded-full bg-white shadow hover:bg-gray-200 focus:outline-none">
               {isMinimized ? "➡️" : "⬅️"}
             </button>
           </div>
 
           <ul className="space-y-1 mt-2">
-            {[ 
-              { id: "home", label: "Home", icon: "🏠", page: "home" },
-              { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "permintaan-lapangan" },
-              { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "purchase-order" },
-              { id: "material", label: "Material", icon: "📦", page: "material" },
-              { id: "confirmation-order", label: "Confirmation Order", icon: "✔️", page: "confirmation-order" },  // New Menu Added
-              { id: "Vendor", label: "Vendor", icon: "🏭", page: "vendor" },
-              { id: "Kategori", label: "Kategori", icon: "🏷️", page: "kategori" },
-              { id: "User", label: "Users Control", icon: "👤", page: "user-control" },
-            ].map((menu) => (
+            {filteredMenus.map((menu) => (
               <li key={menu.id}>
                 <button
                   onClick={() => handleNavigation(menu.page)}
@@ -60,7 +71,10 @@ export default function Sidebar() {
 
       <div className="px-4 py-4 border-t">
         <button
-          onClick={() => alert("Keluar clicked")}
+          onClick={() => {
+            localStorage.clear();
+            router.push("/login");
+          }}
           className="flex items-center w-full px-4 py-2 text-sm rounded bg-gray-200 hover:bg-gray-300 focus:outline-none"
         >
           <span className="text-lg">🔓</span>
