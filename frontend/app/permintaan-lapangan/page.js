@@ -60,6 +60,46 @@ export default function PermintaanLapangan({ setActiveContent }) {
 
     fetchPermintaanLapangan();
   }, []);
+
+
+  const handleDetail = async (id) => {
+    // Cek apakah user yang login adalah USER_PURCHASE
+    if (userRole === "USER_PURCHASE") {
+      try {
+        // Mengupdate status menjadi "READ" ketika USER_PURCHASE melihat detail
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: "READ" }), // Mengubah status menjadi READ
+        });
+  
+        if (!response.ok) throw new Error("Gagal memperbarui status ke READ");
+  
+        // Update status di local state
+        setUpdatedData((prevData) =>
+          prevData.map((item) =>
+            item.id === id ? { ...item, status: "READ" } : item
+          )
+        );
+  
+        // Langsung redirect ke halaman detail setelah status berhasil diubah
+        router.push(`/permintaan-lapangan/detail/${item.id}`);
+      } catch (error) {
+        console.error("Gagal memperbarui status:", error);
+        alert("Terjadi kesalahan saat memperbarui status.");
+      }
+    } else {
+      // Jika role selain USER_PURCHASE, langsung pindah ke detail tanpa update status
+      router.push(`/permintaan-lapangan/detail/${item.id}`);
+    }
+  };
+  
+
+  
+
+  
   const handlePending = async (id) => {
     const confirmPending = window.confirm("Apakah Anda yakin ingin mengembalikan status ke Pending?");
     if (!confirmPending) return;
@@ -150,11 +190,10 @@ export default function PermintaanLapangan({ setActiveContent }) {
   
 
   const getStatus = (status) => {
-    if (userRole === "USER_PURCHASE") {
-      return "Read"; 
-    }
+    // Status akan tetap sesuai dengan data yang ada, tidak perlu diubah di sini
     return status;
   };
+  
 
   return (
     <div className="flex h-screen">
@@ -221,46 +260,47 @@ export default function PermintaanLapangan({ setActiveContent }) {
             </tr>
           </thead>
           <tbody>
-            {filteredData.length > 0 ? (
-              filteredData.slice(0, rowsToShow).map((item, index) => {
-                const { day, month, year } = parseDate(item.tanggal);
-                return (
-                  <tr key={item.id} className="hover:bg-gray-100 text-center">
-                    <td className="border px-4 py-2">{index + 1}</td>
-                    <td className="border px-4 py-2">{item.nomor}</td>
-                    <td className="border px-4 py-2">
-                      {day} {getMonthName(month)} {year}
-                    </td>
-                    <td className="border px-4 py-2">{item.lokasi}</td>
-                    <td className="border px-4 py-2">
-                        {getStatus(item.status)} 
-                      </td>
-                    <td className="border px-4 py-2 flex justify-center gap-2">
-                      <button
-                        className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
-                        onClick={() => router.push(`/permintaan-lapangan/${item.id}`)}
-                      >
-                       <Eye className="text-white" />
-                      </button>
-                      <button
-                        className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600"
-                        onClick={() => handleDelete(item.id)}
-                      >
-                        <Trash2 className="text-white" />
-                      </button>
-                    
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan="6" className="border px-4 py-2 text-center text-gray-500">
-                  Tidak ada data ditemukan.
-                </td>
-              </tr>
-            )}
-          </tbody>
+  {filteredData.length > 0 ? (
+    filteredData.slice(0, rowsToShow).map((item, index) => {
+      const { day, month, year } = parseDate(item.tanggal);
+      return (
+        <tr key={item.id} className="hover:bg-gray-100 text-center">
+          <td className="border px-4 py-2">{index + 1}</td>
+          <td className="border px-4 py-2">{item.nomor}</td>
+          <td className="border px-4 py-2">
+            {day} {getMonthName(month)} {year}
+          </td>
+          <td className="border px-4 py-2">{item.lokasi}</td>
+          <td className="border px-4 py-2">{getStatus(item.status)}</td>
+          <td className="border px-4 py-2 flex justify-center gap-2">
+            <button
+              className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
+              onClick={() => {
+                handleDetail(item.id);  // Memanggil handleDetail dengan id item
+                router.push(`/permintaan-lapangan/${item.id}`);  // Lanjutkan routing ke halaman detail
+              }}
+            >
+              <Eye className="text-white" />
+            </button>
+            <button
+              className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600"
+              onClick={() => handleDelete(item.id)}
+            >
+              <Trash2 className="text-white" />
+            </button>
+          </td>
+        </tr>
+      );
+    })
+  ) : (
+    <tr>
+      <td colSpan="6" className="border px-4 py-2 text-center text-gray-500">
+        Tidak ada data ditemukan.
+      </td>
+    </tr>
+  )}
+</tbody>
+
         </table>
       </div>
     </div>
