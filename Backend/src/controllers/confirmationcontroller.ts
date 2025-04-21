@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient,DetailStatus } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -38,6 +38,7 @@ export const createConfirmationOrder = async (req: Request, res: Response) => {
             qty: item.qty,
             satuan: item.satuan,
             code: item.kodeBarang,
+            status: item.status,
             keterangan: item.namaBarang,
           })),
         },
@@ -50,7 +51,6 @@ export const createConfirmationOrder = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Terjadi kesalahan", error });
   }
 };
-// GET ALL CONFIRMATION ORDERS
 export const getAllConfirmationOrders = async (req: Request, res: Response) => {
   try {
     const confirmationOrders = await prisma.confirmationOrder.findMany({
@@ -78,8 +78,6 @@ export const getAllConfirmationOrders = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Terjadi kesalahan", error });
   }
 };
-
-// GET CONFIRMATION ORDER BY ID
 export const getConfirmationOrderById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -168,7 +166,6 @@ export const updateConfirmationOrder = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Terjadi kesalahan", error });
   }
 };
-
 export const deleteConfirmationOrder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
