@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -15,7 +16,7 @@ const months = [
 export default function PermintaanLapangan({ setActiveContent }) {
   const [rowsToShow, setRowsToShow] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAddFormVisible, setIsAddFormVisible] = useState(false);
+  const [isAddFormVisible] = useState(false);
   const [updatedData, setUpdatedData] = useState([]);
   const router = useRouter();
   const [userRole, setUserRole] = useState(null); 
