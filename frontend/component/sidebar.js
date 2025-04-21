@@ -49,7 +49,7 @@ export default function Sidebar() {
         <div className="mt-4 px-4">
           <div className="flex items-center justify-between border-b border-gray-300 pb-2">
             {!isMinimized && <h2 className="text-xs font-bold text-gray-500">MENU</h2>}
-            <button onClick={() => setIsMinimized(!isMinimized)} className="p-1 rounded-full bg-white shadow hover:bg-gray-200 focus:outline-none">
+            <button onClick={() => setIsMinimized(!isMinimized)} className="p-1 rounded-full focus:outline-none">
               {isMinimized ? "➡️" : "⬅️"}
             </button>
           </div>
