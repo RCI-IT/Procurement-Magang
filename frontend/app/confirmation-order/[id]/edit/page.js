@@ -22,7 +22,7 @@ export default function EditPurchaseOrder() {
   useEffect(() => {
     if (!id) return;
 
-    const fetchPO = async () => {
+    const fetchCO = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`);
         if (!res.ok) throw new Error("Gagal mengambil data");
@@ -41,7 +41,7 @@ export default function EditPurchaseOrder() {
       }
     };
 
-    fetchPO();
+    fetchCO();
   }, [id]);
 
   const handleChange = (e, field) => {
