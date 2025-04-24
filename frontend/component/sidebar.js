@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -24,8 +25,8 @@ export default function Sidebar() {
     { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "purchase-order", roles: ["USER_PURCHASE", "ADMIN"] },
     { id: "material", label: "Material", icon: "📦", page: "material", roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"] },
     { id: "confirmation-order", label: "Confirmation Order", icon: "✔️", page: "confirmation-order", roles: ["USER_PURCHASE", "ADMIN", "USER_LAPANGAN"] },
-    { id: "vendor", label: "Vendor", icon: "🏭", page: "vendor", roles: ["USER_PURCHASE", "ADMIN"] },
-    { id: "kategori", label: "Kategori", icon: "🏷️", page: "kategori", roles: ["ADMIN", "USER_PURCHASE"] },
+    { id: "vendor", label: "Vendor", icon: "🏭", page: "vendor", roles: ["ADMIN"] },
+    { id: "kategori", label: "Kategori", icon: "🏷️", page: "kategori", roles: ["ADMIN"] },
     { id: "user-control", label: "Users Control", icon: "👤", page: "user-control", roles: ["ADMIN"] },
   ];
 
@@ -48,7 +49,7 @@ export default function Sidebar() {
         <div className="mt-4 px-4">
           <div className="flex items-center justify-between border-b border-gray-300 pb-2">
             {!isMinimized && <h2 className="text-xs font-bold text-gray-500">MENU</h2>}
-            <button onClick={() => setIsMinimized(!isMinimized)} className="p-1 rounded-full bg-white shadow hover:bg-gray-200 focus:outline-none">
+            <button onClick={() => setIsMinimized(!isMinimized)} className="p-1 rounded-full focus:outline-none">
               {isMinimized ? "➡️" : "⬅️"}
             </button>
           </div>

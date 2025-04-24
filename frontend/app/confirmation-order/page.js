@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -53,10 +54,11 @@ const ConfirmationOrderTable = () => {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`, {
         method: "DELETE",
       });
+
       if (!response.ok) {
         throw new Error("Gagal menghapus data");
       }
-      setData((prevData) => prevData.filter((item) => item.id !== id));
+      router.push('/confirmation-order');
     } catch (err) {
       alert(err.message);
     }

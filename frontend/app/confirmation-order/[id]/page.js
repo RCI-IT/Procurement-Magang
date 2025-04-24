@@ -113,10 +113,13 @@ useEffect(() => {
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
   const totalHarga =
-  ConfirmationDetails?.confirmationDetails?.reduce((sum, coItem) => {
-    const item = coItem.permintaanDetail; // Ambil permintaan detail dari confirmationDetailss
-    return sum + ((item.material?.price || 0) * (item.qty || 0));
+  ConfirmationDetail?.confirmationDetails?.reduce((sum, coItem) => {
+    const material = coItem.permintaanDetail?.material;
+    const harga = material?.price || 0;
+    const qty = coItem.qty || 0; // qty dari confirmationDetails, bukan dari permintaanDetail
+    return sum + (harga * qty);
   }, 0) || 0;
+
 
 
   return (
@@ -239,29 +242,32 @@ useEffect(() => {
   </thead>
   <tbody>
   {ConfirmationDetail?.confirmationDetails?.length > 0 ? (
-  ConfirmationDetail.confirmationDetails.map((coItem, index) => {
-    const item = coItem.permintaanDetail;
+  ConfirmationDetail.confirmationDetails.map((item, index) => {
+    const material = item.permintaanDetail?.material;
+    const harga = material?.price || 0;
+    const qty = item.qty || 0;
+    const total = harga * qty;
+
     return (
-      <tr key={index} className="border">
-        <td className="border p-2">{index + 1}</td>
-        <td className="border p-2">{item.code || "N/A"}</td>
-        <td className="border p-2 text-center">{item.material?.name || "N/A"}</td>
-        <td className="border p-2">Rp{item.material?.price?.toLocaleString() || "0"}</td>
-        <td className="border p-2">{item.qty || "0"}</td>
-        <td className="border p-2">{item.satuan || "N/A"}</td>
-        <td className="border p-2 font-bold text-right">
-          Rp{((item.material?.price || 0) * (item.qty || 0)).toLocaleString()}
-        </td>
+      <tr key={index}>
+        <td className="border px-4 py-2 text-center">{index + 1}</td>
+        <td className="border px-4 py-2">{item.code}</td>
+        <td className="border px-4 py-2">{material?.name || 'N/A'}</td>
+        <td className="border px-4 py-2 text-right">Rp{harga.toLocaleString()}</td>
+        <td className="border px-4 py-2 text-center">{qty}</td>
+        <td className="border px-4 py-2 text-center">{item.satuan || 'N/A'}</td>
+        <td className="border px-4 py-2 text-right">Rp{total.toLocaleString()}</td>
       </tr>
     );
   })
 ) : (
   <tr>
-    <td colSpan={7} className="text-center p-4 text-gray-500">
-      Tidak ada item
+    <td colSpan={7} className="text-center text-gray-500 py-4">
+      Tidak ada data
     </td>
   </tr>
 )}
+
 
     <tr className="font-semibold">
       <td colSpan="4" className="bg-blue-600 text-white p-2 text-left">Terbilang</td>

@@ -72,16 +72,18 @@ model ConfirmationOrder {
 }
 
 model ConfirmationDetails {
-  id                  Int               @id @default(autoincrement())
-  confirmationOrderId Int
-  permintaanDetailId  Int
-  qty                 Int
-  code                String
-  keterangan          String?
-  satuan              String
-  permintaanDetail    PermintaanDetails @relation(fields: [permintaanDetailId], references: [id], onDelete: Cascade)
-  confirmationOrder   ConfirmationOrder @relation(fields: [confirmationOrderId], references: [id], onDelete: Cascade)
+  id                   Int                @id @default(autoincrement())
+  confirmationOrderId  Int
+  permintaanDetailId   Int
+  qty                  Int
+  code                 String
+  keterangan           String?
+  satuan               String
+  status               DetailStatus       @default(PENDING) // ⬅️ Tambahan
+  permintaanDetail     PermintaanDetails  @relation(fields: [permintaanDetailId], references: [id], onDelete: Cascade)
+  confirmationOrder    ConfirmationOrder  @relation(fields: [confirmationOrderId], references: [id], onDelete: Cascade)
 }
+
 
 model PermintaanDetails {
   id                  Int                   @id @default(autoincrement())
@@ -94,6 +96,7 @@ model PermintaanDetails {
   mention             String?
   code                String
   keterangan          String?
+  status              PDetailStatus       @default(PENDING)
   confirmationDetails ConfirmationDetails[]
   material            Materials             @relation(fields: [materialId], references: [id], onDelete: Cascade)
   permintaan          PermintaanLapangan    @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
@@ -186,4 +189,16 @@ enum UserRole {
   ADMIN
   USER_PURCHASE
   USER_LAPANGAN
+}
+
+enum DetailStatus {
+  PENDING
+  ACC
+  REJECTED
+}
+
+enum PDetailStatus {
+  PENDING
+  ACC
+  REJECTED
 }

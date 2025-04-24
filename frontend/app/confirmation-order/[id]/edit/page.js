@@ -22,7 +22,7 @@ export default function EditPurchaseOrder() {
   useEffect(() => {
     if (!id) return;
 
-    const fetchPO = async () => {
+    const fetchCO = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`);
         if (!res.ok) throw new Error("Gagal mengambil data");
@@ -41,77 +41,67 @@ export default function EditPurchaseOrder() {
       }
     };
 
-    fetchPO();
+    fetchCO();
   }, [id]);
 
   const handleChange = (e, field) => {
     setCoData((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
-  const handleItemChange = (index, field, value) => {
-    setCoData((prev) => {
-      const updatedItems = [...prev.confirmationDetails];
-  
-      if (field === "material.price") {
-        // Jika yang diubah adalah harga material
-        updatedItems[index] = {
-          ...updatedItems[index],
-          permintaanDetail: {
-            ...updatedItems[index].permintaanDetail,
-            material: {
-              ...updatedItems[index].permintaanDetail.material,
-              price: value, // Update harga
-            },
-          },
-        };
-      } else {
-        // Jika yang diubah adalah field lain seperti qty atau satuan
-        updatedItems[index] = {
-          ...updatedItems[index],
-          permintaanDetail: {
-            ...updatedItems[index].permintaanDetail,
-            [field]: value,
-          },
-        };
-      }
-  
-      return { ...prev, confirmationDetails: updatedItems };
-    });
-  };
-  
+const handleItemChange = (index, field, value) => {
+  console.log(`Mengubah ${field} pada index ${index} menjadi: ${value}`);
+
+  setCoData((prev) => {
+    const updatedItems = [...prev.confirmationDetails];
+    const updatedItem = { ...updatedItems[index] };
+
+    if (field === "qty" || field === "satuan") {
+      updatedItem.permintaanDetail = {
+        ...updatedItem.permintaanDetail,
+        [field]: value,
+      };
+    }
+
+    updatedItems[index] = updatedItem;
+
+    console.log("Updated CoData:", { ...prev, confirmationDetails: updatedItems });
+
+    return { ...prev, confirmationDetails: updatedItems };
+  });
+};
+
   
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const bodyData = {
       nomorCO: CoData.nomorCO,
       tanggalCO: CoData.tanggalCO,
       lokasiCO: CoData.lokasiCO,
-      status: "Pending", // Sesuaikan dengan kebutuhan backend
+      status: "Pending",
       confirmationDetails: CoData.confirmationDetails.map((detail) => ({
-        id: detail.id, // Pastikan ID item tetap ada
+        id: detail.id,
+        permintaanDetailId: detail.permintaanDetail.id,
         qty: detail.permintaanDetail.qty,
         satuan: detail.permintaanDetail.satuan,
-        material: {
-          price: detail.permintaanDetail.material.price,
-        },
+        code: detail.permintaanDetail.code,
+        keterangan: detail.permintaanDetail.keterangan || "",
       })),
     };
-    
-    console.log("Data yang dikirim ke backend:", bodyData);
-    
-  
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bodyData),
       });
-  
-      const responseData = await response.json();
-      console.log("Response dari server:", responseData); // Debugging
-  
+
+     // Ganti:
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const responseData = await response.json();
+
+
       if (response.ok) {
         Swal.fire({
           title: "Berhasil!",
@@ -135,9 +125,7 @@ export default function EditPurchaseOrder() {
       console.error("Terjadi kesalahan:", error);
     }
   };
-  
-  
-  
+
   if (loading) return <p className="text-center text-gray-600">Memuat data...</p>;
   if (!CoData.nomorCO) return <p className="text-center text-red-600">Data tidak ditemukan</p>;
 
@@ -195,41 +183,31 @@ export default function EditPurchaseOrder() {
                   const item = poItem.permintaanDetail;
                   const harga = item?.material?.price || 0;
                   const qty = item?.qty || 0;
-                  const total = harga * qty; // Pastikan tidak NaN
+                  const total = harga * qty;
 
                   return (
                     <tr key={index} className="border">
                       <td className="border p-2">{index + 1}</td>
                       <td className="border p-2">{item?.code || "N/A"}</td>
                       <td className="border p-2">{item?.material?.name || "N/A"}</td>
+                      <td className="border p-2">Rp {harga.toLocaleString("id-ID")}</td>
                       <td className="border p-2">
-  <input
-    type="number"
-    className="w-full border rounded p-1"
-    value={harga}
-    onChange={(e) => handleItemChange(index, "material.price", parseFloat(e.target.value) || 0)}
-  />
-</td>
-<td className="border p-2">
-  <input
-    type="number"
-    className="w-full border rounded p-1"
-    value={qty}
-    onChange={(e) => handleItemChange(index, "qty", parseInt(e.target.value) || 0)}
-  />
-</td>
-<td className="border p-2">
-  <input
-    type="text"
-    className="w-full border rounded p-1"
-    value={item?.satuan || ""}
-    onChange={(e) => handleItemChange(index, "satuan", e.target.value)}
-  />
-</td>
-
-                      <td className="border p-2 font-bold text-right">
-                        Rp{total.toLocaleString()}
+                        <input
+                          type="number"
+                          className="w-full border rounded p-1"
+                          value={qty}
+                          onChange={(e) => handleItemChange(index, "qty", parseInt(e.target.value) || 0)}
+                        />
                       </td>
+                      <td className="border p-2">
+                        <input
+                          type="text"
+                          className="w-full border rounded p-1"
+                          value={item?.satuan || ""}
+                          onChange={(e) => handleItemChange(index, "satuan", e.target.value)}
+                        />
+                      </td>
+                      <td className="border p-2 font-bold text-right">Rp {total.toLocaleString("id-ID")}</td>
                     </tr>
                   );
                 })
@@ -240,6 +218,16 @@ export default function EditPurchaseOrder() {
                   </td>
                 </tr>
               )}
+              <tr>
+                <td colSpan={6} className="text-right font-bold p-2">Total Keseluruhan</td>
+                <td className="text-right font-bold p-2">
+                  Rp {CoData.confirmationDetails.reduce((sum, detail) => {
+                    const price = detail.permintaanDetail.material?.price || 0;
+                    const qty = detail.permintaanDetail.qty || 0;
+                    return sum + price * qty;
+                  }, 0).toLocaleString("id-ID")}
+                </td>
+              </tr>
             </tbody>
           </table>
 

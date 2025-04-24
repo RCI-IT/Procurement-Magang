@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -15,7 +16,7 @@ const months = [
 export default function PermintaanLapangan({ setActiveContent }) {
   const [rowsToShow, setRowsToShow] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAddFormVisible, setIsAddFormVisible] = useState(false);
+  const [isAddFormVisible] = useState(false);
   const [updatedData, setUpdatedData] = useState([]);
   const router = useRouter();
   const [userRole, setUserRole] = useState(null); 
@@ -63,43 +64,33 @@ export default function PermintaanLapangan({ setActiveContent }) {
 
 
   const handleDetail = async (id) => {
-    // Cek apakah user yang login adalah USER_PURCHASE
     if (userRole === "USER_PURCHASE") {
       try {
-        // Mengupdate status menjadi "READ" ketika USER_PURCHASE melihat detail
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ status: "READ" }), // Mengubah status menjadi READ
+          body: JSON.stringify({ status: "READ" }),
         });
   
         if (!response.ok) throw new Error("Gagal memperbarui status ke READ");
   
-        // Update status di local state
         setUpdatedData((prevData) =>
           prevData.map((item) =>
             item.id === id ? { ...item, status: "READ" } : item
           )
         );
   
-        // Langsung redirect ke halaman detail setelah status berhasil diubah
-        router.push(`/permintaan-lapangan/detail/${item.id}`);
+        router.push(`/permintaan-lapangan/${id}`);
       } catch (error) {
         console.error("Gagal memperbarui status:", error);
         alert("Terjadi kesalahan saat memperbarui status.");
       }
     } else {
-      // Jika role selain USER_PURCHASE, langsung pindah ke detail tanpa update status
-      router.push(`/permintaan-lapangan/detail/${item.id}`);
+      router.push(`/permintaan-lapangan/${id}`);
     }
   };
-  
-
-  
-
-  
   const handlePending = async (id) => {
     const confirmPending = window.confirm("Apakah Anda yakin ingin mengembalikan status ke Pending?");
     if (!confirmPending) return;
@@ -127,8 +118,6 @@ export default function PermintaanLapangan({ setActiveContent }) {
       alert("Terjadi kesalahan saat mengubah status.");
     }
   };
-  
-
   const handleApprove = async (id) => {
     const confirmApprove = window.confirm("Apakah Anda yakin ingin menyetujui permintaan ini?");
     if (!confirmApprove) return;
@@ -159,8 +148,6 @@ export default function PermintaanLapangan({ setActiveContent }) {
       alert("Terjadi kesalahan saat mengubah status.");
     }
   };
-  
-
   const handleDelete = async (id) => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus permintaan ini?")) return;
 
@@ -178,7 +165,6 @@ export default function PermintaanLapangan({ setActiveContent }) {
       alert("Terjadi kesalahan saat menghapus permintaan.");
     }
   };
-
   const parseDate = (dateString) => {
     const date = new Date(dateString);
     return {
@@ -187,14 +173,9 @@ export default function PermintaanLapangan({ setActiveContent }) {
       year: date.getFullYear(),
     };
   };
-  
-
   const getStatus = (status) => {
-    // Status akan tetap sesuai dengan data yang ada, tidak perlu diubah di sini
     return status;
   };
-  
-
   return (
     <div className="flex h-screen">
      <Sidebar />
@@ -212,12 +193,15 @@ export default function PermintaanLapangan({ setActiveContent }) {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="border border-gray-300 rounded px-4 py-2"
           />
-          <button
-  onClick={() => router.push("/permintaan-lapangan/add")}
-  className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
->
-  Tambah Permintaan
-</button>
+          {userRole !== "USER_PURCHASE" && (
+  <button
+    onClick={() => router.push("/permintaan-lapangan/add")}
+    className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
+  >
+    Tambah Permintaan
+  </button>
+)}
+
 
         </div>
       </div>
@@ -273,15 +257,13 @@ export default function PermintaanLapangan({ setActiveContent }) {
           <td className="border px-4 py-2">{item.lokasi}</td>
           <td className="border px-4 py-2">{getStatus(item.status)}</td>
           <td className="border px-4 py-2 flex justify-center gap-2">
-            <button
-              className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
-              onClick={() => {
-                handleDetail(item.id);  // Memanggil handleDetail dengan id item
-                router.push(`/permintaan-lapangan/${item.id}`);  // Lanjutkan routing ke halaman detail
-              }}
-            >
-              <Eye className="text-white" />
-            </button>
+          <button
+  className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
+  onClick={() => handleDetail(item.id)}
+>
+  <Eye className="text-white" />
+</button>
+
             <button
               className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600"
               onClick={() => handleDelete(item.id)}
