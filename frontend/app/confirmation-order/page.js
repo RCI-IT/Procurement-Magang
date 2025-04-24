@@ -15,6 +15,7 @@ const ConfirmationOrderTable = () => {
   const [error, setError] = useState(null);
   const [username, setUsername] = useState("");
   const router = useRouter();
+  const [userRole, setUserRole] = useState(null); 
 
   // Ambil data dari API
   useEffect(() => {
@@ -40,10 +41,14 @@ const ConfirmationOrderTable = () => {
   // Ambil username dari localStorage
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
+    const storedRole = localStorage.getItem("role"); 
     if (storedUsername) {
       setUsername(storedUsername);
     }
-  }, []); 
+    if (storedRole) {
+      setUserRole(storedRole); 
+    }
+  }, []);
 
   // Fungsi hapus data
   const handleDelete = async (id) => {
@@ -101,12 +106,14 @@ const ConfirmationOrderTable = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-bold">Confirmation Order</h1>
           <div className="flex gap-2">
+          {userRole !== "USER_LAPANGAN" && (
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded"
               onClick={() => router.push("/confirmation-order/add")}
             >
               + Tambah
             </button>
+          )}
             <input
               type="text"
               placeholder="Cari PO..."
