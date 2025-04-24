@@ -6,12 +6,16 @@ import Link from "next/link";
 import LoadingIcon from "../../component/LoadingIcon";
 import Header from "../../component/Header"; // Import Header
 
-// Update navigationItems to include "Confirmation Order"
-const navigationItems = [
-  { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "/?page=permintaan-lapangan" },
-  { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "/?page=purchase-order" },
-  { id: "material", label: "Material", icon: "📦", page: "/?page=material" },
-  { id: "confirmation-order", label: "Confirmation Order", icon: "✔️", page: "/?page=confirmation-order" }, // New menu
+// Menu items yang sudah ada di Sidebar
+const menuItems = [
+  { id: "home", label: "Home", icon: "🏠", page: "home", roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"] },
+  { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "permintaan-lapangan", roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"] },
+  { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "purchase-order", roles: ["USER_PURCHASE", "ADMIN"] },
+  { id: "material", label: "Material", icon: "📦", page: "material", roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"] },
+  { id: "confirmation-order", label: "Confirmation Order", icon: "✔️", page: "confirmation-order", roles: ["USER_PURCHASE", "ADMIN", "USER_LAPANGAN"] },
+  { id: "vendor", label: "Vendor", icon: "🏭", page: "vendor", roles: ["USER_PURCHASE", "ADMIN"] },
+  { id: "kategori", label: "Kategori", icon: "🏷️", page: "kategori", roles: ["ADMIN", "USER_PURCHASE"] },
+  { id: "user-control", label: "Users Control", icon: "👤", page: "user-control", roles: ["ADMIN"] },
 ];
 
 export default function Home() {
@@ -41,18 +45,8 @@ export default function Home() {
     fetchData();
   }, [router]);
 
-  const filterNavigationItems = () => {
-    switch (role) {
-      case "ADMIN":
-        return navigationItems;
-      case "USER_LAPANGAN":
-        return navigationItems.filter(item => item.id === "material" || item.id === "permintaan-lapangan" || item.id === "purchase-order");
-      case "USER_PURCHASE":
-        return navigationItems.filter(item => item.id === "material" || item.id === "permintaan-lapangan" || item.id === "purchase-order");
-      default:
-        return [];
-    }
-  };
+  // Filter menu berdasarkan role user
+  const filteredMenus = menuItems.filter((item) => item.roles.includes(role));
 
   return (
     <div className="p-6 min-h-screen bg-white text-blue-500 flex flex-col items-center">
@@ -68,11 +62,11 @@ export default function Home() {
           <h1 className="text-5xl font-extrabold mb-10 tracking-wide text-black bg-clip-text">Procurement</h1>
 
           <div className="flex flex-col gap-6 w-full max-w-md items-center">
-            {filterNavigationItems().map((item) => (
-              <Link key={item.id} href={item.page}>
+            {filteredMenus.map((menu) => (
+              <Link key={menu.id} href={`/?page=${menu.page}`}>
                 <div className="flex flex-col items-center justify-center bg-blue-500 p-6 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-300 hover:bg-blue-300 text-white cursor-pointer w-full h-32 min-w-[300px]">
-                  <span className="text-5xl mb-4">{item.icon}</span>
-                  <span className="text-lg font-semibold">{item.label}</span>
+                  <span className="text-5xl mb-4">{menu.icon}</span>
+                  <span className="text-lg font-semibold">{menu.label}</span>
                 </div>
               </Link>
             ))}
