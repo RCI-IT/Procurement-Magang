@@ -117,58 +117,70 @@ export const updateConfirmationOrder = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { nomorCO, tanggalCO, lokasiCO, status, confirmationDetails } = req.body;
 
-    const updatedCO = await prisma.confirmationOrder.update({
+    if (!id || isNaN(Number(id))) {
+      return res.status(400).json({ message: "ID tidak valid" });
+    }
+
+    if (!nomorCO || !tanggalCO || !lokasiCO || !status || !Array.isArray(confirmationDetails)) {
+      return res.status(400).json({ message: "Data tidak lengkap atau format salah" });
+    }
+
+    const existing = await prisma.confirmationOrder.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: "Confirmation Order tidak ditemukan" });
+    }
+
+    await prisma.confirmationOrder.update({
       where: { id: Number(id) },
       data: {
         nomorCO,
         tanggalCO: new Date(tanggalCO),
         lokasiCO,
-        status: status?.toUpperCase(), // pastikan enum valid
+        status: status.toUpperCase(),
       },
     });
 
-    // Hapus semua confirmationDetails lama
     await prisma.confirmationDetails.deleteMany({
       where: { confirmationOrderId: Number(id) },
     });
 
-    // Masukkan ulang confirmationDetails baru
-    await prisma.confirmationDetails.createMany({
-      data: confirmationDetails.map((detail: any) => ({
-        confirmationOrderId: Number(id),
-        permintaanDetailId: detail.permintaanDetailId,
-        qty: detail.qty,
-        code: detail.code,
-        satuan: detail.satuan,
-        keterangan: detail.keterangan,
-      })),
-    });
+    if (confirmationDetails.length > 0) {
+      await prisma.confirmationDetails.createMany({
+        data: confirmationDetails.map((detail: any) => ({
+          confirmationOrderId: Number(id),
+          permintaanDetailId: detail.permintaanDetailId,
+          qty: detail.qty,
+          code: detail.code,
+          satuan: detail.satuan,
+          keterangan: detail.keterangan || "",
+        })),
+      });
+    }
 
-    // Ambil data updated termasuk relasi
-    const result = await prisma.confirmationOrder.findUnique({
-      where: { id: Number(id) },
-      include: {
-        confirmationDetails: {
-          include: {
-            permintaanDetail: {
-              include: {
-                material: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    res.status(200).json(result);
+    res.status(200).json({ message: "Confirmation Order berhasil diupdate" });
   } catch (error) {
-    console.error("Error updating Confirmation Order:", error);
-    res.status(500).json({ message: "Terjadi kesalahan", error });
+    console.error("Error updating confirmation order:", error);
+    res.status(500).json({ message: "Terjadi kesalahan saat mengupdate confirmation order" });
   }
 };
 export const deleteConfirmationOrder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+
+    if (!id || isNaN(Number(id))) {
+      return res.status(400).json({ message: "ID tidak valid" });
+    }
+
+    const existing = await prisma.confirmationOrder.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ message: "Confirmation Order tidak ditemukan" });
+    }
 
     await prisma.confirmationOrder.delete({
       where: { id: Number(id) },
@@ -176,7 +188,7 @@ export const deleteConfirmationOrder = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "Confirmation Order berhasil dihapus" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Terjadi kesalahan", error });
+    console.error("Error deleting Confirmation Order:", error);
+    res.status(500).json({ message: "Terjadi kesalahan saat menghapus", error });
   }
 };

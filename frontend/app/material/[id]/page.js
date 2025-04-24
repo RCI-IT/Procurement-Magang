@@ -153,7 +153,7 @@ export default function MaterialPage() {
 
         <div className="flex gap-6 items-start mb-8 bg-white shadow-md p-4 rounded-md">
           <div className="bg-gray-100 border border-gray-300 rounded p-4 flex justify-center">
-            <img src={materialImage} alt={material.name} className="object-cover max-h-72" />
+            <img src={materialImage} alt={material.image} className="object-cover max-h-72" />
           </div>
           <div className="flex-grow">
             <h3 className="text-2xl font-bold mb-2">{material.name}</h3>

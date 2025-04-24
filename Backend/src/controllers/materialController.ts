@@ -176,7 +176,7 @@ export const getMaterialById = async (req: Request, res: Response): Promise<void
       price: `Rp ${material.price.toLocaleString("id-ID")}`,
       category: material.category ? material.category.name : "Unknown Category",
       vendor: material.vendor ? material.vendor.name : "Unknown Vendor",
-      imageUrl: `http://192.168.110.205:5000/uploads/${material.image}`,
+      imageUrl: `http://192.168.110.204:5000/uploads/${material.image}`,
       createdAt: new Date(material.createdAt).toLocaleString("id-ID"),
       updatedAt: new Date(material.updatedAt).toLocaleString("id-ID"),
     };
