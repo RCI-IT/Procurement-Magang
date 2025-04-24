@@ -193,12 +193,15 @@ export default function PermintaanLapangan({ setActiveContent }) {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="border border-gray-300 rounded px-4 py-2"
           />
-          <button
-  onClick={() => router.push("/permintaan-lapangan/add")}
-  className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
->
-  Tambah Permintaan
-</button>
+          {userRole !== "USER_PURCHASE" && (
+  <button
+    onClick={() => router.push("/permintaan-lapangan/add")}
+    className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
+  >
+    Tambah Permintaan
+  </button>
+)}
+
 
         </div>
       </div>
