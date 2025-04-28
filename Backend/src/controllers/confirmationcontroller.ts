@@ -217,12 +217,14 @@ export const deleteConfirmationOrder = async (req: Request, res: Response): Prom
 export const accConfirmationDetails = async (req: Request, res: Response): Promise<void> => {
   const { confirmationDetailIds } = req.body;
 
+  // Validasi input
   if (!Array.isArray(confirmationDetailIds) || confirmationDetailIds.length === 0) {
     res.status(400).json({ error: 'No confirmationDetailIds provided' });
     return;
   }
 
   try {
+    // 1. Cari data confirmationDetails berdasarkan ID
     const details = await prisma.confirmationDetails.findMany({
       where: { id: { in: confirmationDetailIds } },
       include: {
@@ -238,35 +240,60 @@ export const accConfirmationDetails = async (req: Request, res: Response): Promi
       return;
     }
 
+    // 2. Pastikan semua confirmationDetailIds milik ConfirmationOrder yang sama
     const confirmationOrderId = details[0].confirmationOrderId;
 
+    const isSameConfirmationOrder = details.every(
+      (d) => d.confirmationOrderId === confirmationOrderId
+    );
+    if (!isSameConfirmationOrder) {
+      res.status(400).json({ error: 'Semua Confirmation Details harus berasal dari Confirmation Order yang sama' });
+      return;
+    }
+
+    // 3. Update status confirmationDetails menjadi ACC
     await prisma.confirmationDetails.updateMany({
       where: { id: { in: confirmationDetailIds } },
       data: { status: 'ACC' },
     });
 
+    // 4. Cari atau buat PurchaseOrder
     let existingPO = await prisma.purchaseOrder.findUnique({
       where: { confirmationOrderId },
     });
 
+    // Jika tidak ada PO untuk Confirmation Order, buat PO baru
     if (!existingPO) {
+      const today = new Date();
+      const year = today.getFullYear().toString().slice(-2); // Ambil dua digit tahun terakhir
+      const month = (today.getMonth() + 1).toString().padStart(2, '0'); // Bulan dengan 2 digit
+      const day = today.getDate().toString().padStart(2, '0'); // Tanggal dengan 2 digit
+      const datePrefix = `${year}/${month}/${day}`; // Format yyyy/mm/dd
+
+      // Cari PO yang sudah ada dengan tanggal yang sama
       const lastPO = await prisma.purchaseOrder.findFirst({
+        where: {
+          nomorPO: {
+            startsWith: `PO-${datePrefix}`,
+          },
+        },
         orderBy: { id: 'desc' },
       });
 
-      const nextNumber = lastPO ? lastPO.id + 1 : 1;
-      const nomorPO = `PO-${String(nextNumber).padStart(3, '0')}`;
+ const nextNumber = lastPO ? parseInt(lastPO.nomorPO.split('-')[3]) + 1 : 1; 
+ const nomorPO = `PO-${datePrefix}-${String(nextNumber).padStart(3, '0')}`;
 
       existingPO = await prisma.purchaseOrder.create({
         data: {
           nomorPO,
-          tanggalPO: new Date(),
+          tanggalPO: today,
           lokasiPO: details[0].confirmationOrder.lokasiCO,
           confirmationOrderId,
         },
       });
     }
 
+    // 5. Buat PurchaseDetails untuk setiap confirmationDetail yang ACC
     const newPurchaseDetails = await Promise.all(
       details.map(detail =>
         prisma.purchaseDetails.create({
@@ -282,13 +309,18 @@ export const accConfirmationDetails = async (req: Request, res: Response): Promi
       )
     );
 
+    // 6. Jangan hapus confirmationDetails, biarkan yang tidak di-ACC tetap ada
+    // Hanya ubah status confirmationDetails yang di-ACC menjadi "ACC" dan biarkan yang lainnya tetap ada di ConfirmationOrder
+
+    // 7. Balikan response sukses
     res.status(200).json({
-      message: 'Confirmation details ACC-ed and purchase details created',
-      PO: existingPO,
+      message: 'Confirmation Details berhasil ACC dan dipindahkan ke Purchase Order',
+      purchaseOrder: existingPO,
       purchaseDetails: newPurchaseDetails,
     });
+
   } catch (err) {
-    console.error(err);
+    console.error("Error accConfirmationDetails:", err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
