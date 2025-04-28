@@ -6,12 +6,12 @@ import {
 
 const router = express.Router();
 
+router.put("/acc-details", accConfirmationDetails as RequestHandler);
 router.post("/", createConfirmationOrder as RequestHandler);
 router.get("/", getAllConfirmationOrders as RequestHandler);
 router.get("/:id", getConfirmationOrderById as RequestHandler);
 router.put("/:id", updateConfirmationOrder as RequestHandler);
 router.delete("/:id", deleteConfirmationOrder as RequestHandler);
 
-router.put("/confirmation-details/acc", accConfirmationDetails as RequestHandler);
 
 export default router;
