@@ -16,6 +16,8 @@ export default function ConfirmationOrderDetail() {
   const [error, setError] = useState(null);
   const router = useRouter();
   const [username, setUsername] = useState("");
+  const [selectedItems, setSelectedItems] = useState([]);
+
 
 
   const handlePrint = () => {
@@ -116,10 +118,71 @@ useEffect(() => {
   ConfirmationDetail?.confirmationDetails?.reduce((sum, coItem) => {
     const material = coItem.permintaanDetail?.material;
     const harga = material?.price || 0;
-    const qty = coItem.qty || 0; // qty dari confirmationDetails, bukan dari permintaanDetail
+    const qty = coItem.qty || 0; 
     return sum + (harga * qty);
   }, 0) || 0;
 
+  const handleCheckboxChange = (code) => {
+    setSelectedItems((prevSelected) => {
+      if (prevSelected.includes(code)) {
+        return prevSelected.filter((item) => item !== code);
+      } else {
+        return [...prevSelected, code];
+      }
+    });
+  };
+  
+  const handleKonfirmasi = () => {
+    // Pastikan selectedItems adalah array dan memiliki panjang lebih dari 0
+    if (Array.isArray(selectedItems) && selectedItems.length > 0) {
+      const path = '/purchase-order';
+      const query = { items: JSON.stringify(selectedItems) };
+  
+      // Validasi apakah path adalah string
+      if (typeof path !== 'string') {
+        console.error('Error: path bukan string:', path);
+        return;  // Menghentikan eksekusi jika path bukan string
+      }
+  
+      // Validasi apakah query.items adalah string
+      if (typeof query.items !== 'string') {
+        console.error('Error: query.items bukan string:', query.items);
+        return;  // Menghentikan eksekusi jika query.items bukan string
+      }
+  
+      // Pastikan router.push dipanggil dengan argument yang benar
+      try {
+        // Cek apakah router.push adalah fungsi
+        if (typeof router.push !== 'function') {
+          console.error('Error: router.push bukan fungsi');
+          return; // Hentikan eksekusi jika router.push tidak tersedia
+        }
+  
+        // Pastikan path valid
+        if (path && typeof path === 'string' && path.startsWith('/')) {
+          router.push({
+            pathname: path,
+            query: query,
+          });
+        } else {
+          console.error('Error: path tidak valid:', path);
+        }
+      } catch (error) {
+        console.error('Error during navigation:', error);
+      }
+    } else {
+      console.error('Error: selectedItems tidak valid atau kosong.');
+    }
+  };
+  
+  
+const ActionButtons = ({ onKonfirmasi }) => (
+  <div className="flex justify-center gap-4">
+    <button onClick={onKonfirmasi} className="bg-green-500 hover:bg-green-600 text-white rounded-xl w-12 h-12 flex items-center justify-center">
+      ✅
+    </button>
+  </div>
+);
 
 
   return (
@@ -254,11 +317,19 @@ useEffect(() => {
         <td className="border px-4 py-2 text-center">{index + 1}</td>
         <td className="border px-4 py-2">{item.code}</td>
         <td className="border px-4 py-2">{material?.name || 'N/A'}</td>
-        <td className="border px-4 py-2 text-right">Rp{harga.toLocaleString()}</td>
+        <td className="border px-4 py-2 text-center">Rp{harga.toLocaleString()}</td>
         <td className="border px-4 py-2 text-center">{qty}</td>
         <td className="border px-4 py-2 text-center">{item.satuan || 'N/A'}</td>
-        <td className="border px-4 py-2 text-right">Rp{total.toLocaleString()}</td>
-        <td className="border px-4 py-2 text-right">cek</td>
+        <td className="border px-4 py-2 text-center">Rp{total.toLocaleString()}</td>
+        <td className="border px-4 py-2 text-center">
+            <input
+            type="checkbox"
+            checked={selectedItems.includes(item.code)}
+            onChange={() => handleCheckboxChange(item.code)}
+            className="w-6 h-6"
+            />
+        </td>
+
       </tr>
     );
   })
@@ -274,8 +345,21 @@ useEffect(() => {
     <tr className="font-semibold">
       <td colSpan="4" className="bg-blue-600 text-white p-2 text-left">Terbilang</td>
       <td colSpan="2" rowSpan={2} className="p-2 text-center border">TOTAL</td>
-      <td colSpan="1" rowSpan={2} className="p-2 text-right border">Rp{totalHarga.toLocaleString()}</td>
-      <td colSpan="1" rowSpan={2} className="p-2 text-right border">konfirmasi</td>
+      <td colSpan="1" rowSpan={2} className="p-2 text-center border">Rp{totalHarga.toLocaleString()}</td>
+      <td colSpan="1" rowSpan={2} className="p-2 text-center border">
+      <button
+      disabled={selectedItems.length === 0}
+      className={`px-4 py-2 rounded ${
+        selectedItems.length === 0
+          ? "bg-gray-400 cursor-not-allowed"
+          : "bg-green-500 hover:bg-green-600 text-white"
+      }`}
+      onClick={handleKonfirmasi}
+    >
+      Konfirmasi
+    </button>
+</td>
+
     </tr>
 <tr>
 <td colSpan="4" className="border p-2 text-gray-800 bg-white italic text-left">
