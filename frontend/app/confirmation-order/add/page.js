@@ -4,7 +4,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../../component/sidebar";
-import Header from "../../../component/Header.js"
+import Header from "../../../component/Header.js";
+import Swal from 'sweetalert2';
 
 export default function AddConfirmationOrder() { // UBAH NAMA FUNGSI
   const [formData, setFormData] = useState({
@@ -87,18 +88,29 @@ export default function AddConfirmationOrder() { // UBAH NAMA FUNGSI
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
 
-    if (!formData.nomorCO || !formData.lokasiCO || !formData.tanggalCO || !formData.idPL || !formData.idVendor) {
-      alert("Semua kolom harus diisi!");
-      return;
-    }
 
-    if (selectedItems.length === 0) {
-      alert("Pilih minimal 1 barang!");
-      return;
-    }
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!formData.nomorCO || !formData.lokasiCO || !formData.tanggalCO || !formData.idPL || !formData.idVendor) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Semua kolom harus diisi!',
+    });
+    return;
+  }
+
+  if (selectedItems.length === 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Pilih minimal 1 barang!',
+    });
+    return;
+  }
+
 
     const payload = {
       nomorCO: formData.nomorCO,

@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../../component/sidebar.js";
 import Header from "../../../component/Header.js";
+import Swal from 'sweetalert2';
 
 export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddForm }) {
   const router = useRouter();
@@ -76,14 +77,20 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
     }));
   };
 
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!formData.nomor || !formData.tanggal.day || !formData.tanggal.month || !formData.tanggal.year || !formData.lokasi || !formData.picLapangan) {
-      alert("Harap lengkapi semua kolom!");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Harap lengkapi semua kolom!',
+        confirmButtonText: 'Ok',
+      });
       return;
     }
-
+  
     const finalData = {
       ...formData,
       tanggal: `${formData.tanggal.year}-${formData.tanggal.month}-${formData.tanggal.day}`,
@@ -96,20 +103,24 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
         keterangan: d.keterangan, 
       })),
     };
-
+  
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(finalData),
       });
-
+  
       if (!response.ok) {
         throw new Error("Gagal menambahkan permintaan lapangan");
       }
-
-      alert("Permintaan berhasil ditambahkan!");
-
+  
+      Swal.fire({
+        icon: 'success',
+        title: 'Permintaan berhasil ditambahkan!',
+        confirmButtonText: 'Ok',
+      });
+  
       setFormData({
         nomor: "",
         tanggal: { day: "", month: "", year: "" },
@@ -118,15 +129,20 @@ export default function AddPermintaanLapanganForm({ onAddPermintaan, toggleAddFo
         keterangan: "",
         detail: [{ id: Date.now(), materialId: "", qty: "", satuan: "", mention: "", code: "", keterangan: "" }],
       });
-
+  
       router.back();
-
+  
     } catch (error) {
       console.error("Error:", error);
-      alert("Terjadi kesalahan saat menyimpan data. Cek log untuk detail.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Terjadi kesalahan!',
+        text: 'Cek log untuk detail.',
+        confirmButtonText: 'Ok',
+      });
     }
   };
-
+  
   return (
 <div className="flex px-10 py-6 w-full">
   <Sidebar />

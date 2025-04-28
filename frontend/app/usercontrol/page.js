@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../../component/sidebar.js";
 import Header from "../../component/Header.js";
 import { Eye, Trash2 } from "lucide-react";
+import Swal from 'sweetalert2';
 
 export default function User() {
   const [users, setUsers] = useState([]);
@@ -37,23 +38,50 @@ export default function User() {
     }
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Yakin ingin menghapus user ini?")) return;
 
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      });
 
-      if (!response.ok) throw new Error("Gagal menghapus user");
+const handleDelete = async (id) => {
+  // Use SweetAlert2 for confirmation
+  const result = await Swal.fire({
+    title: 'Yakin ingin menghapus user ini?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Hapus!',
+    cancelButtonText: 'Batal',
+    reverseButtons: true
+  });
 
-      setUsers((prev) => prev.filter((user) => user.id !== id));
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      alert("Gagal menghapus user: " + error.message);
-    }
-  };
+  if (!result.isConfirmed) return; // If the user clicks "Cancel", don't delete
+
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) throw new Error("Gagal menghapus user");
+
+    setUsers((prev) => prev.filter((user) => user.id !== id));
+
+    // Success alert
+    Swal.fire({
+      title: 'User berhasil dihapus!',
+      icon: 'success',
+      timer: 1500,
+      showConfirmButton: false
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    // Error alert
+    Swal.fire({
+      title: 'Gagal menghapus user!',
+      text: error.message,
+      icon: 'error',
+      confirmButtonText: 'Tutup'
+    });
+  }
+};
+
 
   return (
     <div className="flex flex-col min-h-screen">

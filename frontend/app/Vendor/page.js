@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../../component/sidebar";
 import Header from "../../component/Header";
 import { Eye, Trash2 } from "lucide-react";
+import Swal from 'sweetalert2';
 
 export default function VendorPage() {
   const [vendors, setVendors] = useState([]);
@@ -39,23 +40,46 @@ export default function VendorPage() {
     router.push(`/vendor/${vendorId}`);
   };
 
+
+
   const handleDelete = async (vendorId) => {
-    const confirmDelete = window.confirm("Yakin ingin hapus vendor ini?");
-    if (!confirmDelete) return;
-
+    const result = await Swal.fire({
+      title: 'Yakin ingin hapus vendor ini?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, Hapus!',
+      cancelButtonText: 'Batal',
+    });
+  
+    if (!result.isConfirmed) return;
+  
     try {
-      const res = await  fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`, {
-        method: "DELETE",
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`, {
+        method: 'DELETE',
       });
-      if (!res.ok) throw new Error("Gagal hapus vendor");
-
-      alert("Berhasil hapus vendor");
+  
+      if (!res.ok) throw new Error('Gagal hapus vendor');
+  
+      Swal.fire({
+        title: 'Berhasil!',
+        text: 'Vendor berhasil dihapus.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+      });
+  
       fetchData(); // Refresh data setelah delete
     } catch (error) {
-      console.error("Error:", error);
-      alert("Gagal hapus vendor");
+      console.error('Error:', error);
+  
+      Swal.fire({
+        title: 'Gagal!',
+        text: 'Terjadi kesalahan saat menghapus vendor.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
     }
   };
+  
 
   return (
     <div className="flex flex-col min-h-screen">
