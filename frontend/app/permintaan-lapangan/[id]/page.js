@@ -122,9 +122,28 @@ export default function DetailPermintaanLapangan() {
       <div id="permintaan-lapangan" className="print-container  mx-auto bg-white rounded-lg p-6"> 
         <div className="border-b-4 border-blue-600 mt-4">
         <div className="flex justify-between items-center pb-3">
-  <h1 className="text-lg font-bold text-blue-900 uppercase">Company Name</h1>
-  <h2 className="text-lg font-bold text-blue-900 uppercase">Permintaan Lapangan</h2>
-  <div className="border border-gray-300 text-sm">
+        <div className="flex flex-col items-start space-y-2">
+    <img src="/logo1.png" alt="Logo" className="w-20 h-20 object-contain" />
+
+    <div>
+      <h4 className="text-blue-900 font-bold text-lg uppercase">
+        PT. REKA CIPTA INOVASI
+      </h4>
+      <p className="text-sm text-gray-700">
+        Jl. Aluminium Perumahan Gatot Subroto Town House No. 5<br />
+        Kel. Sei Sikambing C II, Kec. Medan Helvetia, Medan<br />
+        Sumatera Utara, 20213
+      </p>
+    </div>
+  </div>
+  <div className="text-sm">
+  {/* Judul */}
+  <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">
+    PERMINTAAN LAPANGAN
+  </h2>
+
+  {/* Tabel */}
+  <div className="border border-gray-300">
     <table className="border-collapse w-full">
       <tbody>
         <tr>
@@ -138,6 +157,8 @@ export default function DetailPermintaanLapangan() {
       </tbody>
     </table>
   </div>
+</div>
+
 </div>
 </div>       
          <br></br>
