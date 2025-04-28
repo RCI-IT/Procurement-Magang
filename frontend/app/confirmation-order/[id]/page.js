@@ -234,6 +234,7 @@ useEffect(() => {
       <th className="border p-2" rowSpan={2}>Harga</th>
       <th className="border p-2 w-12 " colSpan="2">Permintaan</th>
       <th className="border p-2 w-35" rowSpan={2}>Total</th>
+      <th className="border p-2 w-35" rowSpan={2}>Aksi</th>
     </tr>
     <tr className="bg-blue-600 text-white">
       <th className="border p-2 w-12">QTY</th>
@@ -257,6 +258,7 @@ useEffect(() => {
         <td className="border px-4 py-2 text-center">{qty}</td>
         <td className="border px-4 py-2 text-center">{item.satuan || 'N/A'}</td>
         <td className="border px-4 py-2 text-right">Rp{total.toLocaleString()}</td>
+        <td className="border px-4 py-2 text-right">cek</td>
       </tr>
     );
   })
@@ -273,6 +275,7 @@ useEffect(() => {
       <td colSpan="4" className="bg-blue-600 text-white p-2 text-left">Terbilang</td>
       <td colSpan="2" rowSpan={2} className="p-2 text-center border">TOTAL</td>
       <td colSpan="1" rowSpan={2} className="p-2 text-right border">Rp{totalHarga.toLocaleString()}</td>
+      <td colSpan="1" rowSpan={2} className="p-2 text-right border">konfirmasi</td>
     </tr>
 <tr>
 <td colSpan="4" className="border p-2 text-gray-800 bg-white italic text-left">
