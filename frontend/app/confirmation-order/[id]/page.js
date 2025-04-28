@@ -7,6 +7,7 @@ import "../../../styles/globals.css";
 import Sidebar from "../../../component/sidebar.js";
 import { useRouter } from "next/navigation";
 import Header from "../../../component/Header.js"
+import Swal from 'sweetalert2';
 
 export default function ConfirmationOrderDetail() {
   const { id } = useParams();
@@ -132,13 +133,16 @@ useEffect(() => {
   };
   const handleKonfirmasi = async () => {
     if (selectedItems.length === 0) {
-      alert("Tidak ada item yang dipilih!");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Oops!',
+        text: 'Tidak ada item yang dipilih!',
+      });
       return;
     }
   
-    console.log("Selected Items:", selectedItems); // Menampilkan data yang dipilih
+    console.log("Selected Items:", selectedItems);
   
-    // Pastikan selectedItems adalah array angka
     const confirmationDetailIds = selectedItems.map(id => parseInt(id, 10));
   
     try {
@@ -147,25 +151,36 @@ useEffect(() => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          confirmationDetailIds,
-        }),
+        body: JSON.stringify({ confirmationDetailIds }),
       });
   
-      console.log("Response Status:", response.status); // Menampilkan status code response
+      console.log("Response Status:", response.status);
+  
       if (!response.ok) {
         throw new Error("Gagal mengkonfirmasi");
       }
   
       const result = await response.json();
-      console.log("Response Data:", result); // Menampilkan data response dari server
+      console.log("Response Data:", result);
   
       if (result.message) {
-        alert(result.message);
+        await Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: result.message,
+          confirmButtonText: 'OK'
+        });
+  
+        // Redirect setelah user klik OK
+        window.location.href = "http://192.168.110.204:3000/?page=confirmation-order";
       }
     } catch (error) {
       console.error("Error konfirmasi: ", error.message);
-      alert("Terjadi kesalahan: " + error.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Terjadi kesalahan: ' + error.message,
+      });
     }
   };
 const ActionButtons = ({ onKonfirmasi }) => (
@@ -193,7 +208,6 @@ const ActionButtons = ({ onKonfirmasi }) => (
 >
   Edit
 </button>
-
 
           <button onClick={handlePrint} className="no-print bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
           Cetak
@@ -316,13 +330,18 @@ const ActionButtons = ({ onKonfirmasi }) => (
         <td className="border px-4 py-2 text-center">{item.satuan || 'N/A'}</td>
         <td className="border px-4 py-2 text-center">Rp{total.toLocaleString()}</td>
         <td className="border px-4 py-2 text-center">
-            <input
-            type="checkbox"
-            checked={selectedItems.includes(item.code)}
-            onChange={() => handleCheckboxChange(item.code)}
-            className="w-6 h-6"
-            />
-        </td>
+  {item.status === "ACC" ? (
+    <span className="text-green-600 font-semibold">ACC </span>
+  ) : (
+    <input
+      type="checkbox"
+      checked={selectedItems.includes(item.id)}
+      onChange={() => handleCheckboxChange(item.id)}
+      className="w-6 h-6"
+    />
+  )}
+</td>
+
 
       </tr>
     );
