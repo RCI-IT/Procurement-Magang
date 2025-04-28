@@ -170,8 +170,7 @@ useEffect(() => {
           text: result.message,
           confirmButtonText: 'OK'
         });
-  
-        // Redirect setelah user klik OK
+
         window.location.href = "http://192.168.110.204:3000/?page=confirmation-order";
       }
     } catch (error) {

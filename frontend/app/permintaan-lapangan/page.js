@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -7,6 +6,7 @@ import AddPermintaanLapanganForm from "./add/page";
 import Sidebar from "../../component/sidebar";
 import Header from "../../component/Header.js";
 import { Eye, Trash2 } from "lucide-react";
+import Swal from 'sweetalert2';
 
 const months = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -148,23 +148,35 @@ export default function PermintaanLapangan({ setActiveContent }) {
       alert("Terjadi kesalahan saat mengubah status.");
     }
   };
-  const handleDelete = async (id) => {
-    if (!window.confirm("Apakah Anda yakin ingin menghapus permintaan ini?")) return;
 
+
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: 'Apakah Anda yakin?',
+      text: 'Anda tidak dapat mengembalikan permintaan ini!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, hapus!',
+      cancelButtonText: 'Batal',
+    });
+  
+    if (!result.isConfirmed) return;
+  
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
-
-      if (!response.ok) throw new Error("Gagal menghapus permintaan");
-
+  
+      if (!response.ok) throw new Error('Gagal menghapus permintaan');
+  
       setUpdatedData((prevData) => prevData.filter((item) => item.id !== id));
-      alert("Permintaan berhasil dihapus!");
+      Swal.fire('Dihapus!', 'Permintaan berhasil dihapus.', 'success');
     } catch (error) {
-      console.error("Gagal menghapus permintaan lapangan:", error);
-      alert("Terjadi kesalahan saat menghapus permintaan.");
+      console.error('Gagal menghapus permintaan lapangan:', error);
+      Swal.fire('Terjadi kesalahan!', 'Terjadi kesalahan saat menghapus permintaan.', 'error');
     }
   };
+  
   const parseDate = (dateString) => {
     const date = new Date(dateString);
     return {

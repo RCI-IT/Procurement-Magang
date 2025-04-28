@@ -10,7 +10,6 @@ export default function Login() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    // Ambil data user dari backend
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`)
       .then(response => response.json())
       .then(data => setUsers(data))
@@ -23,12 +22,10 @@ export default function Login() {
     );
 
     if (validUser) {
-      // Simpan credential di localStorage
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("username", validUser.username);
       localStorage.setItem("role", validUser.role);
-      
-      // Arahkan ke halaman Home
+
       router.push("/");
     } else {
       alert("Invalid credentials");

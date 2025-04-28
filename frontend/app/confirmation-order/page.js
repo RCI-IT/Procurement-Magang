@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Sidebar from "@/component/sidebar";
 import Header from "../../component/Header";
 import { Eye, Trash2 } from "lucide-react";
+import Swal from 'sweetalert2';
 
 const ConfirmationOrderTable = () => {
   const [data, setData] = useState([]);
@@ -49,23 +49,45 @@ const ConfirmationOrderTable = () => {
   }, []);
 
 
-  const handleDelete = async (id) => {
-    const confirmDelete = confirm("Yakin ingin menghapus data ini?");
-    if (!confirmDelete) return;
+ 
 
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`, {
-        method: "DELETE",
-      });
+const handleDelete = async (id) => {
+  const { value: confirmDelete } = await Swal.fire({
+    title: 'Yakin ingin menghapus data ini?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Hapus',
+    cancelButtonText: 'Batal',
+  });
 
-      if (!response.ok) {
-        throw new Error("Gagal menghapus data");
-      }
-      router.push('/confirmation-order');
-    } catch (err) {
-      alert(err.message);
+  if (!confirmDelete) return;
+
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error("Gagal menghapus data");
     }
-  };
+
+    await Swal.fire({
+      title: 'Data berhasil dihapus!',
+      icon: 'success',
+      confirmButtonText: 'OK',
+    });
+
+    router.push('/confirmation-order');
+  } catch (err) {
+    Swal.fire({
+      title: 'Terjadi kesalahan!',
+      text: err.message,
+      icon: 'error',
+      confirmButtonText: 'OK',
+    });
+  }
+};
+
 
   const ActionButtons = ({ onView, onDelete}) => (
     <div className="flex justify-center gap-4">

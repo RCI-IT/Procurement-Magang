@@ -4,9 +4,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../../component/sidebar";
-import Header from "../../../component/Header.js"
+import Header from "../../../component/Header.js";
+import Swal from 'sweetalert2';
 
-export default function AddConfirmationOrder() { // UBAH NAMA FUNGSI
+export default function AddConfirmationOrder() { 
   const [formData, setFormData] = useState({
     nomorCO: "",
     lokasiCO: "",
@@ -87,18 +88,29 @@ export default function AddConfirmationOrder() { // UBAH NAMA FUNGSI
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
 
-    if (!formData.nomorCO || !formData.lokasiCO || !formData.tanggalCO || !formData.idPL || !formData.idVendor) {
-      alert("Semua kolom harus diisi!");
-      return;
-    }
 
-    if (selectedItems.length === 0) {
-      alert("Pilih minimal 1 barang!");
-      return;
-    }
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!formData.nomorCO || !formData.lokasiCO || !formData.tanggalCO || !formData.idPL || !formData.idVendor) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Semua kolom harus diisi!',
+    });
+    return;
+  }
+
+  if (selectedItems.length === 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Pilih minimal 1 barang!',
+    });
+    return;
+  }
+
 
     const payload = {
       nomorCO: formData.nomorCO,
@@ -120,21 +132,21 @@ export default function AddConfirmationOrder() { // UBAH NAMA FUNGSI
     console.log("🛠 Items yang akan dikirim:", JSON.stringify(selectedItems, null, 2));
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation`, { // ENDPOINT SUDAH BENAR UNTUK CO
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation`, { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (response.ok) {
-        alert("Confirmation Order berhasil ditambahkan!"); // PESAN SUDAH SESUAI
+        alert("Confirmation Order berhasil ditambahkan!"); 
         router.back();
       } else {
         const errorData = await response.json();
-        console.error("Gagal menambah Confirmation Order:", errorData); // LOG DISESUAIKAN
+        console.error("Gagal menambah Confirmation Order:", errorData); 
       }
     } catch (error) {
-      console.error("Gagal menambah Confirmation Order:", error); // LOG DISESUAIKAN
+      console.error("Gagal menambah Confirmation Order:", error); 
     }
   };
 
@@ -158,7 +170,7 @@ export default function AddConfirmationOrder() { // UBAH NAMA FUNGSI
         <div>
           <Header username={username} />
         </div>
-        <h1 className="text-2xl font-bold mb-6">Tambah Confirmation Order</h1> {/* JUDUL DIUBAH */}
+        <h1 className="text-2xl font-bold mb-6">Tambah Confirmation Order</h1> 
         <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 shadow-md rounded-lg">
           <div className="grid grid-cols-2 gap-4 border-b pb-4">
             <div>

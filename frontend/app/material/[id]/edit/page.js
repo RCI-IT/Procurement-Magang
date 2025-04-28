@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Sidebar from "../../../../component/sidebar";
 import Header from "../../../../component/Header";
+import Swal from "sweetalert2"; 
 
 export default function EditMaterial() {
   const { id } = useParams();
@@ -50,14 +51,13 @@ export default function EditMaterial() {
       }
     };
 
-      const storedUsername = localStorage.getItem("username");
-      if (storedUsername) {
-        setUsername(storedUsername);
-      }
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
 
     fetchData();
   }, [id]);
-
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -84,11 +84,20 @@ export default function EditMaterial() {
         throw new Error("Gagal mengupdate material");
       }
 
-      window.alert("Material berhasil diperbarui!");
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Material berhasil diperbarui!",
+      });
 
       router.push("/?page=material");
     } catch (error) {
       setError(error.message);
+      Swal.fire({
+        icon: "error",
+        title: "Terjadi kesalahan",
+        text: error.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -96,64 +105,98 @@ export default function EditMaterial() {
 
   return (
     <div className="flex">
-    <Sidebar />
-    <div className="p-6 flex-1">
-    <div className="w-full">
-        <Header username={username} />
+      <Sidebar />
+      <div className="p-6 flex-1">
+        <div className="w-full">
+          <Header username={username} />
         </div>
 
-      <h2 className="text-2xl font-bold mb-4">Edit Material</h2>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+        <h2 className="text-2xl font-bold mb-4">Edit Material</h2>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block">Gambar:</label>
-          <input type="file" onChange={(e) => setImage(e.target.files[0])} />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block">Gambar:</label>
+            <input type="file" onChange={(e) => setImage(e.target.files[0])} />
+          </div>
 
-        <div>
-          <label className="block">Nama Material:</label>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="border p-2 w-full" />
-        </div>
+          <div>
+            <label className="block">Nama Material:</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="border p-2 w-full"
+            />
+          </div>
 
-        <div>
-          <label className="block">Harga:</label>
-          <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="border p-2 w-full" />
-        </div>
+          <div>
+            <label className="block">Harga:</label>
+            <input
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              className="border p-2 w-full"
+            />
+          </div>
 
-        <div>
-          <label className="block">Deskripsi:</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="border p-2 w-full"></textarea>
-        </div>
+          <div>
+            <label className="block">Deskripsi:</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="border p-2 w-full"
+            ></textarea>
+          </div>
 
-        <div>
-          <label className="block">Kategori:</label>
-          <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="border p-2 w-full">
-            <option value="">Pilih Kategori</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-        </div>
+          <div>
+            <label className="block">Kategori:</label>
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="border p-2 w-full"
+            >
+              <option value="">Pilih Kategori</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div>
-          <label className="block">Vendor:</label>
-          <select value={vendorId} onChange={(e) => setVendorId(e.target.value)} className="border p-2 w-full">
-            <option value="">Pilih Vendor</option>
-            {vendors.map((vendor) => (
-              <option key={vendor.id} value={vendor.id}>{vendor.name}</option>
-            ))}
-          </select>
-        </div>
+          <div>
+            <label className="block">Vendor:</label>
+            <select
+              value={vendorId}
+              onChange={(e) => setVendorId(e.target.value)}
+              className="border p-2 w-full"
+            >
+              <option value="">Pilih Vendor</option>
+              {vendors.map((vendor) => (
+                <option key={vendor.id} value={vendor.id}>
+                  {vendor.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2" disabled={loading}>
-          {loading ? "Menyimpan..." : "Simpan Perubahan"}
-        </button><br></br>
-        <button onClick={() => router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2"
+            disabled={loading}
+          >
+            {loading ? "Menyimpan..." : "Simpan Perubahan"}
+          </button>
+          <br />
+          <button
+            onClick={() => router.back()}
+            className="mt-6 bg-gray-500 text-white px-4 py-2 rounded"
+          >
             Kembali
           </button>
-      </form>
-    </div>
+        </form>
+      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Header from "../../../component/Header";
 import Sidebar from "../../../component/sidebar";
+import Swal from "sweetalert2";
 
 export default function AddMaterialPage() {
   const router = useRouter();
@@ -55,7 +56,11 @@ export default function AddMaterialPage() {
     setError("");
 
     if (!name || !vendorId || !price || !categoryId) {
-      setError("Semua field harus diisi!");
+      Swal.fire({
+        icon: "error",
+        title: "Data Belum Lengkap",
+        text: "Semua field harus diisi!",
+      });
       setLoading(false);
       return;
     }
@@ -80,8 +85,6 @@ export default function AddMaterialPage() {
         throw new Error("Gagal menambahkan material");
       }
 
-     
-
       setName("");
       setVendorId("");
       setPrice("");
@@ -89,10 +92,22 @@ export default function AddMaterialPage() {
       setDescription("");
       setImage(null);
 
-      router.back();
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil!",
+        text: "Material berhasil ditambahkan.",
+        confirmButtonText: "OK",
+      });
+
+      router.back(); 
     } catch (error) {
       console.error("Error adding material:", error);
-      setError(`Terjadi kesalahan: ${error.message}`);
+
+      Swal.fire({
+        icon: "error",
+        title: "Terjadi Kesalahan",
+        text: error.message || "Gagal menambahkan material",
+      });
     } finally {
       setLoading(false);
     }

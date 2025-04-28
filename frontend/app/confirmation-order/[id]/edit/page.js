@@ -97,8 +97,6 @@ const handleItemChange = (index, field, value) => {
         body: JSON.stringify(bodyData),
       });
 
-     // Ganti:
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const responseData = await response.json();
 
 

@@ -1,9 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Sidebar from "../../../component/sidebar"; // aslinya ini sidebar kan?
+import Sidebar from "../../../component/sidebar"; 
 import Header from "../../../component/Header";
 
 export default function VendorPage() {
