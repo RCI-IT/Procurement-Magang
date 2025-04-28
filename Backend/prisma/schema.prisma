@@ -2,12 +2,10 @@ generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
 model PermintaanLapangan {
   id                  Int                 @id @default(autoincrement())
   createdAt           DateTime            @default(now())
@@ -26,7 +24,6 @@ model PermintaanLapangan {
   userId              Int?
   user                User?               @relation(fields: [userId], references: [id])
 }
-
 model PurchaseOrder {
   id                  Int               @id @default(autoincrement())
   createdAt           DateTime          @default(now())
@@ -42,7 +39,6 @@ model PurchaseOrder {
   userId              Int?
   user                User?             @relation(fields: [userId], references: [id])
 }
-
 model PurchaseDetails {
   id              Int           @id @default(autoincrement())
   purchaseOrderId Int
@@ -54,7 +50,6 @@ model PurchaseDetails {
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
   material        Materials     @relation(fields: [materialId], references: [id], onDelete: Cascade)
 }
-
 model ConfirmationOrder {
   id                  Int                   @id @default(autoincrement())
   createdAt           DateTime              @default(now())
@@ -70,7 +65,6 @@ model ConfirmationOrder {
   user                User?                 @relation(fields: [userId], references: [id])
   purchaseOrder       PurchaseOrder?        @relation("COToPO")
 }
-
 model ConfirmationDetails {
   id                   Int                @id @default(autoincrement())
   confirmationOrderId  Int
@@ -83,8 +77,6 @@ model ConfirmationDetails {
   permintaanDetail     PermintaanDetails  @relation(fields: [permintaanDetailId], references: [id], onDelete: Cascade)
   confirmationOrder    ConfirmationOrder  @relation(fields: [confirmationOrderId], references: [id], onDelete: Cascade)
 }
-
-
 model PermintaanDetails {
   id                  Int                   @id @default(autoincrement())
   createdAt           DateTime              @default(now())
@@ -96,12 +88,11 @@ model PermintaanDetails {
   mention             String?
   code                String
   keterangan          String?
-  status              PDetailStatus       @default(PENDING)
+  status              PLDStatus            @default(PENDING)
   confirmationDetails ConfirmationDetails[]
   material            Materials             @relation(fields: [materialId], references: [id], onDelete: Cascade)
   permintaan          PermintaanLapangan    @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
 }
-
 model Materials {
   id              Int                 @id @default(autoincrement())
   createdAt       DateTime            @default(now())
@@ -117,7 +108,6 @@ model Materials {
   permintaan      PermintaanDetails[]
   PurchaseDetails PurchaseDetails[]
 }
-
 model Categories {
   id        Int         @id @default(autoincrement())
   createdAt DateTime    @default(now())
@@ -125,7 +115,6 @@ model Categories {
   name      String      @unique
   materials Materials[]
 }
-
 model Vendors {
   id        Int         @id @default(autoincrement())
   createdAt DateTime    @default(now())
@@ -136,7 +125,6 @@ model Vendors {
   phone     String?
   materials Materials[]
 }
-
 model User {
   id                 Int                  @id @default(autoincrement())
   createdAt          DateTime             @default(now())
@@ -150,7 +138,6 @@ model User {
   confirmationOrders ConfirmationOrder[]
   PurchaseOrder      PurchaseOrder[]
 }
-
 enum PermintaanStatus {
   PENDING
   APPROVED
@@ -160,7 +147,6 @@ enum PermintaanStatus {
   CANCELLED
   READ
 }
-
 enum COStatus {
   PENDING
   CLOSED
@@ -172,7 +158,6 @@ enum COStatus {
   IN_PROGRESS
   READ
 }
-
 enum POStatus {
   PENDING
   CLOSED
@@ -184,21 +169,27 @@ enum POStatus {
   IN_PROGRESS
   READ
 }
-
 enum UserRole {
   ADMIN
   USER_PURCHASE
   USER_LAPANGAN
 }
-
 enum DetailStatus {
   PENDING
-  ACC
+  APPROVED
   REJECTED
+  IN_PROGRESS
+  CLOSED
+  CANCELLED
+  READ
+  ACC
 }
-
-enum PDetailStatus {
+enum PLDStatus {
   PENDING
-  ACC
+  APPROVED
   REJECTED
+  IN_PROGRESS
+  CLOSED
+  CANCELLED
+  READ
 }

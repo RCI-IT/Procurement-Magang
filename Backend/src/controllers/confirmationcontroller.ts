@@ -27,7 +27,8 @@ export const createConfirmationOrder = async (req: Request, res: Response): Prom
       return;
     }
 
-    await prisma.confirmationOrder.create({
+    // Simpan Confirmation Order
+    const confirmationOrder = await prisma.confirmationOrder.create({
       data: {
         nomorCO,
         tanggalCO,
@@ -45,6 +46,18 @@ export const createConfirmationOrder = async (req: Request, res: Response): Prom
             keterangan: item.namaBarang,
           })),
         },
+      },
+    });
+
+    // 2. Update status PermintaanDetails menjadi IN_PROGRESS
+    await prisma.permintaanDetails.updateMany({
+      where: {
+        id: {
+          in: items.map((item) => item.permintaanDetailId),
+        },
+      },
+      data: {
+        status: 'IN_PROGRESS',
       },
     });
 

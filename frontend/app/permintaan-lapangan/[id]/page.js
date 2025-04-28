@@ -154,6 +154,7 @@ export default function DetailPermintaanLapangan() {
       <th rowSpan="2" className="border border-gray-300 px-2 text-center">code</th>
       <th colSpan="2" className="border border-gray-300 p-2 text-center" >Permintaan</th>
       <th rowSpan="2" className="border border-gray-300 px-2 text-center">Keterangan</th>
+      <th rowSpan="2" className="border border-gray-300 px-2 text-center">Status</th>
     </tr>
     <tr>  
     <th className="border border- p-2 text-center">QTY</th>
@@ -171,6 +172,7 @@ export default function DetailPermintaanLapangan() {
           <td className="border border-gray-300 p-2">{item.qty}</td>
           <td className="border border-gray-300 p-2">{item.satuan}</td>
           <td className="border border-gray-300 p-2">{item.keterangan}</td>
+          <td className="border border-gray-300 p-2">{item.status}</td>
         </tr>
       ))
     ) : (
@@ -219,19 +221,19 @@ export default function DetailPermintaanLapangan() {
       <td colSpan="3" className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1">
         Diketahui
       </td>
-      <td colSpan="1" className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1">
+      <td colSpan="2" className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1">
         Dibuat
       </td>
     </tr>
     <tr>
       <td colSpan="1" className="border border-gray-300 border-b-0 h-16"></td>
       <td colSpan="3" className="border border-gray-300 border-b-0 h-16"></td>
-      <td colSpan="1" className="border border-gray-300 border-b-0 h-16"></td>
+      <td colSpan="2" className="border border-gray-300 border-b-0 h-16"></td>
     </tr>
     <tr>
   <td className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
   <td className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom" colSpan="3">Nama</td>
-  <td className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
+  <td className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom" colSpan="2" >Nama</td>
 </tr>
 
 
@@ -242,7 +244,7 @@ export default function DetailPermintaanLapangan() {
   <td colSpan="3" className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1">
     Site Manager
   </td>
-  <td colSpan="1" className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1">
+  <td colSpan="2" className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1">
     Logistik
   </td>
 </tr>

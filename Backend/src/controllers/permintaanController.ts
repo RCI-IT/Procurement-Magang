@@ -86,16 +86,8 @@ export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
         },
       },
     });
-
-    // Filter PL yang masih punya barang belum masuk PO
-    const filteredPermintaanList = permintaanList
-      .map((pl: any) => ({
-        ...pl,
-        detail: pl.detail.filter((item: any) => item.confirmationDetails.length === 0),
-      }))
-      .filter((pl: any) => pl.detail.length > 0);
-
-    res.status(200).json(filteredPermintaanList);
+//    // Filter PL yang masih punya barang belum masuk PO const filteredPermintaanList = permintaanList .map((pl: any) => ({   ...pl,   detail: pl.detail.filter((item: any) => item.confirmationDetails.length === 0), })) .filter((pl: any) => pl.detail.length > 0);
+    res.status(200).json(permintaanList);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Gagal mengambil data permintaan lapangan" });
