@@ -8,7 +8,6 @@ import Header from "../../component/Header"; // Import Header
 
 // Menu items yang sudah ada di Sidebar
 const menuItems = [
-  { id: "home", label: "Home", icon: "🏠", page: "home", roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"] },
   { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "permintaan-lapangan", roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"] },
   { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "purchase-order", roles: ["USER_PURCHASE", "ADMIN"] },
   { id: "material", label: "Material", icon: "📦", page: "material", roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"] },
