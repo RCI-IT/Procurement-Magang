@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // import useRouter dari next/navigation
+import { useRouter } from "next/navigation"; 
 import Sidebar from "@/component/sidebar";
 import Header from "../../component/Header";
 import { Eye, Trash2 } from "lucide-react";
@@ -17,7 +16,6 @@ const ConfirmationOrderTable = () => {
   const router = useRouter();
   const [userRole, setUserRole] = useState(null); 
 
-  // Ambil data dari API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -38,7 +36,6 @@ const ConfirmationOrderTable = () => {
     fetchData();
   }, []);
 
-  // Ambil username dari localStorage
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
     const storedRole = localStorage.getItem("role"); 
@@ -50,7 +47,7 @@ const ConfirmationOrderTable = () => {
     }
   }, []);
 
-  // Fungsi hapus data
+
   const handleDelete = async (id) => {
     const confirmDelete = confirm("Yakin ingin menghapus data ini?");
     if (!confirmDelete) return;
@@ -69,32 +66,31 @@ const ConfirmationOrderTable = () => {
     }
   };
 
-  // Fungsi konfirmasi dan pindahkan data ke halaman purchase-order
-  const handleKonfirmasi = (co) => {
-    // Menyimpan data di localStorage (atau bisa menggunakan sessionStorage)
-    localStorage.setItem('selectedOrder', JSON.stringify(co));
-
-    // Navigasi ke halaman purchase-order
-    router.push('/purchase-order');
+  const handleKonfirmasi = () => {
+    if (selectedItems.length > 0) {
+      const orderData = {
+        nomorCO: "CO-123", 
+        tanggalCO: new Date(),
+        lokasiCO: "Jakarta", 
+        items: selectedItems, 
+      };
+      
+      localStorage.setItem("selectedOrder", JSON.stringify(orderData));
+      router.push('/purchase-order');
+    }
   };
-
-  // Komponen tombol aksi (lihat + hapus)
-  const ActionButtons = ({ onView, onDelete }) => (
+  
+  const ActionButtons = ({ onView, onDelete, onKonfirmasi }) => (
     <div className="flex justify-center gap-4">
-      <button
-        onClick={onView}
-        className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl w-12 h-12 flex items-center justify-center"
-      >
+      <button onClick={onView} className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl w-12 h-12 flex items-center justify-center">
         <Eye className="text-white" />
       </button>
-      <button
-        onClick={onDelete}
-        className="bg-red-500 hover:bg-red-600 text-white rounded-xl w-12 h-12 flex items-center justify-center"
-      >
+      <button onClick={onDelete} className="bg-red-500 hover:bg-red-600 text-white rounded-xl w-12 h-12 flex items-center justify-center">
         <Trash2 className="text-white" />
       </button>
     </div>
   );
+  
 
   return (
     <div className="flex h-screen">
