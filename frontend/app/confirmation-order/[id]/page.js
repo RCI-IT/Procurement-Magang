@@ -218,52 +218,59 @@ const ActionButtons = ({ onKonfirmasi }) => (
         </div>
         <br></br>
         <br></br>
-      <div id="purchase-order" className="border-t pb-4 flex items-center relative mt-4">
-  <h2 className="text-lg font-bold text-blue-900 uppercase">COMPANY NAME</h2>
-  <h2 className="text-lg font-bold text-blue-900 uppercase absolute left-1/2 transform -translate-x-1/2">
-    CONFIRMATION ORDER
-  </h2>
-    <div className="ml-auto pt-6">
-    <table className="border text-sm">
+        <div id="purchase-order" className="flex justify-between items-start mt-4">
+  {/* Kiri: Logo + Nama PT + Alamat */}
+  <div className="flex flex-col items-start space-y-2">
+    <img src="/logo1.png" alt="Logo" className="w-20 h-20 object-contain" />
+
+    <div>
+      <h4 className="text-blue-900 font-bold text-lg uppercase">
+        PT. REKA CIPTA INOVASI
+      </h4>
+      <p className="text-sm text-gray-700">
+        Jl. Aluminium Perumahan Gatot Subroto Town House No. 5<br />
+        Kel. Sei Sikambing C II, Kec. Medan Helvetia, Medan<br />
+        Sumatera Utara, 20213
+      </p>
+    </div>
+  </div>
+
+  {/* Kanan: Judul + Tabel */}
+  <div className="flex flex-col items-center">
+    <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">
+      CONFIRMATION<br />PURCHASE ORDER
+    </h2>
+    <table className="border text-sm w-auto">
       <tbody>
         <tr className="border">
-          <td className="border px-4 py-2 font-semibold">Nomor</td>
-          <td className="border px-4 py-2">{ConfirmationDetails?.nomorCO || "N/A"}</td>
-        </tr>
-        <tr className="border">
-          <td className="border px-4 py-2 font-semibold">Tanggal</td>
-          <td className="border px-4 py-2">
-            {ConfirmationDetail?.tanggalCO
+          <td className="border px-2 py-1 font-semibold text-center">Date</td>
+          <td className="border px-2 py-1 text-center">
+            {ConfirmationDetails?.tanggalCO
               ? new Date(ConfirmationDetails.tanggalCO).toLocaleDateString("id-ID", {
                   day: "2-digit",
-                  month: "long",
+                  month: "short",
                   year: "numeric",
                 })
               : "N/A"}
           </td>
         </tr>
         <tr className="border">
-          <td className="border px-4 py-2 font-semibold">Nomor PL</td>
-          <td className="border px-4 py-2">{ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.permintaan?.nomor || "N/A"}</td>
-
+          <td className="border px-2 py-1 font-semibold text-center">No. Konfirmasi PO</td>
+          <td className="border px-2 py-1 text-center">{ConfirmationDetails?.nomorKonfirmasiCO || "N/A"}</td>
         </tr>
         <tr className="border">
-          <td className="border px-4 py-2 font-semibold">Tanggal PL</td>
-          <td className="border px-4 py-2">
-  {ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.permintaan?.tanggal
-    ? new Date(ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.permintaan.tanggal).toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      })
-    : "N/A"}
-</td>
-
+          <td className="border px-2 py-1 font-semibold text-center">PO Number</td>
+          <td className="border px-2 py-1 text-center">{ConfirmationDetails?.nomorCO || "N/A"}</td>
         </tr>
         <tr className="border">
-          <td className="border px-4 py-2 font-semibold">Proyek</td>
-          <td className="border px-4 py-2">{ConfirmationDetails?.lokasiCO || "N/A"}
+          <td className="border px-2 py-1 font-semibold text-center">PL Number</td>
+          <td className="border px-2 py-1 text-center">
+            {ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.permintaan?.nomor || "N/A"}
           </td>
+        </tr>
+        <tr className="border">
+          <td className="border px-2 py-1 font-semibold text-center">No. Kontrak</td>
+          <td className="border px-2 py-1 text-center">{ConfirmationDetails?.noKontrak || "N/A"}</td>
         </tr>
       </tbody>
     </table>
@@ -271,29 +278,6 @@ const ActionButtons = ({ onKonfirmasi }) => (
 </div>
 
 
-      <div id="purchase-order" className="border-b-4 border-blue-600 mt-4"></div>
-<div id="purchase-order" className=" p-4 bg-white mt-4">
-  <h3 className="text-gray-600 text-sm">Vendor :</h3>
-  
-  <div className="flex justify-between items-center">
-  <p className="text-lg font-bold text-gray-900 flex-1">
-  {ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.material?.vendor?.name || "Nama Vendor"}
-</p>
-    <div className="flex items-center space-x-6 text-gray-600 text-sm">
-    <div className="flex flex-col items-end text-gray-600 text-sm">
-    <div className="flex items-center space-x-1">
-    <span className="text-green-500">📞</span>
-    <span>{ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.material?.vendor?.phone || "-"}</span>
-  </div>
-  <div className="flex items-center space-x-1 mt-1">
-    <span className="text-red-500">📍</span>
-    <span>{ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.material?.vendor?.address || "Di goa"}</span>
-  </div>
-</div>
-
-    </div>
-  </div>
-</div>
 <div id="purchase-order" className="border-b-4 border-blue-600 mt-2"></div>
 <table id="purchase-order" className="w-full border mt-4 text-center rounded-md">
   <thead className="bg-blue-600 text-white">
@@ -378,8 +362,12 @@ const ActionButtons = ({ onKonfirmasi }) => (
 
 <table id="purchase-order" className="w-full border mt-6">
   <tbody>
+  <tr className="text-center ">
+      <td  colSpan={3} className="bg-gray-300 font-semibold border p-2">PT.REKA CIPTA INOVASI</td>
+      <td rowSpan={2} className="bg-gray-300 font-semibold border p-2 ">Vendor</td>
+    </tr>
+
     <tr className="text-center ">
-    <td rowSpan={4} className="border p-4 text-left align-top w-1/4 ">Keterangan :</td>
       <td className="bg-gray-300 font-semibold border p-2">Diperiksa</td>
       <td className="bg-gray-300 font-semibold border p-2 ">Diketahui</td>
       <td className="bg-gray-300 font-semibold border p-2">Dibuat</td>
