@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -12,7 +11,7 @@ export default function VendorPage() {
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [username, setUsername] = useState("");
-  const [rowsToShow, setRowsToShow] = useState(10); // Default tampilkan 10
+  const [rowsToShow, setRowsToShow] = useState(10); 
   const router = useRouter();
 
   useEffect(() => {
@@ -67,7 +66,7 @@ export default function VendorPage() {
         confirmButtonText: 'OK',
       });
   
-      fetchData(); // Refresh data setelah delete
+      fetchData();
     } catch (error) {
       console.error('Error:', error);
   

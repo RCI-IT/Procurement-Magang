@@ -87,7 +87,6 @@ export default function Header({ username }) {
           ))}
         </div>
 
-        {/* User Button */}
         <div className="relative flex items-center">
           <button
             className="flex items-center bg-blue-600 px-4 py-2 rounded-full shadow-md hover:bg-blue-700 text-white transition duration-200"
@@ -98,7 +97,6 @@ export default function Header({ username }) {
             <span>▼</span>
           </button>
 
-          {/* Dropdown */}
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 bg-white rounded-md shadow-md min-w-[150px] z-10 border border-gray-300 overflow-hidden animate-fade-in">
               <button
@@ -112,7 +110,6 @@ export default function Header({ username }) {
         </div>
       </nav>
 
-      {/* Animasi CSS tambahan */}
       <style jsx>{`
         @keyframes fadeIn {
           from {
