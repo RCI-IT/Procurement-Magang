@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../../component/sidebar.js";
 import Header from "../../component/Header.js";
 import { Eye, Trash2 } from "lucide-react";
+import Swal from "sweetalert2"; // <-- Tambah import ini
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
@@ -59,7 +60,18 @@ export default function Material() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Yakin ingin menghapus material ini?")) return;
+    const result = await Swal.fire({
+      title: "Apakah kamu yakin?",
+      text: "Material ini akan dihapus permanen!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, hapus!",
+      cancelButtonText: "Batal",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`, {
@@ -70,22 +82,22 @@ export default function Material() {
       if (!response.ok) throw new Error("Gagal menghapus material");
 
       setMaterials((prev) => prev.filter((material) => material.id !== id));
+
+      Swal.fire("Berhasil!", "Material berhasil dihapus.", "success");
     } catch (error) {
       console.error("Error deleting material:", error);
-      alert("Gagal menghapus material: " + error.message);
+      Swal.fire("Gagal!", `Gagal menghapus material: ${error.message}`, "error");
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen">
-     
-
       <div className="flex flex-1">
         <Sidebar />
         <main className="p-6 flex-1 overflow-auto">
-        <div className="w-full">
-        <Header username={username} />
-        </div>
+          <div className="w-full">
+            <Header username={username} />
+          </div>
           <h1 className="text-3xl font-bold mb-4">Material</h1>
           <div className="mb-4 flex justify-between space-x-2">
             <input
