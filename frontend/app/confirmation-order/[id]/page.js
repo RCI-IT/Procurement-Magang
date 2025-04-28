@@ -146,7 +146,7 @@ useEffect(() => {
     const confirmationDetailIds = selectedItems.map(id => parseInt(id, 10));
   
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/acc-details`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation/acc-details`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

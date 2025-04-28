@@ -31,7 +31,6 @@ model PurchaseOrder {
   nomorPO             String            @unique
   tanggalPO           DateTime
   lokasiPO            String
-  status              POStatus          @default(PENDING)
   keterangan          String?
   confirmationOrderId Int               @unique
   confirmationOrder   ConfirmationOrder @relation("COToPO", fields: [confirmationOrderId], references: [id], onDelete: Cascade)
@@ -47,6 +46,7 @@ model PurchaseDetails {
   code            String
   satuan          String
   keterangan      String?
+  status          POStatus          @default(IN_PROGRESS)
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
   material        Materials     @relation(fields: [materialId], references: [id], onDelete: Cascade)
 }
