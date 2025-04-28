@@ -358,8 +358,6 @@ const ActionButtons = ({ onKonfirmasi }) => (
     </tr>
   </tbody>
 </table>
-
-
 <table id="purchase-order" className="w-full border mt-6">
   <tbody>
   <tr className="text-center ">
