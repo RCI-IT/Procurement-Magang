@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import LoadingIcon from "../../component/LoadingIcon";
-import Header from "../../component/Header"; // Import Header
+import Header from "../../component/Header";
 
-// Menu items yang sudah ada di Sidebar
 const menuItems = [
   { id: "material", label: "Material", icon: "📦", page: "material", roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"] },
   { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "permintaan-lapangan", roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"] },
@@ -44,7 +43,6 @@ export default function Home() {
     fetchData();
   }, [router]);
 
-  // Filter menu berdasarkan role user
   const filteredMenus = menuItems.filter((item) => item.roles.includes(role));
 
   return (

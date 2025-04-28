@@ -41,7 +41,6 @@ export default function User() {
 
 
 const handleDelete = async (id) => {
-  // Use SweetAlert2 for confirmation
   const result = await Swal.fire({
     title: 'Yakin ingin menghapus user ini?',
     icon: 'warning',
@@ -51,7 +50,7 @@ const handleDelete = async (id) => {
     reverseButtons: true
   });
 
-  if (!result.isConfirmed) return; // If the user clicks "Cancel", don't delete
+  if (!result.isConfirmed) return; 
 
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
@@ -63,7 +62,6 @@ const handleDelete = async (id) => {
 
     setUsers((prev) => prev.filter((user) => user.id !== id));
 
-    // Success alert
     Swal.fire({
       title: 'User berhasil dihapus!',
       icon: 'success',
@@ -72,7 +70,6 @@ const handleDelete = async (id) => {
     });
   } catch (error) {
     console.error("Error deleting user:", error);
-    // Error alert
     Swal.fire({
       title: 'Gagal menghapus user!',
       text: error.message,

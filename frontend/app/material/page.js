@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../../component/sidebar.js";
 import Header from "../../component/Header.js";
 import { Eye, Trash2 } from "lucide-react";
-import Swal from "sweetalert2"; // <-- Tambah import ini
+import Swal from "sweetalert2"; 
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);

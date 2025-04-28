@@ -63,10 +63,7 @@ export default function DetailPermintaanLapangan() {
         .from(element)
         .save()
         .then(() => {
-          // Hapus class setelah PDF selesai dibuat
           element.classList.remove("pdf-format");
-  
-          // Tampilkan kembali tombol setelah PDF selesai dibuat
           if (backButton) backButton.style.visibility = "visible";
         });
     }, 500);

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -72,7 +71,6 @@ const handleDelete = async (id) => {
       throw new Error("Gagal menghapus data");
     }
 
-    // Success alert
     await Swal.fire({
       title: 'Data berhasil dihapus!',
       icon: 'success',
@@ -81,7 +79,6 @@ const handleDelete = async (id) => {
 
     router.push('/confirmation-order');
   } catch (err) {
-    // Error alert
     Swal.fire({
       title: 'Terjadi kesalahan!',
       text: err.message,

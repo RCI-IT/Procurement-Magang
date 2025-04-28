@@ -85,7 +85,6 @@ export default function AddMaterialPage() {
         throw new Error("Gagal menambahkan material");
       }
 
-      // RESET FORM
       setName("");
       setVendorId("");
       setPrice("");
@@ -93,7 +92,6 @@ export default function AddMaterialPage() {
       setDescription("");
       setImage(null);
 
-      // Tampilkan SweetAlert sukses
       await Swal.fire({
         icon: "success",
         title: "Berhasil!",
@@ -101,7 +99,7 @@ export default function AddMaterialPage() {
         confirmButtonText: "OK",
       });
 
-      router.back(); // kembali ke halaman sebelumnya
+      router.back(); 
     } catch (error) {
       console.error("Error adding material:", error);
 

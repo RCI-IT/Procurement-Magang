@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Sidebar from "../../../../component/sidebar";
 import Header from "../../../../component/Header";
-import Swal from "sweetalert2"; // Import SweetAlert2
+import Swal from "sweetalert2"; 
 
 export default function EditMaterial() {
   const { id } = useParams();
@@ -84,7 +84,6 @@ export default function EditMaterial() {
         throw new Error("Gagal mengupdate material");
       }
 
-      // SweetAlert2 success alert
       Swal.fire({
         icon: "success",
         title: "Berhasil",
@@ -94,7 +93,6 @@ export default function EditMaterial() {
       router.push("/?page=material");
     } catch (error) {
       setError(error.message);
-      // SweetAlert2 error alert
       Swal.fire({
         icon: "error",
         title: "Terjadi kesalahan",
