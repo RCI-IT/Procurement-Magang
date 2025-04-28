@@ -172,7 +172,20 @@ export default function DetailPermintaanLapangan() {
           <td className="border border-gray-300 p-2">{item.qty}</td>
           <td className="border border-gray-300 p-2">{item.satuan}</td>
           <td className="border border-gray-300 p-2">{item.keterangan}</td>
-          <td className="border border-gray-300 p-2">{item.status}</td>
+          <td className="border border-gray-300 p-2 text-center">
+  <span className={`
+    px-2 py-1 rounded-full text-sm font-semibold
+    ${item.status === 'PENDING' && 'bg-yellow-100 text-yellow-700'}
+    ${item.status === 'APPROVED' && 'bg-green-100 text-green-700'}
+    ${item.status === 'REJECTED' && 'bg-red-100 text-red-700'}
+    ${item.status === 'IN_PROGRESS' && 'bg-blue-100 text-blue-700'}
+    ${item.status === 'CLOSED' && 'bg-gray-200 text-gray-700'}
+    ${item.status === 'CANCELLED' && 'bg-pink-100 text-pink-700'}
+    ${item.status === 'READ' && 'bg-purple-100 text-purple-700'}
+  `}>
+    {item.status.replace('_', ' ')}
+  </span>
+</td>
         </tr>
       ))
     ) : (

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -66,21 +67,7 @@ const ConfirmationOrderTable = () => {
     }
   };
 
-  const handleKonfirmasi = () => {
-    if (selectedItems.length > 0) {
-      const orderData = {
-        nomorCO: "CO-123", 
-        tanggalCO: new Date(),
-        lokasiCO: "Jakarta", 
-        items: selectedItems, 
-      };
-      
-      localStorage.setItem("selectedOrder", JSON.stringify(orderData));
-      router.push('/purchase-order');
-    }
-  };
-  
-  const ActionButtons = ({ onView, onDelete, onKonfirmasi }) => (
+  const ActionButtons = ({ onView, onDelete}) => (
     <div className="flex justify-center gap-4">
       <button onClick={onView} className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl w-12 h-12 flex items-center justify-center">
         <Eye className="text-white" />
