@@ -1,18 +1,85 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/component/sidebar";
-import Header from "../../component/Header";
+import Header from "@/component/Header";
 import { Eye, Trash2 } from "lucide-react";
+import Swal from 'sweetalert2';
 
-const ConfirmationOrderTableEmpty = () => {
+const PurchaseOrderTable = () => {
+  const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
+  const [filteredData, setFilteredData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [username, setUsername] = useState("");
   const [userRole, setUserRole] = useState(null);
   const router = useRouter();
-  const [username, setUsername] = useState("");
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase`);
+        if (!response.ok) {
+          throw new Error(`Gagal mengambil data: ${response.statusText}`);
+        }
+        const result = await response.json();
+        setData(result);
+        setFilteredData(result);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    const storedRole = localStorage.getItem("role");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+    if (storedRole) {
+      setUserRole(storedRole);
+    }
+  }, []);
+
+  const handleDelete = async (id) => {
+    // Gunakan SweetAlert untuk konfirmasi penghapusan
+    const result = await Swal.fire({
+      title: 'Yakin ingin menghapus Purchase Order ini?',
+      text: "Data yang dihapus tidak dapat dikembalikan!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Hapus',
+      cancelButtonText: 'Batal',
+    });
+  
+    // Jika pengguna mengklik "Hapus", lanjutkan penghapusan
+    if (result.isConfirmed) {
+      try {
+        // Menghapus PurchaseOrder dan terkait PurchaseDetails melalui backend
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`, {
+          method: "DELETE",
+        });
+  
+        if (!response.ok) {
+          throw new Error("Gagal menghapus Purchase Order");
+        }
+  
+        // Setelah berhasil menghapus, arahkan kembali ke halaman Purchase Orders
+        Swal.fire('Dihapus!', 'Purchase Order berhasil dihapus.', 'success');
+        router.push('/purchase-order'); // Kembali ke halaman daftar Purchase Order
+      } catch (err) {
+        Swal.fire('Gagal', err.message, 'error');
+      }
+    }
+  };
 
   const ActionButtons = ({ onView, onDelete }) => (
     <div className="flex justify-center gap-4">
@@ -35,7 +102,6 @@ const ConfirmationOrderTableEmpty = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-bold">Purchase Order</h1>
           <div className="flex gap-2">
-
             <input
               type="text"
               placeholder="Cari PO..."
@@ -46,28 +112,58 @@ const ConfirmationOrderTableEmpty = () => {
           </div>
         </div>
 
-        {/* Empty Table Section */}
-        <table className="w-full border-collapse border text-sm">
-          <thead>
-            <tr className="bg-blue-600 text-white">
-              <th className="border p-2">No.</th>
-              <th className="border p-2">Nomor</th>
-              <th className="border p-2">Tanggal</th>
-              <th className="border p-2">Lokasi</th>
-              <th className="border p-2">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colSpan="5" className="text-center p-4">
-                Tidak ada data
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        {loading ? (
+          <p className="text-center">Memuat data...</p>
+        ) : error ? (
+          <p className="text-center text-red-500">{error}</p>
+        ) : (
+          <table className="w-full border-collapse border text-sm">
+            <thead>
+              <tr className="bg-blue-600 text-white">
+                <th className="border p-2">No.</th>
+                <th className="border p-2">Nomor PO</th>
+                <th className="border p-2">Tanggal PO</th>
+                <th className="border p-2">Lokasi</th>
+                <th className="border p-2">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredData.length > 0 ? (
+                filteredData.map((po, index) => (
+                  <tr key={po.id} className="text-center border">
+                    <td className="border p-2">{index + 1}</td>
+                    <td className="border p-2">{po.nomorPO}</td>
+                    <td className="border p-2">
+                      {po.tanggalPO
+                        ? new Date(po.tanggalPO).toLocaleDateString("id-ID", {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          })
+                        : "N/A"}
+                    </td>
+                    <td className="border p-2">{po.lokasiPO}</td>
+                    <td className="border p-2">
+                      <ActionButtons
+                        onView={() => router.push(`/purchase-order/${po.id}`)}
+                        onDelete={() => handleDelete(po.id)}
+                      />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="text-center p-4">
+                    Tidak ada data Purchase Order
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
 };
 
-export default ConfirmationOrderTableEmpty;
+export default PurchaseOrderTable;
