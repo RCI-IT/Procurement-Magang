@@ -217,9 +217,9 @@ export const deleteConfirmationOrder = async (req: Request, res: Response): Prom
 export const accConfirmationDetails = async (req: Request, res: Response): Promise<void> => {
   const { confirmationDetailIds } = req.body;
 
-  // Validasi input
-  if (!Array.isArray(confirmationDetailIds) || confirmationDetailIds.length === 0) {
-    res.status(400).json({ error: 'No confirmationDetailIds provided' });
+  // Validasi input: Pastikan confirmationDetailIds adalah array angka
+  if (!Array.isArray(confirmationDetailIds) || confirmationDetailIds.length === 0 || confirmationDetailIds.some(id => typeof id !== 'number')) {
+    res.status(400).json({ error: 'ConfirmationDetailIds harus berupa array angka' });
     return;
   }
 
@@ -280,8 +280,8 @@ export const accConfirmationDetails = async (req: Request, res: Response): Promi
         orderBy: { id: 'desc' },
       });
 
- const nextNumber = lastPO ? parseInt(lastPO.nomorPO.split('-')[3]) + 1 : 1; 
- const nomorPO = `PO-${datePrefix}-${String(nextNumber).padStart(3, '0')}`;
+      const nextNumber = lastPO ? parseInt(lastPO.nomorPO.split('-')[3]) + 1 : 1;
+      const nomorPO = `PO-${datePrefix}-${String(nextNumber).padStart(3, '0')}`;
 
       existingPO = await prisma.purchaseOrder.create({
         data: {

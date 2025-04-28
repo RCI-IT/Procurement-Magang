@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import "../../../styles/globals.css";
-import html2pdf from "html2pdf.js";
+//import html2pdf from "html2pdf.js";
 import Sidebar from "../../../component/sidebar.js";
 import { useRouter } from "next/navigation";
 import Header from "../../../component/Header.js"
@@ -121,69 +121,63 @@ useEffect(() => {
     const qty = coItem.qty || 0; 
     return sum + (harga * qty);
   }, 0) || 0;
-
-  const handleCheckboxChange = (code) => {
+ const handleCheckboxChange = (confirmationDetailId) => {
     setSelectedItems((prevSelected) => {
-      if (prevSelected.includes(code)) {
-        return prevSelected.filter((item) => item !== code);
+      if (prevSelected.includes(confirmationDetailId)) {
+        return prevSelected.filter((item) => item !== confirmationDetailId);
       } else {
-        return [...prevSelected, code];
+        return [...prevSelected, confirmationDetailId];
       }
     });
   };
+  const handleKonfirmasi = async () => {
+    if (selectedItems.length === 0) {
+      alert("Tidak ada item yang dipilih!");
+      return;
+    }
   
-  const handleKonfirmasi = () => {
-    // Pastikan selectedItems adalah array dan memiliki panjang lebih dari 0
-    if (Array.isArray(selectedItems) && selectedItems.length > 0) {
-      const path = '/purchase-order';
-      const query = { items: JSON.stringify(selectedItems) };
+    console.log("Selected Items:", selectedItems); // Menampilkan data yang dipilih
   
-      // Validasi apakah path adalah string
-      if (typeof path !== 'string') {
-        console.error('Error: path bukan string:', path);
-        return;  // Menghentikan eksekusi jika path bukan string
+    // Pastikan selectedItems adalah array angka
+    const confirmationDetailIds = selectedItems.map(id => parseInt(id, 10));
+  
+    try {
+      const response = await fetch("http://192.168.110.204:5000/confirmation/acc-details", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          confirmationDetailIds,
+        }),
+      });
+  
+      console.log("Response Status:", response.status); // Menampilkan status code response
+      if (!response.ok) {
+        throw new Error("Gagal mengkonfirmasi");
       }
   
-      // Validasi apakah query.items adalah string
-      if (typeof query.items !== 'string') {
-        console.error('Error: query.items bukan string:', query.items);
-        return;  // Menghentikan eksekusi jika query.items bukan string
-      }
+      const result = await response.json();
+      console.log("Response Data:", result); // Menampilkan data response dari server
   
-      // Pastikan router.push dipanggil dengan argument yang benar
-      try {
-        // Cek apakah router.push adalah fungsi
-        if (typeof router.push !== 'function') {
-          console.error('Error: router.push bukan fungsi');
-          return; // Hentikan eksekusi jika router.push tidak tersedia
-        }
-  
-        // Pastikan path valid
-        if (path && typeof path === 'string' && path.startsWith('/')) {
-          router.push({
-            pathname: path,
-            query: query,
-          });
-        } else {
-          console.error('Error: path tidak valid:', path);
-        }
-      } catch (error) {
-        console.error('Error during navigation:', error);
+      if (result.message) {
+        alert(result.message);
       }
-    } else {
-      console.error('Error: selectedItems tidak valid atau kosong.');
+    } catch (error) {
+      console.error("Error konfirmasi: ", error.message);
+      alert("Terjadi kesalahan: " + error.message);
     }
   };
-  
-  
 const ActionButtons = ({ onKonfirmasi }) => (
   <div className="flex justify-center gap-4">
-    <button onClick={onKonfirmasi} className="bg-green-500 hover:bg-green-600 text-white rounded-xl w-12 h-12 flex items-center justify-center">
+    <button 
+      onClick={onKonfirmasi} 
+      className="bg-green-500 hover:bg-green-600 text-white rounded-xl w-12 h-12 flex items-center justify-center"
+    >
       ✅
     </button>
   </div>
 );
-
 
   return (
     <div className="flex h-screen">
@@ -347,18 +341,8 @@ const ActionButtons = ({ onKonfirmasi }) => (
       <td colSpan="2" rowSpan={2} className="p-2 text-center border">TOTAL</td>
       <td colSpan="1" rowSpan={2} className="p-2 text-center border">Rp{totalHarga.toLocaleString()}</td>
       <td colSpan="1" rowSpan={2} className="p-2 text-center border">
-      <button
-      disabled={selectedItems.length === 0}
-      className={`px-4 py-2 rounded ${
-        selectedItems.length === 0
-          ? "bg-gray-400 cursor-not-allowed"
-          : "bg-green-500 hover:bg-green-600 text-white"
-      }`}
-      onClick={handleKonfirmasi}
-    >
-      Konfirmasi
-    </button>
-</td>
+    <ActionButtons onKonfirmasi={handleKonfirmasi} />
+  </td>
 
     </tr>
 <tr>
