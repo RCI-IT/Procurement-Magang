@@ -9,8 +9,6 @@ export default function Header({ username }) {
   const pathname = usePathname();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  console.log("Current Path:", pathname);
-
   const handleLogout = () => {
     localStorage.clear();
     router.push("/login");
@@ -32,30 +30,28 @@ export default function Header({ username }) {
   let breadcrumbs = [];
   let currentPath = "";
 
-  pathSegments.forEach((segment) => {
+  // Tambahkan breadcrumb Home
+  breadcrumbs.push({ label: "Home", path: "/home" });
+
+  pathSegments.forEach((segment, index) => {
     currentPath += `/${segment}`;
-    let label = breadcrumbMap[segment] || segment;
+    let label = "";
 
     if (breadcrumbMap[segment]) {
-      breadcrumbs.push({ label, path: currentPath });
+      label = breadcrumbMap[segment];
     } else if (segment.match(/^\d+$/)) {
       label = "Detail";
-      breadcrumbs.push({ label, path: currentPath });
     } else if (segment === "edit") {
       label = "Edit";
-      breadcrumbs.push({ label, path: currentPath });
     } else if (segment === "add") {
       label = "Tambah";
-      breadcrumbs.push({ label, path: currentPath });
     } else if (segment === "[id]") {
       label = "ID";
-      breadcrumbs.push({ label, path: currentPath });
     } else {
-      breadcrumbs.push({
-        label: label.charAt(0).toUpperCase() + label.slice(1),
-        path: currentPath,
-      });
+      label = segment.charAt(0).toUpperCase() + segment.slice(1);
     }
+
+    breadcrumbs.push({ label, path: currentPath });
   });
 
   const handleBreadcrumbClick = (path) => {
