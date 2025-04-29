@@ -34,6 +34,8 @@ export default function DetailPermintaanLapangan() {
     router.push(`/permintaan-lapangan/${id}/edit`);
   };
 
+  
+
   const handlePrint = () => {
     window.print();
   };
@@ -191,9 +193,8 @@ export default function DetailPermintaanLapangan() {
           <td className="border border-gray-300 p-2">{item.qty}</td>
           <td className="border border-gray-300 p-2">{item.satuan}</td>
           <td className="border border-gray-300 p-2">{item.keterangan}</td>
-          <td className="border border-gray-300 p-2 text-center">
-  <span className={`
-    px-2 py-1 rounded-full text-sm font-semibold
+          <td colSpan="1" className="border border-gray-300 p-2 text-center no-print">
+  <span className={`px-2 py-1 rounded-full text-sm font-semibold
     ${item.status === 'PENDING' && 'bg-yellow-100 text-yellow-700'}
     ${item.status === 'APPROVED' && 'bg-green-100 text-green-700'}
     ${item.status === 'REJECTED' && 'bg-red-100 text-red-700'}
@@ -205,6 +206,7 @@ export default function DetailPermintaanLapangan() {
     {item.status.replace('_', ' ')}
   </span>
 </td>
+
         </tr>
       ))
     ) : (

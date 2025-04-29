@@ -19,9 +19,11 @@
     size: A4;
     margin: 10mm;
   }
+
   header, footer {
     display: none !important;
   }
+
   th {
     background-color: #0d6efd !important; 
     color: white !important; 
@@ -29,11 +31,24 @@
     print-color-adjust: exact;
   }
 
+  /* Menyembunyikan kolom status dan judulnya saat print */
+  .status-column,
+  .status-header {
+    display: none !important;
+  }
+
+  /* Memastikan kolom Keterangan berada di posisi paling kanan */
+  .keterangan-column {
+    text-align: center;
+    position: relative !important;
+  }
+
+  /* Menghilangkan elemen yang tidak diperlukan saat print */
   .no-print,
   .sidebar {
     display: none !important;
   }
-  
+
   body *:not(.print-area) {
     visibility: hidden;
     -webkit-print-color-adjust: exact;
@@ -46,6 +61,7 @@
   header, footer, nav {
     display: none !important;
   }
+
   .remove-on-print,
   header,
   footer,
@@ -56,10 +72,9 @@
   .browser-footer {
     display: none !important;
   }
+
   #permintaan-lapangan,
-  #permintaan-lapangan *,
-  #purchase-order,
-  #purchase-order * {
+  #permintaan-lapangan * {
     visibility: visible;
   }
 
@@ -69,15 +84,18 @@
     top: 0;
     width: 100%;
   }
+
   .print-area, .print-area * {
     visibility: visible;
   }
+
   .print-area {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
   }
+
   body {
     visibility: hidden;
     -webkit-print-color-adjust: exact;
@@ -90,6 +108,7 @@
     width: 100%;
   }
 }
+
 .pdf-format {
   font-size: 12px; 
   width: 100%;
@@ -133,4 +152,16 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Menghilangkan kolom status pada tabel */
+.status-column,
+.status-header {
+  display: none !important;
+}
+
+/* Memastikan kolom Keterangan berada di posisi paling kanan */
+.keterangan-column {
+  text-align: center;
+  position: relative !important;
 }
