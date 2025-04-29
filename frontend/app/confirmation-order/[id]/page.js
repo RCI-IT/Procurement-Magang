@@ -185,12 +185,13 @@ useEffect(() => {
   };
 const ActionButtons = ({ onKonfirmasi }) => (
   <div className="flex justify-center gap-4">
-    <button 
-      onClick={onKonfirmasi} 
-      className="bg-green-500 hover:bg-green-600 text-white rounded-xl w-12 h-12 flex items-center justify-center"
-    >
-      ✅
-    </button>
+<button 
+  onClick={onKonfirmasi} 
+  className="bg-green-500 hover:bg-green-600 text-white rounded-xl w-32 h-12 flex items-center justify-center"
+>
+  Konfirmasi
+</button>
+
   </div>
 );
 
