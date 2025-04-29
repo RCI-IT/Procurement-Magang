@@ -123,6 +123,7 @@ useEffect(() => {
     const qty = coItem.qty || 0; 
     return sum + (harga * qty);
   }, 0) || 0;
+  
  const handleCheckboxChange = (confirmationDetailId) => {
     setSelectedItems((prevSelected) => {
       if (prevSelected.includes(confirmationDetailId)) {
