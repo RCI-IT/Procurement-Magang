@@ -173,15 +173,15 @@ export default function DetailPurchaseOrder() {
                 <table className="border-collapse w-full">
                   <tbody>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">Tanggal Purchase Order</td>
+                      <td className="border border-gray-300 px-2 py-1 font-semibold">Tanggal PO</td>
                       <td className="border border-gray-300 px-2 py-1">{day} {month} {year}</td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">Nomor Purchase Order</td>
+                      <td className="border border-gray-300 px-2 py-1 font-semibold">Nomor PO</td>
                       <td className="border border-gray-300 px-2 py-1">{data.nomorPO}</td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">Lokasi Purchase Order</td>
+                      <td className="border border-gray-300 px-2 py-1 font-semibold">Lokasi</td>
                       <td className="border border-gray-300 px-2 py-1">{data.lokasiPO}</td>
                     </tr>
                     {data.keterangan && (

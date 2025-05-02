@@ -259,10 +259,6 @@ const ActionButtons = ({ onKonfirmasi }) => (
         </tr>
         <tr className="border">
           <td className="border px-2 py-1 font-semibold text-center">No. Konfirmasi PO</td>
-          <td className="border px-2 py-1 text-center">{ConfirmationDetails?.nomorKonfirmasiCO || "N/A"}</td>
-        </tr>
-        <tr className="border">
-          <td className="border px-2 py-1 font-semibold text-center">PO Number</td>
           <td className="border px-2 py-1 text-center">{ConfirmationDetails?.nomorCO || "N/A"}</td>
         </tr>
         <tr className="border">
@@ -270,10 +266,6 @@ const ActionButtons = ({ onKonfirmasi }) => (
           <td className="border px-2 py-1 text-center">
             {ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.permintaan?.nomor || "N/A"}
           </td>
-        </tr>
-        <tr className="border">
-          <td className="border px-2 py-1 font-semibold text-center">No. Kontrak</td>
-          <td className="border px-2 py-1 text-center">{ConfirmationDetails?.noKontrak || "N/A"}</td>
         </tr>
       </tbody>
     </table>

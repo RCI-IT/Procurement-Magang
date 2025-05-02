@@ -65,7 +65,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
 
 
   const handleDetail = async (id) => {
-    if (userRole === "USER_PURCHASE") {
+    if (userRole === "USER_PURCHASE","ADMIN") {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`, {
           method: "PUT",
