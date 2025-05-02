@@ -125,17 +125,27 @@ export default function DetailPermintaanLapangan() {
     <div>
     <Header username={username} />
     </div>
-      <div className="flex justify-end space-x-2 no-print">
-        <button onClick={handleEdit} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32">
-          Edit
-        </button>
-        <button onClick={handlePrint} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
-          Cetak
-        </button>
-        <button onClick={handleDownloadPDF} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32">
-          Download PDF
-        </button>
-      </div>
+    <div className="flex justify-end space-x-2 no-print">
+  <button
+    onClick={handleEdit}
+    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
+  >
+    Edit
+  </button>
+  <button
+    onClick={handlePrint}
+    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32 text-center"
+  >
+    Cetak
+  </button>
+  <button
+    onClick={handleDownloadPDF}
+    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32 text-center"
+  >
+    Simpan PDF
+  </button>
+</div>
+
   
       {/* Elemen yang akan dicetak */}
       <div id="permintaan-lapangan" className="print-container  mx-auto bg-white rounded-lg p-6"> 

@@ -19,59 +19,52 @@ export default function ConfirmationOrderDetail() {
   const [username, setUsername] = useState("");
   const [selectedItems, setSelectedItems] = useState([]);
 
-
-
   const handlePrint = () => {
     window.print();
   };
-
+  
   const handleDownloadPDF = () => {
     setTimeout(() => {
-      const headerElement = document.getElementById("confirmation-order");
-      const noPrintElements = document.querySelectorAll(".no-print");
+      const element = document.getElementById("confirmation-order");
+      const backButton = document.getElementById("back-button");
   
-      if (!headerElement) {
-        console.error("Header element not found!");
+      // Tambahan: target elemen status
+      const statusHeaders = document.querySelectorAll('.status-header');
+      const statusColumns = document.querySelectorAll('.status-column');
+  
+      if (!element) {
+        console.error("Element not found!");
         return;
       }
   
-      // Sembunyikan elemen yang tidak perlu dicetak
-      noPrintElements.forEach(el => el.style.display = "none");
+      if (backButton) backButton.style.visibility = "hidden";
   
-      const opt = {
-        margin: 10,
-        filename: `confirmation-order-${new Date().toISOString().slice(0, 10)}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2, // meningkatkan kualitas render
-          useCORS: true,
-          scrollY: 0,
-          x: 0,
-          y: 0,
-          width: headerElement.scrollWidth, // Tangkap seluruh lebar konten
-          height: headerElement.scrollHeight, // Tangkap seluruh tinggi konten
-          windowWidth: document.body.scrollWidth, // Memastikan keseluruhan dokumen ter-capture
-          windowHeight: document.body.scrollHeight,
-          ignoreElements: (el) => el.classList.contains('no-print') // Mengabaikan elemen dengan class 'no-print'
-        },
-        jsPDF: {
-          unit: "mm",
-          format: "a4",
-          orientation: "portrait"
-        }
-      };
+      // Tambahan: sembunyikan kolom status
+      statusHeaders.forEach(el => el.classList.add('hidden'));
+      statusColumns.forEach(el => el.classList.add('hidden'));
+  
+      element.classList.add("pdf-format");
   
       html2pdf()
-        .set(opt)
-        .from(headerElement)
+        .set({
+          margin: 10,
+          filename: `confirmation-order-${id || "unknown"}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          // Tambahan penting agar html2pdf pakai CSS print
+          printMediaType: true
+        })
+        .from(element)
         .save()
         .then(() => {
-          // Tampilkan kembali elemen yang disembunyikan
-          noPrintElements.forEach(el => el.style.display = "block");
-        })
-        .catch(error => {
-          console.error("PDF generation failed: ", error);
-          noPrintElements.forEach(el => el.style.display = "block");
+          element.classList.remove("pdf-format");
+  
+          // Kembalikan kolom status
+          statusHeaders.forEach(el => el.classList.remove('hidden'));
+          statusColumns.forEach(el => el.classList.remove('hidden'));
+  
+          if (backButton) backButton.style.visibility = "visible";
         });
     }, 500);
   };
@@ -231,22 +224,22 @@ const ActionButtons = ({ onKonfirmasi }) => (
       <div className="text-right space-x-2">
       <button
   onClick={() => router.push(`/confirmation-order/${id}/edit`)}
-  className="no-print bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
 >
   Edit
 </button>
 
-          <button onClick={handlePrint} className="no-print bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
+          <button onClick={handlePrint} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32 text-center">
           Cetak
           </button>
-          <button onClick={handleDownloadPDF} className="no-print bg-red-500 text-white px-4 py-2 rounded">
+          <button onClick={handleDownloadPDF} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32 text-center">
   Simpan PDF
 </button>
 
         </div>
         <br></br>
         <br></br>
-        <div id="confirmation-order">
+        <div id="confirmation-order" className="print-container  mx-auto bg-white rounded-lg p-6">
         <div className="flex justify-between items-start mt-4">
   {/* Kiri: Logo + Nama PT + Alamat */}
   <div className="flex flex-col items-start space-y-2">
@@ -305,9 +298,8 @@ const ActionButtons = ({ onKonfirmasi }) => (
     </table>
   </div>
 </div>
-
-
 <div className="border-b-4 border-blue-600 mt-2"></div>
+<div id="confirmation-order" className="print-container  mx-auto bg-white rounded-lg p-6">
 <table className="w-full border mt-4 text-center rounded-md">
   <thead  className="bg-blue-600 text-white">
     <tr>
@@ -371,7 +363,7 @@ const ActionButtons = ({ onKonfirmasi }) => (
       <td colSpan="4" className="bg-blue-600 text-white p-2 text-left">Terbilang</td>
       <td colSpan="2" rowSpan={2} className="p-2 text-center border">TOTAL</td>
       <td colSpan="1" rowSpan={2} className="p-2 text-center border">Rp{totalHarga.toLocaleString()}</td>
-      <td colSpan="1" rowSpan={2} className="p-2 text-center border">
+      <td colSpan="1" rowSpan={2} className="p-2 text-center border  status-column">
     <ActionButtons onKonfirmasi={handleKonfirmasi} />
   </td>
 
@@ -387,6 +379,7 @@ const ActionButtons = ({ onKonfirmasi }) => (
     </tr>
   </tbody>
 </table>
+</div>
 <table  className="w-full border mt-6">
   <tbody>
   <tr className="text-center ">

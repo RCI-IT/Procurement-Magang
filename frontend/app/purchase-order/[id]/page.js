@@ -160,41 +160,61 @@ export default function DetailPurchaseOrder() {
             Cetak
           </button>
           <button onClick={handleDownloadPDF} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32">
-            Download PDF
+            Simpan PDF
           </button>
         </div>
 
         <div id="purchase-order" className="print-container mx-auto bg-white rounded-lg p-6">
-          <div className="border-b-4 border-blue-600 mt-4">
-            <div className="flex justify-between items-center pb-3">
-              <h1 className="text-lg font-bold text-blue-900 uppercase">Company Name</h1>
-              <h2 className="text-lg font-bold text-blue-900 uppercase">Purchase Order</h2>
-              <div className="border border-gray-300 text-sm">
-                <table className="border-collapse w-full">
-                  <tbody>
-                    <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">Tanggal Purchase Order</td>
-                      <td className="border border-gray-300 px-2 py-1">{day} {month} {year}</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">Nomor Purchase Order</td>
-                      <td className="border border-gray-300 px-2 py-1">{data.nomorPO}</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">Lokasi Purchase Order</td>
-                      <td className="border border-gray-300 px-2 py-1">{data.lokasiPO}</td>
-                    </tr>
-                    {data.keterangan && (
-                      <tr>
-                        <td className="border border-gray-300 px-2 py-1 font-semibold">Keterangan</td>
-                        <td className="border border-gray-300 px-2 py-1">{data.keterangan}</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+        <div className="border-b-4 border-blue-600 mt-4">
+  <div className="flex justify-between items-start pb-3">
+    {/* Kolom kiri: Company Name */}
+    <div className="flex flex-col items-start space-y-2">
+    <img src="/logo1.png" alt="Logo" className="w-20 h-20 object-contain" />
+
+    <div>
+      <h4 className="text-blue-900 font-bold text-lg uppercase">
+        PT. REKA CIPTA INOVASI
+      </h4>
+      <p className="text-sm text-gray-700">
+        Jl. Aluminium Perumahan Gatot Subroto Town House No. 5<br />
+        Kel. Sei Sikambing C II, Kec. Medan Helvetia, Medan<br />
+        Sumatera Utara, 20213
+      </p>
+    </div>
+  </div>
+
+    {/* Kolom kanan: Purchase Order dan tabel */}
+    <div className="text-right">
+      <h2 className="text-lg font-bold text-blue-900 uppercase mb-2">Purchase Order</h2>
+      <div className="border border-gray-300 text-sm inline-block">
+        <table className="border-collapse">
+          <tbody>
+            <tr>
+              <td className="border border-gray-300 px-2 py-1 font-semibold">Tanggal Purchase Order</td>
+              <td className="border border-gray-300 px-2 py-1">{day} {month} {year}</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 px-2 py-1 font-semibold">Nomor Purchase Order</td>
+              <td className="border border-gray-300 px-2 py-1">{data.nomorPO}</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 px-2 py-1 font-semibold">Lokasi Purchase Order</td>
+              <td className="border border-gray-300 px-2 py-1">{data.lokasiPO}</td>
+            </tr>
+            {data.keterangan && (
+              <tr>
+                <td className="border border-gray-300 px-2 py-1 font-semibold">Keterangan</td>
+                <td className="border border-gray-300 px-2 py-1">{data.keterangan}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
           <br />
           <table className="w-full border-collapse mt-4 text-sm border border-gray-300">
             <thead className="bg-blue-700 text-white">
