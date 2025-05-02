@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -93,7 +92,7 @@ export default function DetailPurchaseOrder() {
         const result = await response.json();
         if (result) {
           setData(result);
-          setPoDetail(result); // ✅ penting: simpan detail juga
+          setPoDetail(result); 
         } else {
           router.push("/purchase-order");
         }
@@ -142,7 +141,7 @@ export default function DetailPurchaseOrder() {
 
   const totalHarga =
   PurchaseDetails?.purchaseDetails?.reduce((sum, poItem) => {
-    const material = poItem.material; // Access directly from poItem
+    const material = poItem.material; 
     const harga = material?.price || 0;
     const qty = poItem.qty || 0;
     return sum + (harga * qty);
@@ -167,7 +166,6 @@ export default function DetailPurchaseOrder() {
         <div id="purchase-order" className="print-container mx-auto bg-white rounded-lg p-6">
         <div className="border-b-4 border-blue-600 mt-4">
   <div className="flex justify-between items-start pb-3">
-    {/* Kolom kiri: Company Name */}
     <div className="flex flex-col items-start space-y-2">
     <img src="/logo1.png" alt="Logo" className="w-20 h-20 object-contain" />
 
@@ -183,7 +181,6 @@ export default function DetailPurchaseOrder() {
     </div>
   </div>
 
-    {/* Kolom kanan: Purchase Order dan tabel */}
     <div className="text-right">
       <h2 className="text-lg font-bold text-blue-900 uppercase mb-2">Purchase Order</h2>
       <div className="border border-gray-300 text-sm inline-block">

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -54,7 +53,6 @@ const PurchaseOrderTable = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    // Gunakan SweetAlert untuk konfirmasi penghapusan
     const result = await Swal.fire({
       title: 'Yakin ingin menghapus Purchase Order ini?',
       text: "Data yang dihapus tidak dapat dikembalikan!",
@@ -64,10 +62,8 @@ const PurchaseOrderTable = () => {
       cancelButtonText: 'Batal',
     });
   
-    // Jika pengguna mengklik "Hapus", lanjutkan penghapusan
     if (result.isConfirmed) {
       try {
-        // Menghapus PurchaseOrder dan terkait PurchaseDetails melalui backend
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`, {
           method: "DELETE",
         });
@@ -75,10 +71,9 @@ const PurchaseOrderTable = () => {
         if (!response.ok) {
           throw new Error("Gagal menghapus Purchase Order");
         }
-  
-        // Setelah berhasil menghapus, arahkan kembali ke halaman Purchase Orders
+
         Swal.fire('Dihapus!', 'Purchase Order berhasil dihapus.', 'success');
-        router.push('/purchase-order'); // Kembali ke halaman daftar Purchase Order
+        router.push('/purchase-order'); 
       } catch (err) {
         Swal.fire('Gagal', err.message, 'error');
       }

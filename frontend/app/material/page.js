@@ -34,14 +34,14 @@ export default function Material() {
 
         setMaterials(materialData);
         setVendors(vendorData);
-        setTotalPages(Math.ceil(materialData.length / rowsToShow)); // Set the total pages for pagination
+        setTotalPages(Math.ceil(materialData.length / rowsToShow)); 
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, [rowsToShow, currentPage]); // Fetch data when rowsToShow or currentPage changes
+  }, [rowsToShow, currentPage]); 
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
@@ -92,7 +92,6 @@ export default function Material() {
     }
   };
 
-  // Handle pagination
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };

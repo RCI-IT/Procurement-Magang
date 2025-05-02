@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -45,8 +44,7 @@ export default function DetailPermintaanLapangan() {
     setTimeout(() => {
       const element = document.getElementById("permintaan-lapangan");
       const backButton = document.getElementById("back-button");
-  
-      // Tambahan: target elemen status
+
       const statusHeaders = document.querySelectorAll('.status-header');
       const statusColumns = document.querySelectorAll('.status-column');
   
@@ -56,8 +54,7 @@ export default function DetailPermintaanLapangan() {
       }
   
       if (backButton) backButton.style.visibility = "hidden";
-  
-      // Tambahan: sembunyikan kolom status
+
       statusHeaders.forEach(el => el.classList.add('hidden'));
       statusColumns.forEach(el => el.classList.add('hidden'));
   
@@ -70,15 +67,13 @@ export default function DetailPermintaanLapangan() {
           image: { type: "jpeg", quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-          // Tambahan penting agar html2pdf pakai CSS print
           printMediaType: true
         })
         .from(element)
         .save()
         .then(() => {
           element.classList.remove("pdf-format");
-  
-          // Kembalikan kolom status
+
           statusHeaders.forEach(el => el.classList.remove('hidden'));
           statusColumns.forEach(el => el.classList.remove('hidden'));
   
@@ -146,8 +141,7 @@ export default function DetailPermintaanLapangan() {
   </button>
 </div>
 
-  
-      {/* Elemen yang akan dicetak */}
+
       <div id="permintaan-lapangan" className="print-container  mx-auto bg-white rounded-lg p-6"> 
         <div className="border-b-4 border-blue-600 mt-4">
         <div className="flex justify-between items-center pb-3">
@@ -166,12 +160,10 @@ export default function DetailPermintaanLapangan() {
     </div>
   </div>
   <div className="text-sm">
-  {/* Judul */}
   <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">
     PERMINTAAN LAPANGAN
   </h2>
 
-  {/* Tabel */}
   <div className="border border-gray-300">
     <table className="border-collapse w-full">
       <tbody>

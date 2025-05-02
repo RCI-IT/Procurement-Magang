@@ -27,8 +27,7 @@ export default function ConfirmationOrderDetail() {
     setTimeout(() => {
       const element = document.getElementById("confirmation-order");
       const backButton = document.getElementById("back-button");
-  
-      // Tambahan: target elemen status
+
       const statusHeaders = document.querySelectorAll('.status-header');
       const statusColumns = document.querySelectorAll('.status-column');
   
@@ -38,8 +37,7 @@ export default function ConfirmationOrderDetail() {
       }
   
       if (backButton) backButton.style.visibility = "hidden";
-  
-      // Tambahan: sembunyikan kolom status
+
       statusHeaders.forEach(el => el.classList.add('hidden'));
       statusColumns.forEach(el => el.classList.add('hidden'));
   
@@ -52,15 +50,13 @@ export default function ConfirmationOrderDetail() {
           image: { type: "jpeg", quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-          // Tambahan penting agar html2pdf pakai CSS print
           printMediaType: true
         })
         .from(element)
         .save()
         .then(() => {
           element.classList.remove("pdf-format");
-  
-          // Kembalikan kolom status
+
           statusHeaders.forEach(el => el.classList.remove('hidden'));
           statusColumns.forEach(el => el.classList.remove('hidden'));
   
@@ -241,7 +237,6 @@ const ActionButtons = ({ onKonfirmasi }) => (
         <br></br>
         <div id="confirmation-order" className="print-container  mx-auto bg-white rounded-lg p-6">
         <div className="flex justify-between items-start mt-4">
-  {/* Kiri: Logo + Nama PT + Alamat */}
   <div className="flex flex-col items-start space-y-2">
     <img src="/logo1.png" alt="Logo" className="w-20 h-20 object-contain" />
 
@@ -257,7 +252,6 @@ const ActionButtons = ({ onKonfirmasi }) => (
     </div>
   </div>
 
-  {/* Kanan: Judul + Tabel */}
   <div className="flex flex-col items-center">
     <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">
       CONFIRMATION<br />PURCHASE ORDER
