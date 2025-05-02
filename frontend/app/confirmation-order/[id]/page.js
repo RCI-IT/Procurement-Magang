@@ -1,10 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import "../../../styles/globals.css";
-//import html2pdf from "html2pdf.js";
+import html2pdf from "html2pdf.js";
 import Sidebar from "../../../component/sidebar.js";
 import { useRouter } from "next/navigation";
 import Header from "../../../component/Header.js"
@@ -26,32 +25,58 @@ export default function ConfirmationOrderDetail() {
     window.print();
   };
 
-const handleDownloadPDF = () => {
-  setTimeout(() => {
-    const headerElement = document.getElementById("confirmation-order");
-    const noPrintElements = document.querySelectorAll(".no-print");
-
-    if (!headerElement) {
-      console.error("Header element not found!");
-      return;
-    }
-    noPrintElements.forEach(el => el.style.display = "none");
-
-    html2pdf()
-      .set({
+  const handleDownloadPDF = () => {
+    setTimeout(() => {
+      const headerElement = document.getElementById("confirmation-order");
+      const noPrintElements = document.querySelectorAll(".no-print");
+  
+      if (!headerElement) {
+        console.error("Header element not found!");
+        return;
+      }
+  
+      // Sembunyikan elemen yang tidak perlu dicetak
+      noPrintElements.forEach(el => el.style.display = "none");
+  
+      const opt = {
         margin: 10,
-        filename: `confirmation-order${new Date().toISOString().slice(0, 10)}.pdf`,
-        image: { type: "png", quality: 1 },
-        html2canvas: { scale: 1 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait", size:"69" },
-      })
-      .from(headerElement)
-      .save()
-      .then(() => {
-        noPrintElements.forEach(el => el.style.display = "block");
-      });
-  }, 500);
-};
+        filename: `confirmation-order-${new Date().toISOString().slice(0, 10)}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2, // meningkatkan kualitas render
+          useCORS: true,
+          scrollY: 0,
+          x: 0,
+          y: 0,
+          width: headerElement.scrollWidth, // Tangkap seluruh lebar konten
+          height: headerElement.scrollHeight, // Tangkap seluruh tinggi konten
+          windowWidth: document.body.scrollWidth, // Memastikan keseluruhan dokumen ter-capture
+          windowHeight: document.body.scrollHeight,
+          ignoreElements: (el) => el.classList.contains('no-print') // Mengabaikan elemen dengan class 'no-print'
+        },
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait"
+        }
+      };
+  
+      html2pdf()
+        .set(opt)
+        .from(headerElement)
+        .save()
+        .then(() => {
+          // Tampilkan kembali elemen yang disembunyikan
+          noPrintElements.forEach(el => el.style.display = "block");
+        })
+        .catch(error => {
+          console.error("PDF generation failed: ", error);
+          noPrintElements.forEach(el => el.style.display = "block");
+        });
+    }, 500);
+  };
+  
+  
 
 const terbilang = (angka) => {
   const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
@@ -219,7 +244,8 @@ const ActionButtons = ({ onKonfirmasi }) => (
         </div>
         <br></br>
         <br></br>
-        <div id="purchase-order" className="flex justify-between items-start mt-4">
+        <div id="confirmation-order">
+        <div className="flex justify-between items-start mt-4">
   {/* Kiri: Logo + Nama PT + Alamat */}
   <div className="flex flex-col items-start space-y-2">
     <img src="/logo1.png" alt="Logo" className="w-20 h-20 object-contain" />
@@ -279,9 +305,9 @@ const ActionButtons = ({ onKonfirmasi }) => (
 </div>
 
 
-<div id="purchase-order" className="border-b-4 border-blue-600 mt-2"></div>
-<table id="purchase-order" className="w-full border mt-4 text-center rounded-md">
-  <thead className="bg-blue-600 text-white">
+<div className="border-b-4 border-blue-600 mt-2"></div>
+<table className="w-full border mt-4 text-center rounded-md">
+  <thead  className="bg-blue-600 text-white">
     <tr>
       <th className="border p-2" rowSpan={2}>No.</th>
       <th className="border p-2" rowSpan={2}>Code</th>
@@ -289,7 +315,7 @@ const ActionButtons = ({ onKonfirmasi }) => (
       <th className="border p-2" rowSpan={2}>Harga</th>
       <th className="border p-2 w-12 " colSpan="2">Permintaan</th>
       <th className="border p-2 w-35" rowSpan={2}>Total</th>
-      <th className="border p-2 w-35" rowSpan={2}>Aksi</th>
+      <th className="border p-2 w-35 status-header" rowSpan={2}>Aksi</th>
     </tr>
     <tr className="bg-blue-600 text-white">
       <th className="border p-2 w-12">QTY</th>
@@ -313,7 +339,7 @@ const ActionButtons = ({ onKonfirmasi }) => (
         <td className="border px-4 py-2 text-center">{qty}</td>
         <td className="border px-4 py-2 text-center">{item.satuan || 'N/A'}</td>
         <td className="border px-4 py-2 text-center">Rp{total.toLocaleString()}</td>
-        <td className="border px-4 py-2 text-center">
+        <td className="border px-4 py-2 text-center status-column">
   {item.status === "ACC" ? (
     <span className="text-green-600 font-semibold">ACC </span>
   ) : (
@@ -359,7 +385,7 @@ const ActionButtons = ({ onKonfirmasi }) => (
     </tr>
   </tbody>
 </table>
-<table id="purchase-order" className="w-full border mt-6">
+<table  className="w-full border mt-6">
   <tbody>
   <tr className="text-center ">
       <td  colSpan={3} className="bg-gray-300 font-semibold border p-2">PT.REKA CIPTA INOVASI</td>
@@ -388,6 +414,7 @@ const ActionButtons = ({ onKonfirmasi }) => (
     </tr>
   </tbody>
 </table>
+</div>
 <br></br>
 <button onClick={() =>  router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
             Kembali

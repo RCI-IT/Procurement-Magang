@@ -155,10 +155,13 @@ body {
 }
 
 /* Menghilangkan kolom status pada tabel */
-.status-column,
-.status-header {
-  display: none !important;
+@media print {
+  .status-column,
+  .status-header {
+    display: none !important;
+  }
 }
+
 
 /* Memastikan kolom Keterangan berada di posisi paling kanan */
 .keterangan-column {

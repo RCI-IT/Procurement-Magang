@@ -46,12 +46,20 @@ export default function DetailPermintaanLapangan() {
       const element = document.getElementById("permintaan-lapangan");
       const backButton = document.getElementById("back-button");
   
+      // Tambahan: target elemen status
+      const statusHeaders = document.querySelectorAll('.status-header');
+      const statusColumns = document.querySelectorAll('.status-column');
+  
       if (!element) {
         console.error("Element not found!");
         return;
       }
   
       if (backButton) backButton.style.visibility = "hidden";
+  
+      // Tambahan: sembunyikan kolom status
+      statusHeaders.forEach(el => el.classList.add('hidden'));
+      statusColumns.forEach(el => el.classList.add('hidden'));
   
       element.classList.add("pdf-format");
   
@@ -62,15 +70,23 @@ export default function DetailPermintaanLapangan() {
           image: { type: "jpeg", quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          // Tambahan penting agar html2pdf pakai CSS print
+          printMediaType: true
         })
         .from(element)
         .save()
         .then(() => {
           element.classList.remove("pdf-format");
+  
+          // Kembalikan kolom status
+          statusHeaders.forEach(el => el.classList.remove('hidden'));
+          statusColumns.forEach(el => el.classList.remove('hidden'));
+  
           if (backButton) backButton.style.visibility = "visible";
         });
     }, 500);
   };
+  
   
     useEffect(() => {
       const storedUsername = localStorage.getItem("username");
@@ -175,7 +191,7 @@ export default function DetailPermintaanLapangan() {
       <th rowSpan="2" className="border border-gray-300 px-2 text-center">code</th>
       <th colSpan="2" className="border border-gray-300 p-2 text-center" >Permintaan</th>
       <th rowSpan="2" className="border border-gray-300 px-2 text-center">Keterangan</th>
-      <th rowSpan="2" className="border border-gray-300 px-2 text-center">Status</th>
+      <th rowSpan="2" className="border border-gray-300 px-2 text-center status-header">Status</th>
     </tr>
     <tr>  
     <th className="border border- p-2 text-center">QTY</th>
@@ -193,7 +209,7 @@ export default function DetailPermintaanLapangan() {
           <td className="border border-gray-300 p-2">{item.qty}</td>
           <td className="border border-gray-300 p-2">{item.satuan}</td>
           <td className="border border-gray-300 p-2">{item.keterangan}</td>
-          <td colSpan="1" className="border border-gray-300 p-2 text-center no-print">
+          <td colSpan="1" className="border border-gray-300 p-2 text-center status-column">
   <span className={`px-2 py-1 rounded-full text-sm font-semibold
     ${item.status === 'PENDING' && 'bg-yellow-100 text-yellow-700'}
     ${item.status === 'APPROVED' && 'bg-green-100 text-green-700'}
