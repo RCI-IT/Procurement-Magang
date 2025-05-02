@@ -11,9 +11,9 @@ export default function Material() {
   const [materials, setMaterials] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [rowsToShow, setRowsToShow] = useState(5); // Default number of rows to show
-  const [currentPage, setCurrentPage] = useState(1); // For pagination
-  const [totalPages, setTotalPages] = useState(0); // For pagination
+  const [rowsToShow, setRowsToShow] = useState(5); 
+  const [currentPage, setCurrentPage] = useState(1); 
+  const [totalPages, setTotalPages] = useState(0); 
   const router = useRouter();
   const [username, setUsername] = useState("");
 

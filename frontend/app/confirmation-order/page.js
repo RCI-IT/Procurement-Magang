@@ -11,6 +11,9 @@ import Swal from 'sweetalert2';
 const ConfirmationOrderTable = () => {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
+  const [rowsToShow, setRowsToShow] = useState(5); 
+  const [currentPage, setCurrentPage] = useState(1); 
+  const [totalPages, setTotalPages] = useState(0); 
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -101,6 +104,13 @@ const handleDelete = async (id) => {
     </div>
   );
   
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
 
   return (
     <div className="flex h-screen">
@@ -112,6 +122,20 @@ const handleDelete = async (id) => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-bold">Confirmation Order</h1>
           <div className="flex gap-2">
+          <div className="flex space-x-2">
+              <label htmlFor="rowsToShow" className="text-sm">Tampilkan</label>
+              <select
+                id="rowsToShow"
+                value={rowsToShow}
+                onChange={(e) => setRowsToShow(Number(e.target.value))}
+                className="border border-gray-300 rounded px-2 py-1 text-sm"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+              </select>
+              <span className="text-sm">baris</span>
+            </div>
           {userRole !== "USER_LAPANGAN" && (
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -179,6 +203,22 @@ const handleDelete = async (id) => {
             </tbody>
           </table>
         )}
+         <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+              className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
       </div>
     </div>
   );
