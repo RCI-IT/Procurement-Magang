@@ -280,7 +280,14 @@ export const accConfirmationDetails = async (req: Request, res: Response): Promi
         orderBy: { id: 'desc' },
       });
 
-      const nextNumber = lastPO ? parseInt(lastPO.nomorPO.split('-')[3]) + 1 : 1;
+      let nextNumber = 1;
+if (lastPO) {
+  const match = lastPO.nomorPO.match(/PO-\d{2}\/\d{2}\/\d{2}-(\d{3})$/);
+  if (match) {
+    nextNumber = parseInt(match[1]) + 1;
+  }
+}
+
       const nomorPO = `PO-${datePrefix}-${String(nextNumber).padStart(3, '0')}`;
 
       existingPO = await prisma.purchaseOrder.create({
