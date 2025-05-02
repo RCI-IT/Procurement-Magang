@@ -100,11 +100,12 @@ const handleDelete = async (id) => {
               className="border border-gray-300 rounded px-2 py-1"
             />
             <button
-              onClick={() => router.push("/user/add")}
-              className="bg-blue-500 text-white rounded px-4 py-2"
-            >
-              + User
-            </button>
+  onClick={() => router.push("/usercontrol/add")}
+  className="bg-blue-500 text-white rounded px-4 py-2"
+>
+  + User
+</button>
+
           </div>
 
           <div className="overflow-x-auto">

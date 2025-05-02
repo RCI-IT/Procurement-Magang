@@ -88,15 +88,23 @@ export default function VendorPage() {
           <Header username={username} />
           <h1 className="text-3xl font-bold mb-4">Vendor</h1>
 
-          <div className="mb-4 flex justify-between space-x-2">
-            <input
-              type="text"
-              placeholder="Cari Vendor"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
-              className="border border-gray-300 rounded px-2 py-1"
-            />
-          </div>
+          <div className="mb-4 flex justify-end items-center space-x-2">
+  <button
+    onClick={() => router.push("/vendor/add")}
+    className="bg-green-500 text-white px-4 py-2 rounded"
+  >
+    +Tambah
+  </button>
+  <input
+    type="text"
+    placeholder="Cari Vendor"
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
+    className="border border-gray-300 rounded px-2 py-1"
+  />
+</div>
+
+
 
           <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
             <thead className="bg-blue-500 text-white">
