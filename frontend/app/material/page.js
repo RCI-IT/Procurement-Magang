@@ -11,7 +11,9 @@ export default function Material() {
   const [materials, setMaterials] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [rowsToShow] = useState(5);
+  const [rowsToShow, setRowsToShow] = useState(5); // Default number of rows to show
+  const [currentPage, setCurrentPage] = useState(1); // For pagination
+  const [totalPages, setTotalPages] = useState(0); // For pagination
   const router = useRouter();
   const [username, setUsername] = useState("");
 
@@ -32,13 +34,14 @@ export default function Material() {
 
         setMaterials(materialData);
         setVendors(vendorData);
+        setTotalPages(Math.ceil(materialData.length / rowsToShow)); // Set the total pages for pagination
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [rowsToShow, currentPage]); // Fetch data when rowsToShow or currentPage changes
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
@@ -89,6 +92,15 @@ export default function Material() {
     }
   };
 
+  // Handle pagination
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex flex-1">
@@ -98,20 +110,36 @@ export default function Material() {
             <Header username={username} />
           </div>
           <h1 className="text-3xl font-bold mb-4">Material</h1>
-          <div className="mb-4 flex justify-between space-x-2">
-            <input
-              type="text"
-              placeholder="Cari Material"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
-              className="border border-gray-300 rounded px-2 py-1"
-            />
-            <button
-              onClick={() => router.push("/material/add")}
-              className="bg-blue-500 text-white rounded px-4 py-2"
-            >
-              + Material
-            </button>
+          <div className="mb-4 flex justify-between items-center">
+            <div className="flex space-x-2">
+              <label htmlFor="rowsToShow" className="text-sm">Tampilkan</label>
+              <select
+                id="rowsToShow"
+                value={rowsToShow}
+                onChange={(e) => setRowsToShow(Number(e.target.value))}
+                className="border border-gray-300 rounded px-2 py-1 text-sm"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+              </select>
+              <span className="text-sm">baris</span>
+            </div>
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                placeholder="Cari Material"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
+                className="border border-gray-300 rounded px-2 py-1"
+              />
+              <button
+                onClick={() => router.push("/material/add")}
+                className="bg-blue-500 text-white rounded px-4 py-2"
+              >
+                + Material
+              </button>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
@@ -128,12 +156,12 @@ export default function Material() {
               <tbody>
                 {materials
                   .filter((m) => m.name.toLowerCase().includes(searchQuery))
-                  .slice(0, rowsToShow)
+                  .slice((currentPage - 1) * rowsToShow, currentPage * rowsToShow)
                   .map((material, index) => {
                     const vendor = vendors.find((v) => v.id === material.vendorId);
                     return (
                       <tr key={material.id}>
-                        <td className="border px-4 py-2 text-center">{index + 1}</td>
+                        <td className="border px-4 py-2 text-center">{(currentPage - 1) * rowsToShow + index + 1}</td>
                         <td className="border px-4 py-2 text-center">{material.name}</td>
                         <td className="border px-4 py-2">
                           <div className="flex justify-center items-center">
@@ -180,6 +208,22 @@ export default function Material() {
                   })}
               </tbody>
             </table>
+          </div>
+          <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+              className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            >
+              Next
+            </button>
           </div>
         </main>
       </div>
