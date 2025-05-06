@@ -11,7 +11,7 @@ export default function VendorPage() {
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [username, setUsername] = useState("");
-  const [rowsToShow, setRowsToShow] = useState(10); 
+  const [rowsToShow] = useState(10); 
   const router = useRouter();
 
   useEffect(() => {
