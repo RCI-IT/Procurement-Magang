@@ -4,10 +4,11 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Sidebar from "../../../../component/sidebar";
 import Header from "../../../../component/Header";
-import Swal from "sweetalert2"; 
+import Swal from "sweetalert2";
 
 export default function EditMaterial() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id; // gunakan id dari params
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -17,12 +18,15 @@ export default function EditMaterial() {
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [vendors, setVendors] = useState([]);
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
   const [username, setUsername] = useState("");
 
   useEffect(() => {
+    if (!id) return;
+
     const fetchData = async () => {
       try {
         const [materialRes, vendorRes, categoryRes] = await Promise.all([
@@ -39,15 +43,17 @@ export default function EditMaterial() {
         const vendorData = await vendorRes.json();
         const categoryData = await categoryRes.json();
 
-        setName(materialData.name);
-        setVendorId(materialData.vendorId);
-        setPrice(materialData.price);
-        setCategoryId(materialData.categoryId);
-        setDescription(materialData.description);
+        setName(materialData.name || "");
+        setVendorId(materialData.vendorId || "");
+        setPrice(materialData.price || "");
+        setCategoryId(materialData.categoryId || "");
+        setDescription(materialData.description || "");
         setVendors(vendorData);
         setCategories(categoryData);
       } catch (error) {
         setError(error.message);
+      } finally {
+        setInitialLoading(false);
       }
     };
 
@@ -66,9 +72,9 @@ export default function EditMaterial() {
 
     const formData = new FormData();
     formData.append("name", name);
-    formData.append("vendorId", parseInt(vendorId, 10));
-    formData.append("price", parseFloat(price));
-    formData.append("categoryId", parseInt(categoryId, 10));
+    formData.append("vendorId", Number(vendorId));
+    formData.append("price", Number(price));
+    formData.append("categoryId", Number(categoryId));
     formData.append("description", description);
     if (image) {
       formData.append("image", image);
@@ -103,6 +109,10 @@ export default function EditMaterial() {
     }
   };
 
+  if (initialLoading) {
+    return <div className="p-6">Memuat data material...</div>;
+  }
+
   return (
     <div className="flex">
       <Sidebar />
@@ -127,6 +137,7 @@ export default function EditMaterial() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="border p-2 w-full"
+              required
             />
           </div>
 
@@ -135,8 +146,9 @@ export default function EditMaterial() {
             <input
               type="number"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={(e) => setPrice(Number(e.target.value))}
               className="border p-2 w-full"
+              required
             />
           </div>
 
@@ -146,6 +158,7 @@ export default function EditMaterial() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="border p-2 w-full"
+              required
             ></textarea>
           </div>
 
@@ -153,8 +166,9 @@ export default function EditMaterial() {
             <label className="block">Kategori:</label>
             <select
               value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
+              onChange={(e) => setCategoryId(Number(e.target.value))}
               className="border p-2 w-full"
+              required
             >
               <option value="">Pilih Kategori</option>
               {categories.map((cat) => (
@@ -169,8 +183,9 @@ export default function EditMaterial() {
             <label className="block">Vendor:</label>
             <select
               value={vendorId}
-              onChange={(e) => setVendorId(e.target.value)}
+              onChange={(e) => setVendorId(Number(e.target.value))}
               className="border p-2 w-full"
+              required
             >
               <option value="">Pilih Vendor</option>
               {vendors.map((vendor) => (
@@ -190,6 +205,7 @@ export default function EditMaterial() {
           </button>
           <br />
           <button
+            type="button"
             onClick={() => router.back()}
             className="mt-6 bg-gray-500 text-white px-4 py-2 rounded"
           >
