@@ -11,7 +11,10 @@ export default function VendorPage() {
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [username, setUsername] = useState("");
-  const [rowsToShow] = useState(10); 
+  const [sortBy, setSortBy] = useState("name");
+  const [rowsToShow, setRowsToShow] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -39,8 +42,6 @@ export default function VendorPage() {
     router.push(`/vendor/${vendorId}`);
   };
 
-
-
   const handleDelete = async (vendorId) => {
     const result = await Swal.fire({
       title: 'Yakin ingin hapus vendor ini?',
@@ -49,27 +50,27 @@ export default function VendorPage() {
       confirmButtonText: 'Ya, Hapus!',
       cancelButtonText: 'Batal',
     });
-  
+
     if (!result.isConfirmed) return;
-  
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`, {
         method: 'DELETE',
       });
-  
+
       if (!res.ok) throw new Error('Gagal hapus vendor');
-  
+
       Swal.fire({
         title: 'Berhasil!',
         text: 'Vendor berhasil dihapus.',
         icon: 'success',
         confirmButtonText: 'OK',
       });
-  
+
       fetchData();
     } catch (error) {
       console.error('Error:', error);
-  
+
       Swal.fire({
         title: 'Gagal!',
         text: 'Terjadi kesalahan saat menghapus vendor.',
@@ -78,35 +79,88 @@ export default function VendorPage() {
       });
     }
   };
-  
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const filteredVendors = vendors
+    .filter((v) => v.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => {
+      const aVal = a[sortBy]?.toLowerCase() || "";
+      const bVal = b[sortBy]?.toLowerCase() || "";
+      return aVal.localeCompare(bVal);
+    });
+
+  const totalPages = Math.ceil(filteredVendors.length / rowsToShow);
+
+  const displayedVendors = filteredVendors.slice(
+    (currentPage - 1) * rowsToShow,
+    currentPage * rowsToShow
+  );
 
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex flex-1">
         <Sidebar />
         <main className="p-6 flex-1 overflow-auto">
-          <Header username={username} /><br></br>
+          <Header username={username} /><br />
           <h1 className="text-3xl font-bold mb-4">Vendor</h1>
 
-          <div className="mb-4 flex justify-end items-cente gap-x-5">
-  
-  <input
-    type="text"
-    placeholder="Cari Vendor"
-    value={searchQuery}
-    onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
-    className="border border-gray-300 rounded px-2 py-1"
-  />
-  <button
-    onClick={() => router.push("/vendor/add")}
-    className="bg-blue-500 text-white px-4 py-2 rounded"
-  >
-    + Vendor
-  </button>
-</div>
+          {/* Filter & Action Row */}
+          <div className="mb-4 flex justify-between items-center flex-wrap gap-4">
+            {/* Kiri: Sort & Rows */}
+            <div className="flex gap-4 items-center">
+              <div>
+                <label className="mr-2">Urutkan :</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => {
+                    setSortBy(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="border border-gray-300 rounded px-2 py-1"
+                >
+                  <option value="name">Nama</option>
+                  <option value="city">Kota</option>
+                </select>
+              </div>
+              <div>
+                <label className="mr-2">Tampilkan</label>
+                <select
+                  value={rowsToShow}
+                  onChange={(e) => {
+                    setRowsToShow(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="border border-gray-300 rounded px-2 py-1"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                </select>
+              </div>
+            </div>
 
+            {/* Kanan: Search & Add */}
+            <div className="flex gap-4 items-center">
+              <input
+                type="text"
+                placeholder="Cari Vendor"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="border border-gray-300 rounded px-2 py-1"
+              />
+              <button
+                onClick={() => router.push("/vendor/add")}
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                + Vendor
+              </button>
+            </div>
+          </div>
 
-
+          {/* Table */}
           <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
             <thead className="bg-blue-500 text-white">
               <tr>
@@ -119,34 +173,49 @@ export default function VendorPage() {
               </tr>
             </thead>
             <tbody>
-              {vendors
-                .filter((v) => v.name.toLowerCase().includes(searchQuery))
-                .slice(0, rowsToShow)
-                .map((vendor, index) => (
-                  <tr key={vendor.id}>
-                    <td className="border px-4 py-2 text-center">{index + 1}</td>
-                    <td className="border px-4 py-2 text-center">{vendor.name}</td>
-                    <td className="border px-4 py-2 text-center">{vendor.address}</td>
-                    <td className="border px-4 py-2 text-center">{vendor.city}</td>
-                    <td className="border px-4 py-2 text-center">{vendor.phone}</td>
-                    <td className="border px-4 py-2 text-center">
-                      <button
-                        onClick={() => handleVendorClick(vendor.id)}
-                        className="bg-blue-500 text-white rounded px-2 py-1"
-                      >
-                        <Eye className="text-white" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(vendor.id)}
-                        className="bg-red-500 text-white rounded px-2 py-1 ml-2"
-                      >
-                        <Trash2 className="text-white" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+              {displayedVendors.map((vendor, index) => (
+                <tr key={vendor.id}>
+                  <td className="border px-4 py-2 text-center">{(currentPage - 1) * rowsToShow + index + 1}</td>
+                  <td className="border px-4 py-2 text-center">{vendor.name}</td>
+                  <td className="border px-4 py-2 text-center">{vendor.address}</td>
+                  <td className="border px-4 py-2 text-center">{vendor.city}</td>
+                  <td className="border px-4 py-2 text-center">{vendor.phone}</td>
+                  <td className="border px-4 py-2 text-center">
+                    <button
+                      onClick={() => handleVendorClick(vendor.id)}
+                      className="bg-blue-500 text-white rounded px-2 py-1"
+                    >
+                      <Eye className="text-white" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(vendor.id)}
+                      className="bg-red-500 text-white rounded px-2 py-1 ml-2"
+                    >
+                      <Trash2 className="text-white" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          <div className="flex justify-between mt-4">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-gray-300 text-black rounded disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="px-4 py-2 bg-gray-300 text-black rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </main>
       </div>
     </div>
