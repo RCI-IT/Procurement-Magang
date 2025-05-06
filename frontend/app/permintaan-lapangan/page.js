@@ -16,7 +16,7 @@ const months = [
 export default function PermintaanLapangan({ setActiveContent }) {
   const [rowsToShow, setRowsToShow] = useState(10);
   const [currentPage, setCurrentPage] = useState(1); 
-  const [totalPages, setTotalPages] = useState(0); 
+  const [totalPages] = useState(0); 
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddFormVisible] = useState(false);
   const [updatedData, setUpdatedData] = useState([]);
@@ -91,63 +91,6 @@ export default function PermintaanLapangan({ setActiveContent }) {
       }
     } else {
       router.push(`/permintaan-lapangan/${id}`);
-    }
-  };
-  const handlePending = async (id) => {
-    const confirmPending = window.confirm("Apakah Anda yakin ingin mengembalikan status ke Pending?");
-    if (!confirmPending) return;
-  
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: "PENDING" }),
-      });
-  
-      if (!response.ok) throw new Error("Gagal mengubah status");
-  
-      setUpdatedData((prevData) =>
-        prevData.map((item) =>
-          item.id === id ? { ...item, status: "PENDING" } : item
-        )
-      );
-  
-      alert("Status berhasil dikembalikan ke Pending.");
-    } catch (error) {
-      console.error("Gagal mengubah status:", error);
-      alert("Terjadi kesalahan saat mengubah status.");
-    }
-  };
-  const handleApprove = async (id) => {
-    const confirmApprove = window.confirm("Apakah Anda yakin ingin menyetujui permintaan ini?");
-    if (!confirmApprove) return;
-  
-    try {
-      console.log("Mengirim request ke backend dengan ID:", id);
-  
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: "APPROVED" }),
-      });
-  
-      console.log("Response status:", response.status);
-      console.log("Response data:", await response.json());
-  
-      if (!response.ok) throw new Error("Gagal mengubah status");
-  
-      setUpdatedData((prevData) =>
-        prevData.map((item) => (item.id === id ? { ...item, status: "APPROVED" } : item))
-      );
-  
-      alert("Permintaan berhasil disetujui!");
-    } catch (error) {
-      console.error("Gagal mengubah status:", error);
-      alert("Terjadi kesalahan saat mengubah status.");
     }
   };
 
