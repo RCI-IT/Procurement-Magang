@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -15,8 +14,6 @@ export default function VendorPage() {
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
@@ -40,7 +37,7 @@ export default function VendorPage() {
 
         setVendor(vendorData);
         setMaterials(filteredMaterials);
-        setCurrentPage(1); // Reset ke halaman pertama jika vendor berubah
+        setCurrentPage(1); 
       } catch (err) {
         setError(err.message);
       } finally {
@@ -51,7 +48,6 @@ export default function VendorPage() {
     if (vendorId) fetchVendorData();
   }, [vendorId]);
 
-  // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentMaterials = materials.slice(indexOfFirstItem, indexOfLastItem);
@@ -75,14 +71,13 @@ export default function VendorPage() {
         <div className="bg-white shadow-md p-6 rounded-md">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Material Dari Vendor ini</h2>
-            {/* Dropdown for items per page (optional) */}
             <div>
               <label className="mr-2 text-sm text-gray-600">Tampilkan</label>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
                   setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1); // Reset halaman ke-1
+                  setCurrentPage(1); 
                 }}
                 className="border rounded px-2 py-1 text-sm"
               >
