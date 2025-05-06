@@ -15,6 +15,8 @@ export default function KategoriPage() {
   const [username, setUsername] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState("name");
+
 
   const router = useRouter();
 
@@ -111,15 +113,25 @@ export default function KategoriPage() {
   };
   
 
-  const filteredCategories = categories.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery)
-  );
+  const sortedCategories = [...categories]
+  .filter((c) => c.name.toLowerCase().includes(searchQuery))
+  .sort((a, b) => {
+    if (sortBy === "name") {
+      return a.name.localeCompare(b.name);
+    } else if (sortBy === "terbaru") {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    } else if (sortBy === "terlama") {
+      return new Date(a.createdAt) - new Date(b.createdAt);
+    }
+    return 0;
+  });
 
-  const totalPages = Math.ceil(filteredCategories.length / rowsPerPage);
-  const paginatedCategories = filteredCategories.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
+const totalPages = Math.ceil(sortedCategories.length / rowsPerPage);
+const paginatedCategories = sortedCategories.slice(
+  (currentPage - 1) * rowsPerPage,
+  currentPage * rowsPerPage
+);
+
 
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -138,22 +150,39 @@ export default function KategoriPage() {
           <h1 className="text-3xl font-bold mb-4">Kategori</h1>
           <div className="mb-4 flex flex-wrap justify-between items-center">
             <div className="flex items-center space-x-2 mb-2 md:mb-0">
+            <div className="flex items-center space-x-2 mb-2 md:mb-0">
+            <label className="mr-2">Urutkan :</label>
+            <select
+    value={sortBy}
+    onChange={(e) => {
+      setSortBy(e.target.value);
+      setCurrentPage(1);
+    }}
+    className="border border-gray-300 rounded px-2 py-1"
+  >
+    <option value="name">Nama</option>
+    <option value="terbaru">Terbaru</option>
+    <option value="terlama">Terlama</option>
+  </select>
+  
+  <label className="mr-2">Tampilkan :</label>
+
+  <select
+    value={rowsPerPage}
+    onChange={(e) => {
+      setRowsPerPage(Number(e.target.value));
+      setCurrentPage(1);
+    }}
+    className="border border-gray-300 rounded px-2 py-1"
+  >
+    <option value={5}>5</option>
+    <option value={10}>10</option>
+    <option value={20}>20</option>
+  </select>
+</div>
 
             </div>
             <div className="flex items-center space-x-4">
-            <select
-                id="rowsPerPage"
-                value={rowsPerPage}
-                onChange={(e) => {
-                  setRowsPerPage(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
-                className="border border-gray-300 rounded px-2 py-1"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-              </select>
 
               <input
                 type="text"
