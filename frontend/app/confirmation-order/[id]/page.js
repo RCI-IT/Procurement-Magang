@@ -188,7 +188,7 @@ useEffect(() => {
           confirmButtonText: 'OK'
         });
 
-        window.location.href = "http://192.168.110.205:3000/?page=confirmation-order";
+        router.back();
       }
     } catch (error) {
       console.error("Error konfirmasi: ", error.message);
