@@ -1,17 +1,34 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../component/sidebar.js";
 import Header from "../../component/Header.js";
-import { Trash2 } from "lucide-react";
+import { Eye, EyeOff, Trash2 } from "lucide-react";
 import Swal from 'sweetalert2';
+
+// Komponen password cell
+function PasswordCell({ password }) {
+  const [showPassword, setShowPassword] = useState(false);
+
+  return (
+    <div className="flex items-center justify-center gap-2">
+      <span>{showPassword ? password : "Coba Tekan Ini ~>"}</span>
+      <button
+        type="button"
+        onClick={() => setShowPassword(!showPassword)}
+        className="focus:outline-none"
+      >
+        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+      </button>
+    </div>
+  );
+}
 
 export default function User() {
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [rowsToShow] = useState();
+  const [rowsToShow] = useState(); // Kalau ingin membatasi jumlah baris, bisa set angka (contoh: useState(10))
   const [username, setUsername] = useState("");
   const router = useRouter();
 
@@ -19,9 +36,7 @@ export default function User() {
     const fetchData = async () => {
       try {
         const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`);
-
         if (!userRes.ok) throw new Error("Gagal mengambil data");
-
         const userData = await userRes.json();
         setUsers(userData);
       } catch (error) {
@@ -39,46 +54,43 @@ export default function User() {
     }
   }, []);
 
-
-
-const handleDelete = async (id) => {
-  const result = await Swal.fire({
-    title: 'Yakin ingin menghapus user ini?',
-    icon: 'warning',
-    showCancelButton: true,
-    cancelButtonText: 'Batal',
-    confirmButtonText: 'Ya, Hapus!'
-  });
-
-  if (!result.isConfirmed) return; 
-
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: 'Yakin ingin menghapus user ini?',
+      icon: 'warning',
+      showCancelButton: true,
+      cancelButtonText: 'Batal',
+      confirmButtonText: 'Ya, Hapus!'
     });
 
-    if (!response.ok) throw new Error("Gagal menghapus user");
+    if (!result.isConfirmed) return;
 
-    setUsers((prev) => prev.filter((user) => user.id !== id));
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
 
-    Swal.fire({
-      title: 'User berhasil dihapus!',
-      icon: 'success',
-      timer: 1500,
-      showConfirmButton: false
-    });
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    Swal.fire({
-      title: 'Gagal menghapus user!',
-      text: error.message,
-      icon: 'error',
-      confirmButtonText: 'Tutup'
-    });
-  }
-};
+      if (!response.ok) throw new Error("Gagal menghapus user");
 
+      setUsers((prev) => prev.filter((user) => user.id !== id));
+
+      Swal.fire({
+        title: 'User berhasil dihapus!',
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      Swal.fire({
+        title: 'Gagal menghapus user!',
+        text: error.message,
+        icon: 'error',
+        confirmButtonText: 'Tutup'
+      });
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -100,12 +112,11 @@ const handleDelete = async (id) => {
               className="border border-gray-300 rounded px-2 py-1"
             />
             <button
-  onClick={() => router.push("/usercontrol/add")}
-  className="bg-blue-500 text-white px-4 py-2 rounded"
->
-  + User
-</button>
-
+              onClick={() => router.push("/usercontrol/add")}
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+            >
+              + User
+            </button>
           </div>
 
           <div className="overflow-x-auto">
@@ -116,6 +127,7 @@ const handleDelete = async (id) => {
                   <th className="border px-4 py-2">Username</th>
                   <th className="border px-4 py-2">Fullname</th>
                   <th className="border px-4 py-2">Email</th>
+                  <th className="border px-4 py-2">Password</th>
                   <th className="border px-4 py-2">Role</th>
                   <th className="border px-4 py-2">Aksi</th>
                 </tr>
@@ -123,13 +135,16 @@ const handleDelete = async (id) => {
               <tbody>
                 {users
                   .filter((u) => u.username.toLowerCase().includes(searchQuery))
-                  .slice(0, rowsToShow)
+                  .slice(0, rowsToShow || users.length)
                   .map((user, index) => (
                     <tr key={user.id}>
                       <td className="border px-4 py-2 text-center">{index + 1}</td>
                       <td className="border px-4 py-2 text-center">{user.username}</td>
                       <td className="border px-4 py-2 text-center">{user.fullName}</td>
                       <td className="border px-4 py-2 text-center">{user.email}</td>
+                      <td className="border px-4 py-2 text-center">
+                        <PasswordCell password={user.password} />
+                      </td>
                       <td className="border px-4 py-2 text-center">{user.role}</td>
                       <td className="border px-4 py-2 text-center">
                         <button
