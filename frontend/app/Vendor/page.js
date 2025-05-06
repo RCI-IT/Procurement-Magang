@@ -11,7 +11,7 @@ export default function VendorPage() {
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [username, setUsername] = useState("");
-  const [rowsToShow] = useState(10); 
+  const [rowsToShow, setRowsToShow] = useState(10); 
   const router = useRouter();
 
   useEffect(() => {
@@ -91,9 +91,9 @@ export default function VendorPage() {
           <div className="mb-4 flex justify-end items-center space-x-2">
   <button
     onClick={() => router.push("/vendor/add")}
-    className="bg-blue-500 text-white px-4 py-2 rounded"
+    className="bg-green-500 text-white px-4 py-2 rounded"
   >
-    + Vendor
+    +Tambah
   </button>
   <input
     type="text"

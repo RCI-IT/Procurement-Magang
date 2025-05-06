@@ -24,8 +24,8 @@ export default function Sidebar() {
     { id: "permintaan-lapangan", label: "Permintaan Lapangan", icon: "📄", page: "permintaan-lapangan", roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"] },
     { id: "confirmation-order", label: "Confirmation Order", icon: "✔️", page: "confirmation-order", roles: ["USER_PURCHASE", "ADMIN", "USER_LAPANGAN"] },
     { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "purchase-order", roles: ["USER_PURCHASE", "ADMIN"] },
-    { id: "vendor", label: "Vendor", icon: "🏭", page: "vendor", roles: ["ADMIN"] },
-    { id: "kategori", label: "Kategori", icon: "🏷️", page: "kategori", roles: ["ADMIN"] },
+    { id: "vendor", label: "Vendor", icon: "🏭", page: "vendor", roles: ["ADMIN", "USER_PURCHASE"] },
+    { id: "kategori", label: "Kategori", icon: "🏷️", page: "kategori", roles: ["ADMIN", "USER_PURCHASE"] },
     { id: "user-control", label: "Users Control", icon: "👤", page: "user-control", roles: ["ADMIN"] },
   ];
 
