@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Sidebar from '../../../../component/sidebar';
 import Header from '../../../../component/Header';
+import Swal from 'sweetalert2';
+
 
 export default function EditVendorPage() {
   const { id: vendorId } = useParams();
@@ -48,21 +50,44 @@ export default function EditVendorPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(vendor),
+      const result = await Swal.fire({
+        title: 'Konfirmasi',
+        text: 'Apakah Anda yakin ingin menyimpan perubahan?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, simpan',
+        cancelButtonText: 'Batal',
       });
-
-      if (!res.ok) throw new Error('Gagal memperbarui vendor');
-
-      alert('Vendor berhasil diperbarui');
-      router.push(`/vendor/${vendorId}`);
+  
+      if (result.isConfirmed) {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(vendor),
+        });
+  
+        if (!res.ok) throw new Error('Gagal memperbarui vendor');
+  
+        await Swal.fire({
+          title: 'Berhasil!',
+          text: 'Vendor berhasil diperbarui.',
+          icon: 'success',
+          confirmButtonText: 'OK',
+        });
+  
+        router.push(`/vendor/${vendorId}`);
+      }
     } catch (err) {
       console.error(err);
-      alert('Terjadi kesalahan saat memperbarui vendor');
+      Swal.fire({
+        title: 'Gagal!',
+        text: 'Terjadi kesalahan saat memperbarui vendor.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
     }
   };
+  
 
   if (loading) return <p className="text-center text-blue-500">Loading...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;

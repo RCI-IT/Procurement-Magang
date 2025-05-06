@@ -16,6 +16,10 @@ export default function VendorPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
     if (storedUsername) setUsername(storedUsername);
@@ -28,7 +32,7 @@ export default function VendorPage() {
         if (!resVendor.ok) throw new Error("Gagal mengambil data vendor");
         const vendorData = await resVendor.json();
 
-        const resMaterials = await  fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials`);
+        const resMaterials = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials`);
         if (!resMaterials.ok) throw new Error("Gagal mengambil daftar material");
         const allMaterials = await resMaterials.json();
 
@@ -36,6 +40,7 @@ export default function VendorPage() {
 
         setVendor(vendorData);
         setMaterials(filteredMaterials);
+        setCurrentPage(1); // Reset ke halaman pertama jika vendor berubah
       } catch (err) {
         setError(err.message);
       } finally {
@@ -45,6 +50,12 @@ export default function VendorPage() {
 
     if (vendorId) fetchVendorData();
   }, [vendorId]);
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentMaterials = materials.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(materials.length / itemsPerPage);
 
   if (loading) return <p className="text-center text-blue-500">Loading...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
@@ -57,12 +68,29 @@ export default function VendorPage() {
 
         <div className="bg-white shadow-md p-6 rounded-md">
           <h1 className="text-3xl font-bold">{vendor?.name} </h1>
-          <p className="text-gray-600 mt-2">{vendor?.address || "Alamat tidak tersedia"} , {vendor?.city || "kota tidak tersedia"}</p>
+          <p className="text-gray-600 mt-2">{vendor?.address || "Alamat tidak tersedia"}, {vendor?.city || "kota tidak tersedia"}</p>
           <p className="text-lg mt-2">📞 {vendor?.phone || "Tidak tersedia"}</p>
         </div>
+
         <div className="bg-white shadow-md p-6 rounded-md">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Material Dari Vendor ini</h2>
+            {/* Dropdown for items per page (optional) */}
+            <div>
+              <label className="mr-2 text-sm text-gray-600">Tampilkan</label>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1); // Reset halaman ke-1
+                }}
+                className="border rounded px-2 py-1 text-sm"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+              </select>
+            </div>
           </div>
 
           <table className="w-full border-collapse border border-gray-300">
@@ -76,10 +104,10 @@ export default function VendorPage() {
               </tr>
             </thead>
             <tbody>
-              {materials.length > 0 ? (
-                materials.map((material, index) => (
+              {currentMaterials.length > 0 ? (
+                currentMaterials.map((material, index) => (
                   <tr key={material.id} className="text-center border-b">
-                    <td className="p-2 border">{index + 1}</td>
+                    <td className="p-2 border">{indexOfFirstItem + index + 1}</td>
                     <td className="p-2 border">{material.name}</td>
                     <td className="p-2 border">
                       {material.image ? (
@@ -105,20 +133,42 @@ export default function VendorPage() {
               )}
             </tbody>
           </table>
+
+{materials.length > itemsPerPage && (
+  <div className="flex justify-between mt-4">
+    <button
+      onClick={() => setCurrentPage(1)}
+      disabled={currentPage === 1}
+      className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
+    >
+      Prev
+    </button>
+    <button
+      onClick={() => setCurrentPage(totalPages)}
+      disabled={currentPage === totalPages}
+      className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
+    >
+      Next
+    </button>
+  </div>
+)}
+
         </div>
-      <div className="mt-4">
-        <button
-          onClick={() => router.push(`/vendor/${vendorId}/edit`)}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-          Edit Vendor
-        </button>
-      </div>
-        <button
-          onClick={() => router.back()}
-          className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded"
-        >
-          Kembali
-        </button>
+
+        <div className="mt-4 space-x-2">
+          <button
+            onClick={() => router.push(`/vendor/${vendorId}/edit`)}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Edit Vendor
+          </button>
+          <button
+            onClick={() => router.back()}
+            className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded"
+          >
+            Kembali
+          </button>
+        </div>
       </div>
     </div>
   );
