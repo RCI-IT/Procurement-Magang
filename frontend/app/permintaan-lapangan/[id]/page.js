@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -45,6 +44,9 @@ export default function DetailPermintaanLapangan() {
     setTimeout(() => {
       const element = document.getElementById("permintaan-lapangan");
       const backButton = document.getElementById("back-button");
+
+      const statusHeaders = document.querySelectorAll('.status-header');
+      const statusColumns = document.querySelectorAll('.status-column');
   
       if (!element) {
         console.error("Element not found!");
@@ -52,6 +54,9 @@ export default function DetailPermintaanLapangan() {
       }
   
       if (backButton) backButton.style.visibility = "hidden";
+
+      statusHeaders.forEach(el => el.classList.add('hidden'));
+      statusColumns.forEach(el => el.classList.add('hidden'));
   
       element.classList.add("pdf-format");
   
@@ -62,15 +67,21 @@ export default function DetailPermintaanLapangan() {
           image: { type: "jpeg", quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          printMediaType: true
         })
         .from(element)
         .save()
         .then(() => {
           element.classList.remove("pdf-format");
+
+          statusHeaders.forEach(el => el.classList.remove('hidden'));
+          statusColumns.forEach(el => el.classList.remove('hidden'));
+  
           if (backButton) backButton.style.visibility = "visible";
         });
     }, 500);
   };
+  
   
     useEffect(() => {
       const storedUsername = localStorage.getItem("username");
@@ -109,19 +120,28 @@ export default function DetailPermintaanLapangan() {
     <div>
     <Header username={username} />
     </div>
-      <div className="flex justify-end space-x-2 no-print">
-        <button onClick={handleEdit} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32">
-          Edit
-        </button>
-        <button onClick={handlePrint} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
-          Cetak
-        </button>
-        <button onClick={handleDownloadPDF} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32">
-          Download PDF
-        </button>
-      </div>
-  
-      {/* Elemen yang akan dicetak */}
+    <div className="flex justify-end space-x-2 no-print">
+  <button
+    onClick={handleEdit}
+    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
+  >
+    Edit
+  </button>
+  <button
+    onClick={handlePrint}
+    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32 text-center"
+  >
+    Cetak
+  </button>
+  <button
+    onClick={handleDownloadPDF}
+    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32 text-center"
+  >
+    Simpan PDF
+  </button>
+</div>
+
+
       <div id="permintaan-lapangan" className="print-container  mx-auto bg-white rounded-lg p-6"> 
         <div className="border-b-4 border-blue-600 mt-4">
         <div className="flex justify-between items-center pb-3">
@@ -140,12 +160,10 @@ export default function DetailPermintaanLapangan() {
     </div>
   </div>
   <div className="text-sm">
-  {/* Judul */}
   <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">
     PERMINTAAN LAPANGAN
   </h2>
 
-  {/* Tabel */}
   <div className="border border-gray-300">
     <table className="border-collapse w-full">
       <tbody>
@@ -175,7 +193,7 @@ export default function DetailPermintaanLapangan() {
       <th rowSpan="2" className="border border-gray-300 px-2 text-center">code</th>
       <th colSpan="2" className="border border-gray-300 p-2 text-center" >Permintaan</th>
       <th rowSpan="2" className="border border-gray-300 px-2 text-center">Keterangan</th>
-      <th rowSpan="2" className="border border-gray-300 px-2 text-center">Status</th>
+      <th rowSpan="2" className="border border-gray-300 px-2 text-center status-header">Status</th>
     </tr>
     <tr>  
     <th className="border border- p-2 text-center">QTY</th>
@@ -193,7 +211,7 @@ export default function DetailPermintaanLapangan() {
           <td className="border border-gray-300 p-2">{item.qty}</td>
           <td className="border border-gray-300 p-2">{item.satuan}</td>
           <td className="border border-gray-300 p-2">{item.keterangan}</td>
-          <td colSpan="1" className="border border-gray-300 p-2 text-center no-print">
+          <td colSpan="1" className="border border-gray-300 p-2 text-center status-column">
   <span className={`px-2 py-1 rounded-full text-sm font-semibold
     ${item.status === 'PENDING' && 'bg-yellow-100 text-yellow-700'}
     ${item.status === 'APPROVED' && 'bg-green-100 text-green-700'}

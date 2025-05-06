@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -11,6 +10,10 @@ import Swal from 'sweetalert2';
 const PurchaseOrderTable = () => {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [rowsToShow, setRowsToShow] = useState(5); 
+  const [currentPage, setCurrentPage] = useState(1); 
+  const [totalPages, setTotalPages] = useState(0); 
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,7 +53,6 @@ const PurchaseOrderTable = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    // Gunakan SweetAlert untuk konfirmasi penghapusan
     const result = await Swal.fire({
       title: 'Yakin ingin menghapus Purchase Order ini?',
       text: "Data yang dihapus tidak dapat dikembalikan!",
@@ -60,10 +62,8 @@ const PurchaseOrderTable = () => {
       cancelButtonText: 'Batal',
     });
   
-    // Jika pengguna mengklik "Hapus", lanjutkan penghapusan
     if (result.isConfirmed) {
       try {
-        // Menghapus PurchaseOrder dan terkait PurchaseDetails melalui backend
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`, {
           method: "DELETE",
         });
@@ -71,10 +71,9 @@ const PurchaseOrderTable = () => {
         if (!response.ok) {
           throw new Error("Gagal menghapus Purchase Order");
         }
-  
-        // Setelah berhasil menghapus, arahkan kembali ke halaman Purchase Orders
+
         Swal.fire('Dihapus!', 'Purchase Order berhasil dihapus.', 'success');
-        router.push('/purchase-order'); // Kembali ke halaman daftar Purchase Order
+        router.push('/purchase-order'); 
       } catch (err) {
         Swal.fire('Gagal', err.message, 'error');
       }
@@ -92,6 +91,14 @@ const PurchaseOrderTable = () => {
     </div>
   );
 
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
   return (
     <div className="flex h-screen">
       <Sidebar />
@@ -102,6 +109,21 @@ const PurchaseOrderTable = () => {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-bold">Purchase Order</h1>
           <div className="flex gap-2">
+          <div className="flex space-x-2">
+              <label htmlFor="rowsToShow" className="text-sm">Tampilkan</label>
+              <select
+                id="rowsToShow"
+                value={rowsToShow}
+                onChange={(e) => setRowsToShow(Number(e.target.value))}
+                className="border border-gray-300 rounded px-2 py-1 text-sm"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+              </select>
+              <span className="text-sm">baris</span>
+            </div>
+
             <input
               type="text"
               placeholder="Cari PO..."
@@ -161,6 +183,23 @@ const PurchaseOrderTable = () => {
             </tbody>
           </table>
         )}
+ <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+              className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+
       </div>
     </div>
   );

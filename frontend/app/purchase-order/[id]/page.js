@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -14,7 +13,7 @@ export default function DetailPurchaseOrder() {
   const [data, setData] = useState(null);
   const [username, setUsername] = useState("");
   const [PurchaseDetails, setPoDetail] = useState(null);
-  const [selectedItems, setSelectedItems] = useState([]);
+
 
   const parseDate = (dateString) => {
     if (!dateString) return { day: "-", month: "-", year: "-" };
@@ -70,13 +69,7 @@ export default function DetailPurchaseOrder() {
     }, 500);
   };
 
-  const handleCheckboxChange = (itemId) => {
-    setSelectedItems((prevSelected) =>
-      prevSelected.includes(itemId)
-        ? prevSelected.filter((id) => id !== itemId)
-        : [...prevSelected, itemId]
-    );
-  };
+  
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
@@ -93,7 +86,7 @@ export default function DetailPurchaseOrder() {
         const result = await response.json();
         if (result) {
           setData(result);
-          setPoDetail(result); // ✅ penting: simpan detail juga
+          setPoDetail(result); 
         } else {
           router.push("/purchase-order");
         }
@@ -142,7 +135,7 @@ export default function DetailPurchaseOrder() {
 
   const totalHarga =
   PurchaseDetails?.purchaseDetails?.reduce((sum, poItem) => {
-    const material = poItem.material; // Access directly from poItem
+    const material = poItem.material; 
     const harga = material?.price || 0;
     const qty = poItem.qty || 0;
     return sum + (harga * qty);
@@ -160,7 +153,7 @@ export default function DetailPurchaseOrder() {
             Cetak
           </button>
           <button onClick={handleDownloadPDF} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32">
-            Download PDF
+            Simpan PDF
           </button>
         </div>
 
@@ -173,15 +166,15 @@ export default function DetailPurchaseOrder() {
                 <table className="border-collapse w-full">
                   <tbody>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">Tanggal PO</td>
+                      <td className="border border-gray-300 px-2 py-1 font-semibold">Tanggal Purchase Order</td>
                       <td className="border border-gray-300 px-2 py-1">{day} {month} {year}</td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">Nomor PO</td>
+                      <td className="border border-gray-300 px-2 py-1 font-semibold">Nomor Purchase Order</td>
                       <td className="border border-gray-300 px-2 py-1">{data.nomorPO}</td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">Lokasi</td>
+                      <td className="border border-gray-300 px-2 py-1 font-semibold">Lokasi Purchase Order</td>
                       <td className="border border-gray-300 px-2 py-1">{data.lokasiPO}</td>
                     </tr>
                     {data.keterangan && (

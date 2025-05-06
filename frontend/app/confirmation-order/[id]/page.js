@@ -1,10 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import "../../../styles/globals.css";
-//import html2pdf from "html2pdf.js";
+import html2pdf from "html2pdf.js";
 import Sidebar from "../../../component/sidebar.js";
 import { useRouter } from "next/navigation";
 import Header from "../../../component/Header.js"
@@ -20,38 +19,53 @@ export default function ConfirmationOrderDetail() {
   const [username, setUsername] = useState("");
   const [selectedItems, setSelectedItems] = useState([]);
 
-
-
   const handlePrint = () => {
     window.print();
   };
+  
+  const handleDownloadPDF = () => {
+    setTimeout(() => {
+      const element = document.getElementById("confirmation-order");
+      const backButton = document.getElementById("back-button");
 
-const handleDownloadPDF = () => {
-  setTimeout(() => {
-    const headerElement = document.getElementById("confirmation-order");
-    const noPrintElements = document.querySelectorAll(".no-print");
+      const statusHeaders = document.querySelectorAll('.status-header');
+      const statusColumns = document.querySelectorAll('.status-column');
+  
+      if (!element) {
+        console.error("Element not found!");
+        return;
+      }
+  
+      if (backButton) backButton.style.visibility = "hidden";
 
-    if (!headerElement) {
-      console.error("Header element not found!");
-      return;
-    }
-    noPrintElements.forEach(el => el.style.display = "none");
+      statusHeaders.forEach(el => el.classList.add('hidden'));
+      statusColumns.forEach(el => el.classList.add('hidden'));
+  
+      element.classList.add("pdf-format");
+  
+      html2pdf()
+        .set({
+          margin: 10,
+          filename: `confirmation-order-${id || "unknown"}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          printMediaType: true
+        })
+        .from(element)
+        .save()
+        .then(() => {
+          element.classList.remove("pdf-format");
 
-    html2pdf()
-      .set({
-        margin: 10,
-        filename: `confirmation-order${new Date().toISOString().slice(0, 10)}.pdf`,
-        image: { type: "png", quality: 1 },
-        html2canvas: { scale: 1 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait", size:"69" },
-      })
-      .from(headerElement)
-      .save()
-      .then(() => {
-        noPrintElements.forEach(el => el.style.display = "block");
-      });
-  }, 500);
-};
+          statusHeaders.forEach(el => el.classList.remove('hidden'));
+          statusColumns.forEach(el => el.classList.remove('hidden'));
+  
+          if (backButton) backButton.style.visibility = "visible";
+        });
+    }, 500);
+  };
+  
+  
 
 const terbilang = (angka) => {
   const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
@@ -206,23 +220,23 @@ const ActionButtons = ({ onKonfirmasi }) => (
       <div className="text-right space-x-2">
       <button
   onClick={() => router.push(`/confirmation-order/${id}/edit`)}
-  className="no-print bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
 >
   Edit
 </button>
 
-          <button onClick={handlePrint} className="no-print bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
+          <button onClick={handlePrint} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32 text-center">
           Cetak
           </button>
-          <button onClick={handleDownloadPDF} className="no-print bg-red-500 text-white px-4 py-2 rounded">
+          <button onClick={handleDownloadPDF} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32 text-center">
   Simpan PDF
 </button>
 
         </div>
         <br></br>
         <br></br>
-        <div id="purchase-order" className="flex justify-between items-start mt-4">
-  {/* Kiri: Logo + Nama PT + Alamat */}
+        <div id="confirmation-order" className="print-container  mx-auto bg-white rounded-lg p-6">
+        <div className="flex justify-between items-start mt-4">
   <div className="flex flex-col items-start space-y-2">
     <img src="/logo1.png" alt="Logo" className="w-20 h-20 object-contain" />
 
@@ -238,7 +252,6 @@ const ActionButtons = ({ onKonfirmasi }) => (
     </div>
   </div>
 
-  {/* Kanan: Judul + Tabel */}
   <div className="flex flex-col items-center">
     <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">
       CONFIRMATION<br />PURCHASE ORDER
@@ -271,11 +284,10 @@ const ActionButtons = ({ onKonfirmasi }) => (
     </table>
   </div>
 </div>
-
-
-<div id="purchase-order" className="border-b-4 border-blue-600 mt-2"></div>
-<table id="purchase-order" className="w-full border mt-4 text-center rounded-md">
-  <thead className="bg-blue-600 text-white">
+<div className="border-b-4 border-blue-600 mt-2"></div>
+<div id="confirmation-order" className="print-container  mx-auto bg-white rounded-lg p-6">
+<table className="w-full border mt-4 text-center rounded-md">
+  <thead  className="bg-blue-600 text-white">
     <tr>
       <th className="border p-2" rowSpan={2}>No.</th>
       <th className="border p-2" rowSpan={2}>Code</th>
@@ -283,7 +295,7 @@ const ActionButtons = ({ onKonfirmasi }) => (
       <th className="border p-2" rowSpan={2}>Harga</th>
       <th className="border p-2 w-12 " colSpan="2">Permintaan</th>
       <th className="border p-2 w-35" rowSpan={2}>Total</th>
-      <th className="border p-2 w-35" rowSpan={2}>Aksi</th>
+      <th className="border p-2 w-35 status-header" rowSpan={2}>Aksi</th>
     </tr>
     <tr className="bg-blue-600 text-white">
       <th className="border p-2 w-12">QTY</th>
@@ -307,7 +319,7 @@ const ActionButtons = ({ onKonfirmasi }) => (
         <td className="border px-4 py-2 text-center">{qty}</td>
         <td className="border px-4 py-2 text-center">{item.satuan || 'N/A'}</td>
         <td className="border px-4 py-2 text-center">Rp{total.toLocaleString()}</td>
-        <td className="border px-4 py-2 text-center">
+        <td className="border px-4 py-2 text-center status-column">
   {item.status === "ACC" ? (
     <span className="text-green-600 font-semibold">ACC </span>
   ) : (
@@ -337,7 +349,7 @@ const ActionButtons = ({ onKonfirmasi }) => (
       <td colSpan="4" className="bg-blue-600 text-white p-2 text-left">Terbilang</td>
       <td colSpan="2" rowSpan={2} className="p-2 text-center border">TOTAL</td>
       <td colSpan="1" rowSpan={2} className="p-2 text-center border">Rp{totalHarga.toLocaleString()}</td>
-      <td colSpan="1" rowSpan={2} className="p-2 text-center border">
+      <td colSpan="1" rowSpan={2} className="p-2 text-center border  status-column">
     <ActionButtons onKonfirmasi={handleKonfirmasi} />
   </td>
 
@@ -353,7 +365,8 @@ const ActionButtons = ({ onKonfirmasi }) => (
     </tr>
   </tbody>
 </table>
-<table id="purchase-order" className="w-full border mt-6">
+</div>
+<table  className="w-full border mt-6">
   <tbody>
   <tr className="text-center ">
       <td  colSpan={3} className="bg-gray-300 font-semibold border p-2">PT.REKA CIPTA INOVASI</td>
@@ -382,6 +395,7 @@ const ActionButtons = ({ onKonfirmasi }) => (
     </tr>
   </tbody>
 </table>
+</div>
 <br></br>
 <button onClick={() =>  router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
             Kembali

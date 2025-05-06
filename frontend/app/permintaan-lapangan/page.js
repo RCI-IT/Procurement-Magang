@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -16,6 +15,8 @@ const months = [
 
 export default function PermintaanLapangan({ setActiveContent }) {
   const [rowsToShow, setRowsToShow] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1); 
+  const [totalPages, setTotalPages] = useState(0); 
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddFormVisible] = useState(false);
   const [updatedData, setUpdatedData] = useState([]);
@@ -189,6 +190,15 @@ export default function PermintaanLapangan({ setActiveContent }) {
   const getStatus = (status) => {
     return status;
   };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
   return (
     <div className="flex h-screen">
      <Sidebar />
@@ -298,6 +308,22 @@ export default function PermintaanLapangan({ setActiveContent }) {
 
         </table>
       </div>
+      <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+              className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
     </div>
     </div>
   );
