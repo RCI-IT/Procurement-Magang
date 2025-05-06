@@ -87,8 +87,7 @@ const handleDelete = async (id) => {
         <main className="p-6 flex-1 overflow-auto">
           <div className="w-full">
             <Header username={username} />
-          </div>
-
+          </div><br></br>
           <h1 className="text-3xl font-bold mb-4">User</h1>
 
           <div className="mb-4 flex justify-end items-cente gap-x-5">

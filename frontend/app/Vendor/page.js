@@ -85,7 +85,7 @@ export default function VendorPage() {
       <div className="flex flex-1">
         <Sidebar />
         <main className="p-6 flex-1 overflow-auto">
-          <Header username={username} />
+          <Header username={username} /><br></br>
           <h1 className="text-3xl font-bold mb-4">Vendor</h1>
 
           <div className="mb-4 flex justify-end items-cente gap-x-5">

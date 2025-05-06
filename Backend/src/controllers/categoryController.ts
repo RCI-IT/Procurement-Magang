@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { Request, Response } from 'express';
 
 const prisma = new PrismaClient();
-export const getAllCategories = async (req: Request, res: Response) => {
+export const getAllCategories = async (req: Request, res: Response): Promise<void> => {
   try {
     const categories = await prisma.categories.findMany();
     res.status(200).json(categories);
@@ -11,7 +11,7 @@ export const getAllCategories = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch categories' });
   }
 };
-export const createCategory = async (req: Request, res: Response) => {
+export const createCategory = async (req: Request, res: Response): Promise<void> => {
   const { name } = req.body;
   try {
     const newCategory = await prisma.categories.create({
@@ -23,13 +23,13 @@ export const createCategory = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to create category' });
   }
 };
-export const editCategory = async (req: Request, res: Response) => {
+export const editCategory = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { name } = req.body;
 
   try {
     const category = await prisma.categories.update({
-      where: { id: Number(id) }, // Konversi ID ke Number
+      where: { id: Number(id) },
       data: { name },
     });
 
@@ -39,12 +39,12 @@ export const editCategory = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to update category' });
   }
 };
-export const deleteCategory = async (req: Request, res: Response) => {
+export const deleteCategory = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
 
   try {
     await prisma.categories.delete({
-      where: { id: Number(id) }, // Konversi ID ke Number
+      where: { id: Number(id) },
     });
 
     res.status(200).json({ message: 'Category deleted successfully' });
@@ -53,7 +53,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to delete category' });
   }
 };
-export const getCategoryById = async (req: Request, res: Response) => {
+export const getCategoryById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const parsedId = Number(id);
@@ -65,6 +65,24 @@ export const getCategoryById = async (req: Request, res: Response) => {
 
     const category = await prisma.categories.findUnique({
       where: { id: parsedId },
+      select: {
+        id: true,
+        name: true,
+        materials: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            image: true,
+            vendor: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
     });
 
     if (!category) {
