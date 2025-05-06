@@ -91,7 +91,7 @@ const handleDelete = async (id) => {
 
           <h1 className="text-3xl font-bold mb-4">User</h1>
 
-          <div className="mb-4 flex justify-between space-x-2">
+          <div className="mb-4 flex justify-end items-cente gap-x-5">
             <input
               type="text"
               placeholder="Cari User"

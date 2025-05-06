@@ -88,13 +88,8 @@ export default function VendorPage() {
           <Header username={username} />
           <h1 className="text-3xl font-bold mb-4">Vendor</h1>
 
-          <div className="mb-4 flex justify-end items-center space-x-2">
-  <button
-    onClick={() => router.push("/vendor/add")}
-    className="bg-blue-500 text-white px-4 py-2 rounded"
-  >
-    + Vendor
-  </button>
+          <div className="mb-4 flex justify-end items-cente gap-x-5">
+  
   <input
     type="text"
     placeholder="Cari Vendor"
@@ -102,6 +97,12 @@ export default function VendorPage() {
     onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
     className="border border-gray-300 rounded px-2 py-1"
   />
+  <button
+    onClick={() => router.push("/vendor/add")}
+    className="bg-blue-500 text-white px-4 py-2 rounded"
+  >
+    + Vendor
+  </button>
 </div>
 
 
