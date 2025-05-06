@@ -136,7 +136,6 @@ export default function KategoriPage() {
         <main className="p-6 flex-1 overflow-auto">
           <Header username={username} /><br></br>
           <h1 className="text-3xl font-bold mb-4">Kategori</h1>
-          {/* Filter dan Tambah Kategori */}
           <div className="mb-4 flex flex-wrap justify-between items-center">
             <div className="flex items-center space-x-2 mb-2 md:mb-0">
 
@@ -175,7 +174,6 @@ export default function KategoriPage() {
             </div>
           </div>
 
-          {/* Tabel Kategori */}
           <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
             <thead className="bg-blue-500 text-white">
               <tr>
@@ -211,7 +209,6 @@ export default function KategoriPage() {
             </tbody>
           </table>
 
-          {/* Pagination */}
           <div className="flex justify-between items-center mt-4">
             <button
               onClick={handlePrevPage}
@@ -229,7 +226,6 @@ export default function KategoriPage() {
             </button>
           </div>
 
-          {/* Modal Tambah Kategori */}
           {showModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white p-6 rounded-lg w-96 shadow-lg">

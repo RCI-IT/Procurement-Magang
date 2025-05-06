@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Sidebar from "../../../component/sidebar";
 import Header from "../../../component/Header";
 import Swal from "sweetalert2";
@@ -14,6 +14,7 @@ export default function KategoriDetailPage() {
   const [username, setUsername] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
@@ -71,7 +72,6 @@ export default function KategoriDetailPage() {
         <br />
 
         <div className="bg-white shadow-md p-6 rounded-md">
-          {/* Header dan filter di satu baris */}
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Material yang sama</h2>
             <select
@@ -134,23 +134,27 @@ export default function KategoriDetailPage() {
             </tbody>
           </table>
 
-          {/* Pagination tanpa info halaman */}
           <div className="flex justify-between items-center mt-4">
             <button
               onClick={handlePrevPage}
               disabled={currentPage === 1}
-              className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded disabled:opacity-50"
+              className="mt-6 bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
             >
               Previous
             </button>
             <button
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded disabled:opacity-50"
+              className="mt-6 bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
             >
               Next
             </button>
           </div>
+          <div>
+          <button onClick={() => router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
+            Kembali
+          </button>
+        </div>
         </div>
       </main>
     </div>
