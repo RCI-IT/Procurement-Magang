@@ -107,9 +107,7 @@ export default function VendorPage() {
           <Header username={username} /><br />
           <h1 className="text-3xl font-bold mb-4">Vendor</h1>
 
-          {/* Filter & Action Row */}
           <div className="mb-4 flex justify-between items-center flex-wrap gap-4">
-            {/* Kiri: Sort & Rows */}
             <div className="flex gap-4 items-center">
               <div>
                 <label className="mr-2">Urutkan :</label>
@@ -142,7 +140,6 @@ export default function VendorPage() {
               </div>
             </div>
 
-            {/* Kanan: Search & Add */}
             <div className="flex gap-4 items-center">
               <input
                 type="text"
@@ -160,7 +157,6 @@ export default function VendorPage() {
             </div>
           </div>
 
-          {/* Table */}
           <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
             <thead className="bg-blue-500 text-white">
               <tr>
@@ -199,7 +195,6 @@ export default function VendorPage() {
             </tbody>
           </table>
 
-          {/* Pagination */}
           <div className="flex justify-between mt-4">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
