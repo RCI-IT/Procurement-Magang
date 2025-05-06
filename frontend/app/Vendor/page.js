@@ -87,10 +87,17 @@ export default function VendorPage() {
   const filteredVendors = vendors
     .filter((v) => v.name.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort((a, b) => {
-      const aVal = a[sortBy]?.toLowerCase() || "";
-      const bVal = b[sortBy]?.toLowerCase() || "";
-      return aVal.localeCompare(bVal);
+      if (sortBy === "created_desc") {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      } else if (sortBy === "created_asc") {
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      } else {
+        const aVal = a[sortBy]?.toLowerCase() || "";
+        const bVal = b[sortBy]?.toLowerCase() || "";
+        return aVal.localeCompare(bVal);
+      }
     });
+    
 
   const totalPages = Math.ceil(filteredVendors.length / rowsToShow);
 
@@ -121,6 +128,8 @@ export default function VendorPage() {
                 >
                   <option value="name">Nama</option>
                   <option value="city">Kota</option>
+                  <option value="created_desc">Terbaru</option>
+                  <option value="created_asc">Terlama</option>
                 </select>
               </div>
               <div>

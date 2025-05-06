@@ -15,6 +15,8 @@ export default function KategoriDetailPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
+  const [sortBy, setSortBy] = useState("name");
+
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
@@ -47,9 +49,26 @@ export default function KategoriDetailPage() {
 
   const totalPages = category?.materials ? Math.ceil(category.materials.length / rowsPerPage) : 1;
 
-  const paginatedMaterials = category?.materials
-    ? category.materials.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
-    : [];
+  const sortedMaterials = category?.materials
+  ? [...category.materials].sort((a, b) => {
+      if (sortBy === "name") {
+        return a.name.localeCompare(b.name);
+      } else if (sortBy === "harga") {
+        return a.price - b.price;
+      } else if (sortBy === "terbaru") {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      } else if (sortBy === "terlama") {
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      }
+      return 0;
+    })
+  : [];
+
+const paginatedMaterials = sortedMaterials.slice(
+  (currentPage - 1) * rowsPerPage,
+  currentPage * rowsPerPage
+);
+
 
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -72,22 +91,38 @@ export default function KategoriDetailPage() {
         <br />
 
         <div className="bg-white shadow-md p-6 rounded-md">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Material yang sama</h2>
-            <select
-              id="rowsPerPage"
-              value={rowsPerPage}
-              onChange={(e) => {
-                setRowsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="border border-gray-300 rounded px-2 py-1"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-            </select>
-          </div>
+        <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+  <h2 className="text-2xl font-bold">Material yang sama</h2>
+  <div className="flex items-center gap-2">
+    <select
+      value={rowsPerPage}
+      onChange={(e) => {
+        setRowsPerPage(Number(e.target.value));
+        setCurrentPage(1);
+      }}
+      className="border border-gray-300 rounded px-2 py-1"
+    >
+      <option value={5}>5</option>
+      <option value={10}>10</option>
+      <option value={20}>20</option>
+    </select>
+
+    <select
+      value={sortBy}
+      onChange={(e) => {
+        setSortBy(e.target.value);
+        setCurrentPage(1);
+      }}
+      className="border border-gray-300 rounded px-2 py-1"
+    >
+      <option value="name">Nama</option>
+      <option value="harga">Harga</option>
+      <option value="terbaru">Terbaru</option>
+      <option value="terlama">Terlama</option>
+    </select>
+  </div>
+</div>
+
 
           <table className="table-auto border-collapse border border-gray-300 w-full">
             <thead className="bg-blue-500 text-white">
