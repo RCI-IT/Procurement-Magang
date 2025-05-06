@@ -91,7 +91,7 @@ const handleDelete = async (id) => {
 
           <h1 className="text-3xl font-bold mb-4">User</h1>
 
-          <div className="mb-4 flex justify-end items-cente gap-x-5">
+          <div className="mb-4 flex justify-end items-center gap-x-5">
             <input
               type="text"
               placeholder="Cari User"
@@ -101,7 +101,7 @@ const handleDelete = async (id) => {
             />
             <button
   onClick={() => router.push("/usercontrol/add")}
-  className="bg-blue-500 text-white rounded px-4 py-2"
+  className="bg-blue-500 text-white px-4 py-2 rounded"
 >
   + User
 </button>
