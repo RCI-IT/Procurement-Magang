@@ -74,6 +74,7 @@ export const getCategoryById = async (req: Request, res: Response): Promise<void
             name: true,
             price: true,
             image: true,
+            createdAt: true, // Menambahkan createdAt
             vendor: {
               select: {
                 id: true,

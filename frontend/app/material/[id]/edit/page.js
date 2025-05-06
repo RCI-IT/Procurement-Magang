@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,7 +9,7 @@ import Swal from "sweetalert2";
 
 export default function EditMaterial() {
   const params = useParams();
-  const id = params?.id; // gunakan id dari params
+  const id = params?.id;
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -17,6 +18,7 @@ export default function EditMaterial() {
   const [categoryId, setCategoryId] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
+  const [oldImageUrl, setOldImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [vendors, setVendors] = useState([]);
@@ -43,11 +45,21 @@ export default function EditMaterial() {
         const vendorData = await vendorRes.json();
         const categoryData = await categoryRes.json();
 
+        const matchedVendor = vendorData.find((v) => v.name === materialData.vendor);
+        const matchedCategory = categoryData.find((c) => c.name === materialData.category);
+
         setName(materialData.name || "");
-        setVendorId(materialData.vendorId || "");
-        setPrice(materialData.price || "");
-        setCategoryId(materialData.categoryId || "");
+        setVendorId(matchedVendor ? String(matchedVendor.id) : "");
+        setCategoryId(matchedCategory ? String(matchedCategory.id) : "");
+
+        const numericPrice = typeof materialData.price === "string"
+          ? materialData.price.replace(/[^\d]/g, "")
+          : String(materialData.price);
+        setPrice(numericPrice || "");
+
         setDescription(materialData.description || "");
+        setOldImageUrl(materialData.imageUrl || null);
+
         setVendors(vendorData);
         setCategories(categoryData);
       } catch (error) {
@@ -70,6 +82,28 @@ export default function EditMaterial() {
     setLoading(true);
     setError("");
 
+    // Periksa apakah ada perubahan pada data
+    const hasChange =
+    name !== "" ||
+    vendorId !== "" ||
+    price !== "" ||
+    categoryId !== "" ||
+    description !== "" ||
+    image !== null;
+  
+  if (!hasChange) {
+    Swal.fire({
+      icon: "warning",
+      title: "Oops",
+      text: "Harap ubah minimal satu data sebelum menyimpan!",
+      background: '#fff',
+      color: '#000',
+      confirmButtonColor: 'blue',
+    });
+    setLoading(false);
+    return;
+  }
+  
     const formData = new FormData();
     formData.append("name", name);
     formData.append("vendorId", Number(vendorId));
@@ -94,15 +128,22 @@ export default function EditMaterial() {
         icon: "success",
         title: "Berhasil",
         text: "Material berhasil diperbarui!",
+        background: '#fff',  // Mengubah background menjadi putih
+        color: '#000',  // Mengubah warna teks menjadi hitam
+        confirmButtonColor: 'blue',
+        timer: 2000,
+      }).then(() => {
+        router.back();
       });
-
-      router.push("/?page=material");
     } catch (error) {
       setError(error.message);
       Swal.fire({
         icon: "error",
         title: "Terjadi kesalahan",
         text: error.message,
+        background: '#fff',  // Mengubah background menjadi putih
+        color: '#000',  // Mengubah warna teks menjadi hitam
+        confirmButtonColor: '#f44336',
       });
     } finally {
       setLoading(false);
@@ -114,65 +155,92 @@ export default function EditMaterial() {
   }
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-white">
       <Sidebar />
-      <div className="p-6 flex-1">
+      <div className="p-6 flex-1 bg-white text-black">
         <div className="w-full">
           <Header username={username} />
         </div>
 
-        <h2 className="text-2xl font-bold mb-4">Edit Material</h2>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <h2 className="text-3xl font-bold text-center text-black mb-8">Edit Material</h2>
+        {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">
           <div>
-            <label className="block">Gambar:</label>
-            <input type="file" onChange={(e) => setImage(e.target.files[0])} />
+            <label className="block text-xl text-white">Gambar:</label>
+            <div className="flex items-center gap-4 mb-4">
+              {oldImageUrl && (
+                <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <img
+                    src={oldImageUrl}
+                    alt="Old Image"
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                </div>
+              )}
+              {image && (
+                <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center relative">
+                  <img
+                    src={URL.createObjectURL(image)}
+                    alt="New Image"
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                  <span className="absolute top-0 left-0 bg-black text-white text-xs px-2 py-1 rounded-br-lg">
+                    Gambar Baru
+                  </span>
+                </div>
+              )}
+            </div>
+            <input
+              type="file"
+              onChange={(e) => setImage(e.target.files[0])}
+              className="file:border file:border-white-600 file:bg-white-800 file:black-white file:py-2 file:px-4 rounded-lg"
+            />
           </div>
 
           <div>
-            <label className="block">Nama Material:</label>
+            <label className="block text-xl text-white">Nama Material:</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="border p-2 w-full"
+              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div>
-            <label className="block">Harga:</label>
+            <label className="block text-xl text-white">Harga:</label>
             <input
               type="number"
               value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
-              className="border p-2 w-full"
+              onChange={(e) => setPrice(e.target.value)}
+              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div>
-            <label className="block">Deskripsi:</label>
+            <label className="block text-xl text-white">Deskripsi:</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="border p-2 w-full"
+              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
               required
             ></textarea>
           </div>
 
           <div>
-            <label className="block">Kategori:</label>
+            <label className="block text-xl text-white">Kategori:</label>
             <select
               value={categoryId}
-              onChange={(e) => setCategoryId(Number(e.target.value))}
-              className="border p-2 w-full"
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Pilih Kategori</option>
               {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
+                <option key={cat.id} value={cat.id.toString()}>
                   {cat.name}
                 </option>
               ))}
@@ -180,16 +248,16 @@ export default function EditMaterial() {
           </div>
 
           <div>
-            <label className="block">Vendor:</label>
+            <label className="block text-xl text-white">Vendor:</label>
             <select
               value={vendorId}
-              onChange={(e) => setVendorId(Number(e.target.value))}
-              className="border p-2 w-full"
+              onChange={(e) => setVendorId(e.target.value)}
+              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Pilih Vendor</option>
               {vendors.map((vendor) => (
-                <option key={vendor.id} value={vendor.id}>
+                <option key={vendor.id} value={vendor.id.toString()}>
                   {vendor.name}
                 </option>
               ))}
@@ -198,7 +266,7 @@ export default function EditMaterial() {
 
           <button
             type="submit"
-            className="bg-blue-500 text-white px-4 py-2"
+            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-lg shadow-lg hover:from-indigo-600 hover:to-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-600"
             disabled={loading}
           >
             {loading ? "Menyimpan..." : "Simpan Perubahan"}
@@ -207,7 +275,7 @@ export default function EditMaterial() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="mt-6 bg-gray-500 text-white px-4 py-2 rounded"
+            className="mt-6 w-full bg-gray-700 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-gray-600"
           >
             Kembali
           </button>
