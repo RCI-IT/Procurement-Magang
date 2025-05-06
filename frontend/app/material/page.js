@@ -111,7 +111,6 @@ export default function Material() {
           <h1 className="text-3xl font-bold mb-4">Material</h1>
           <div className="mb-4 flex justify-between items-center">
             <div className="flex space-x-2">
-              <label htmlFor="rowsToShow" className="text-sm">Tampilkan</label>
               <select
                 id="rowsToShow"
                 value={rowsToShow}
@@ -122,7 +121,6 @@ export default function Material() {
                 <option value={10}>10</option>
                 <option value={15}>15</option>
               </select>
-              <span className="text-sm">baris</span>
             </div>
             <div className="flex space-x-2">
               <input

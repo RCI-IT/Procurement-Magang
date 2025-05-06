@@ -8,17 +8,17 @@ import { Eye, Trash2 } from "lucide-react";
 import Swal from 'sweetalert2';
 
 const PurchaseOrderTable = () => {
-  const [data, setData] = useState([]);
+  const [, setData] = useState([]);
   const [search, setSearch] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [] = useState("");
   const [rowsToShow, setRowsToShow] = useState(5); 
   const [currentPage, setCurrentPage] = useState(1); 
-  const [totalPages, setTotalPages] = useState(0); 
+  const [totalPages] = useState(0); 
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [username, setUsername] = useState("");
-  const [userRole, setUserRole] = useState(null);
+  const [, setUserRole] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -110,7 +110,6 @@ const PurchaseOrderTable = () => {
           <h1 className="text-3xl font-bold">Purchase Order</h1>
           <div className="flex gap-2">
           <div className="flex space-x-2">
-              <label htmlFor="rowsToShow" className="text-sm">Tampilkan</label>
               <select
                 id="rowsToShow"
                 value={rowsToShow}
@@ -121,7 +120,6 @@ const PurchaseOrderTable = () => {
                 <option value={10}>10</option>
                 <option value={15}>15</option>
               </select>
-              <span className="text-sm">baris</span>
             </div>
 
             <input

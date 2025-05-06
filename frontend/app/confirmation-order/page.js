@@ -8,11 +8,11 @@ import { Eye, Trash2 } from "lucide-react";
 import Swal from 'sweetalert2';
 
 const ConfirmationOrderTable = () => {
-  const [data, setData] = useState([]);
+  const [, setData] = useState([]);
   const [search, setSearch] = useState("");
   const [rowsToShow, setRowsToShow] = useState(5); 
   const [currentPage, setCurrentPage] = useState(1); 
-  const [totalPages, setTotalPages] = useState(0); 
+  const [totalPages] = useState(0); 
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -122,7 +122,6 @@ const handleDelete = async (id) => {
           <h1 className="text-3xl font-bold">Confirmation Order</h1>
           <div className="flex gap-2">
           <div className="flex space-x-2">
-              <label htmlFor="rowsToShow" className="text-sm">Tampilkan</label>
               <select
                 id="rowsToShow"
                 value={rowsToShow}
@@ -133,16 +132,7 @@ const handleDelete = async (id) => {
                 <option value={10}>10</option>
                 <option value={15}>15</option>
               </select>
-              <span className="text-sm">baris</span>
             </div>
-          {userRole !== "USER_LAPANGAN" && (
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-              onClick={() => router.push("/confirmation-order/add")}
-            >
-              + Tambah
-            </button>
-          )}
             <input
               type="text"
               placeholder="Cari PO..."
@@ -150,6 +140,14 @@ const handleDelete = async (id) => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+            {userRole !== "USER_LAPANGAN" && (
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+              onClick={() => router.push("/confirmation-order/add")}
+            >
+              + Tambah
+            </button>
+          )}
           </div>
         </div>
 
