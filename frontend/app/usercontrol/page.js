@@ -5,13 +5,13 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../component/sidebar.js";
 import Header from "../../component/Header.js";
-import { Eye, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import Swal from 'sweetalert2';
 
 export default function User() {
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [rowsToShow] = useState(5);
+  const [rowsToShow] = useState();
   const [username, setUsername] = useState("");
   const router = useRouter();
 
@@ -46,9 +46,8 @@ const handleDelete = async (id) => {
     title: 'Yakin ingin menghapus user ini?',
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: 'Ya, Hapus!',
     cancelButtonText: 'Batal',
-    reverseButtons: true
+    confirmButtonText: 'Ya, Hapus!'
   });
 
   if (!result.isConfirmed) return; 
