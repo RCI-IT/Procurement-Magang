@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -55,14 +56,13 @@ export default function VendorPage() {
         <Header username={username} />
 
         <div className="bg-white shadow-md p-6 rounded-md">
-          <h1 className="text-3xl font-bold">{vendor?.name}</h1>
-          <p className="text-gray-600 mt-2">{vendor?.address || "Alamat tidak tersedia"}</p>
+          <h1 className="text-3xl font-bold">{vendor?.name} </h1>
+          <p className="text-gray-600 mt-2">{vendor?.address || "Alamat tidak tersedia"} , {vendor?.city || "kota tidak tersedia"}</p>
           <p className="text-lg mt-2">📞 {vendor?.phone || "Tidak tersedia"}</p>
         </div>
-
         <div className="bg-white shadow-md p-6 rounded-md">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Material</h2>
+            <h2 className="text-2xl font-bold">Material Dari Vendor ini</h2>
           </div>
 
           <table className="w-full border-collapse border border-gray-300">
@@ -106,7 +106,13 @@ export default function VendorPage() {
             </tbody>
           </table>
         </div>
-
+      <div className="mt-4">
+        <button
+          onClick={() => router.push(`/vendor/${vendorId}/edit`)}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+          Edit Vendor
+        </button>
+      </div>
         <button
           onClick={() => router.back()}
           className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded"
