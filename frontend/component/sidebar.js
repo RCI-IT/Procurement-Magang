@@ -68,18 +68,6 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <div className="px-4 py-4 border-t">
-        <button
-          onClick={() => {
-            localStorage.clear();
-            router.push("/login");
-          }}
-          className="flex items-center w-full px-4 py-2 text-sm rounded bg-gray-200 hover:bg-gray-300 focus:outline-none"
-        >
-          <span className="text-lg">🔓</span>
-          {!isMinimized && <span className="ml-3 text-gray-800 font-medium">Keluar</span>}
-        </button>
-      </div>
     </div>
   );
 }
