@@ -145,7 +145,11 @@ export default function AddPermintaanLapanganForm({  }) {
   return (
 <div className="flex px-10 py-6 w-full">
   <Sidebar />
+<<<<<<< HEAD
   <div className="absolute top-0 left-0 h-full w-[250px] bg-gray-800">
+=======
+  <div className="flex-1 p-6">
+>>>>>>> 595e0a35d3c7e3097e6d566e4069e862337d60fc
   <Header username={username} />
       <h1 className="text-3xl font-bold mb-6">Tambah Permintaan Lapangan</h1>
       <form onSubmit={handleSubmit} className="space-y-6">

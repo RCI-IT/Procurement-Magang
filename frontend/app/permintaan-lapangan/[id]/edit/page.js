@@ -57,10 +57,10 @@ export default function EditPermintaanLapangan() {
   };
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     });
   };
 
@@ -72,19 +72,35 @@ export default function EditPermintaanLapangan() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const payload = {
+      keterangan: formData.keterangan,
+      detail: formData.detail.map((item) => ({
+        materialId: item.materialId,
+        qty: item.qty,
+        satuan: item.satuan,
+      })),
+    };
+
+    console.log("Payload yang dikirim:", payload);
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
+
+      const responseText = await response.text();
+      console.log("Respon server:", responseText);
+
       if (response.ok) {
         Swal.fire({
           title: "Berhasil!",
           text: "Data berhasil diperbarui.",
           icon: "success",
           confirmButtonText: "OK",
-          confirmButtonColor: "#2563eb" 
+          confirmButtonColor: "#2563eb",
         }).then(() => {
           router.back();
         });
@@ -94,7 +110,7 @@ export default function EditPermintaanLapangan() {
           text: "Gagal memperbarui data.",
           icon: "error",
           confirmButtonText: "OK",
-          confirmButtonColor: "#2563eb" 
+          confirmButtonColor: "#2563eb",
         });
       }
     } catch (error) {
@@ -112,16 +128,17 @@ export default function EditPermintaanLapangan() {
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-semibold">Nomor</label>
-            <input type="text" name="nomor" value={formData.nomor} onChange={handleChange} className="w-full border p-2 rounded" />
+            <input type="text" name="nomor" value={formData.nomor} readOnly className="w-full border p-2 rounded" />
           </div>
           <div className="mb-4">
             <label className="block text-sm font-semibold">Tanggal</label>
-            <input type="date" name="tanggal" value={formData.tanggal?.split("T")[0] || ""} onChange={handleChange} className="w-full border p-2 rounded" />
+            <input type="date" name="tanggal" value={formData.tanggal?.split("T")[0] || ""} readOnly className="w-full border p-2 rounded" />
           </div>
           <div className="mb-4">
             <label className="block text-sm font-semibold">Keterangan</label>
             <textarea name="keterangan" value={formData.keterangan} onChange={handleChange} className="w-full border p-2 rounded" />
           </div>
+
           <h2 className="text-md font-semibold mt-4 mb-2">Detail Permintaan</h2>
           <table className="w-full border-collapse text-sm border border-gray-300">
             <thead className="bg-blue-700 text-white">
@@ -137,21 +154,36 @@ export default function EditPermintaanLapangan() {
                 <tr key={index} className="text-center">
                   <td className="border border-gray-300 p-2">{materials[item.materialId] || "Memuat..."}</td>
                   <td className="border border-gray-300 p-2">
-                    <input type="text" value={item.mention || ""} onChange={(e) => handleDetailChange(index, "mention", e.target.value)} className="w-full border p-1 rounded" />
+                    <input type="text" value={item.mention || ""} readOnly className="w-full border p-1 rounded bg-gray-100" />
                   </td>
                   <td className="border border-gray-300 p-2">
-                    <input type="number" value={item.qty || ""} onChange={(e) => handleDetailChange(index, "qty", parseInt(e.target.value) || 0)} className="w-full border p-1 rounded" />
+                    <input
+                      type="number"
+                      value={item.qty || ""}
+                      onChange={(e) => handleDetailChange(index, "qty", e.target.value)}
+                      className="w-full border p-1 rounded"
+                    />
                   </td>
                   <td className="border border-gray-300 p-2">
-                    <input type="text" value={item.satuan || ""} onChange={(e) => handleDetailChange(index, "satuan", e.target.value)} className="w-full border p-1 rounded" />
+                    <input
+                      type="text"
+                      value={item.satuan || ""}
+                      onChange={(e) => handleDetailChange(index, "satuan", e.target.value)}
+                      className="w-full border p-1 rounded"
+                    />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+
           <div className="flex justify-between mt-6">
-            <button type="button" onClick={() => router.back()} className="bg-gray-500 text-white px-4 py-2 rounded">Kembali</button>
-            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Simpan Perubahan</button>
+            <button type="button" onClick={() => router.back()} className="bg-gray-500 text-white px-4 py-2 rounded">
+              Kembali
+            </button>
+            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+              Simpan Perubahan
+            </button>
           </div>
         </form>
       </div>
