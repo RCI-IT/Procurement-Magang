@@ -20,6 +20,7 @@ export default function EditPermintaanLapangan() {
     detail: [],
   });
   const [materials, setMaterials] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!id) return;
@@ -42,7 +43,7 @@ export default function EditPermintaanLapangan() {
     fetchData();
   }, [id, router]);
 
-  const fetchMaterialNames = async (details) => {
+  const fetchMaterialNames = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials`);
       const data = await response.json();
@@ -51,6 +52,7 @@ export default function EditPermintaanLapangan() {
         return acc;
       }, {});
       setMaterials(materialMap);
+      setLoading(false);
     } catch (error) {
       console.error("Gagal mengambil nama material:", error);
     }
@@ -118,7 +120,7 @@ export default function EditPermintaanLapangan() {
     }
   };
 
-  if (!formData.nomor) return <p className="text-red-500 text-center mt-10">Memuat data...</p>;
+  if (loading) return <p className="text-red-500 text-center mt-10">Memuat data...</p>;
 
   return (
     <div className="flex h-screen">
