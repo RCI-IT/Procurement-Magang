@@ -117,39 +117,39 @@ const handleDelete = async (id) => {
       <div className="p-4 flex-1 bg-white shadow-md rounded-md overflow-auto">
         <div>
           <Header username={username} />
-        </div>
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold">Confirmation Order</h1>
-          <div className="flex gap-2">
-          <div className="flex space-x-2">
-              <select
-                id="rowsToShow"
-                value={rowsToShow}
-                onChange={(e) => setRowsToShow(Number(e.target.value))}
-                className="border border-gray-300 rounded px-2 py-1 text-sm"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={15}>15</option>
-              </select>
-            </div>
-            <input
-              type="text"
-              placeholder="Cari PO..."
-              className="border p-2 rounded"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            {userRole !== "USER_LAPANGAN" && (
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-              onClick={() => router.push("/confirmation-order/add")}
-            >
-              + Tambah
-            </button>
-          )}
-          </div>
-        </div>
+        </div><br></br>
+        <h1 className="text-3xl font-bold mb-2">Confirmation Order</h1>
+<div className="mb-4 flex justify-between items-end">
+  <div></div>
+  <div className="flex space-x-2">
+    <select
+      id="rowsToShow"
+      value={rowsToShow}
+      onChange={(e) => setRowsToShow(Number(e.target.value))}
+      className="border border-gray-300 rounded px-2 py-1 text-sm"
+    >
+      <option value={5}>5</option>
+      <option value={10}>10</option>
+      <option value={15}>15</option>
+    </select>
+    <input
+      type="text"
+      placeholder="Cari PO..."
+      className="border border-gray-300 rounded px-2 py-1 text-sm"
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+    />
+    {userRole !== "USER_LAPANGAN" && (
+      <button
+        className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600"
+        onClick={() => router.push("/confirmation-order/add")}
+      >
+        + Tambah
+      </button>
+    )}
+  </div>
+</div>
+
 
         {loading ? (
           <p className="text-center">Memuat data...</p>

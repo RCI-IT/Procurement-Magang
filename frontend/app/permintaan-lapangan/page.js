@@ -14,7 +14,7 @@ const months = [
 ];
 
 export default function PermintaanLapangan({ setActiveContent }) {
-  const [rowsToShow, setRowsToShow] = useState(10);
+  const [rowsToShow, setRowsToShow] = useState(5);
   const [currentPage, setCurrentPage] = useState(1); 
   const [totalPages] = useState(0); 
   const [searchQuery, setSearchQuery] = useState("");
@@ -148,29 +148,40 @@ export default function PermintaanLapangan({ setActiveContent }) {
     <div className={`p-6 bg-white flex-1 h-screen shadow-md rounded-lg transition-all duration-300 ${isAddFormVisible ? 'min-h-screen' : 'h-auto'}`}>
     <div>
     <Header username={username} />
-    </div>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold">Permintaan Lapangan</h1>  
-        <div className="flex space-x-4">
-          <input
-            type="text"
-            placeholder="Cari nomor..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="border border-gray-300 rounded px-4 py-2"
-          />
-          {userRole !== "USER_PURCHASE" && (
-  <button
-    onClick={() => router.push("/permintaan-lapangan/add")}
-    className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
-  >
-    + Permintaan
-  </button>
-)}
-
-
-        </div>
-      </div>
+    </div><br></br>
+    <h1 className="text-3xl font-bold mb-2">Permintaan Lapangan</h1>
+<div className="mb-4 flex justify-between items-end">
+  <div></div>
+  <div className="flex space-x-2">
+    <select
+      id="rowsToShow"
+      value={rowsToShow}
+      onChange={(e) => setRowsToShow(Number(e.target.value))}
+      className="border border-gray-300 rounded px-2 py-1 text-sm"
+    >
+      {[5, 10, 20, 30].map((num) => (
+        <option key={num} value={num}>
+          {num}
+        </option>
+      ))}
+    </select>
+    <input
+      type="text"
+      placeholder="Cari nomor..."
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="border border-gray-300 rounded px-2 py-1 text-sm"
+    />
+    {userRole !== "USER_PURCHASE" && (
+      <button
+        onClick={() => router.push("/permintaan-lapangan/add")}
+        className="bg-blue-500 text-white rounded px-4 py-2 text-sm hover:bg-blue-600"
+      >
+        + Permintaan
+      </button>
+    )}
+  </div>
+</div>
 
       {isAddFormVisible && (
         <AddPermintaanLapanganForm
@@ -178,25 +189,6 @@ export default function PermintaanLapangan({ setActiveContent }) {
           toggleAddForm={toggleAddForm}
         />
       )}
-
-      <div className="mb-4 flex items-center">
-        <label htmlFor="rowsToShow" className="mr-2 font-medium">
-          Tampilkan
-        </label>
-        <select
-          id="rowsToShow"
-          value={rowsToShow}
-          onChange={(e) => setRowsToShow(Number(e.target.value))}
-          className="border border-gray-300 rounded px-2 py-1"
-        >
-          {[10, 20, 30].map((num) => (
-            <option key={num} value={num}>
-              {num}
-            </option>
-          ))}
-        </select>
-      </div>
-
       <div className="overflow-x-auto">
         <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
           <thead className="bg-blue-500 text-white">

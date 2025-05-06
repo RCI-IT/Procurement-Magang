@@ -108,11 +108,12 @@ export default function Material() {
         <main className="p-6 flex-1 overflow-auto">
           <div className="w-full">
             <Header username={username} />
-          </div>
+          </div><br></br>
           <h1 className="text-3xl font-bold mb-4">Material</h1>
           <div className="mb-4 flex justify-between items-center">
+            <div className="flex space-x-2"></div>
             <div className="flex space-x-2">
-              <select
+            <select
                 id="rowsToShow"
                 value={rowsToShow}
                 onChange={(e) => setRowsToShow(Number(e.target.value))}
@@ -122,14 +123,12 @@ export default function Material() {
                 <option value={10}>10</option>
                 <option value={15}>15</option>
               </select>
-            </div>
-            <div className="flex space-x-2">
               <input
                 type="text"
                 placeholder="Cari Material"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
-                className="border border-gray-300 rounded px-2 py-1"
+                className="border border-gray-300 rounded px-2 py-1 text-sm"
               />
               <button
                 onClick={() => router.push("/material/add")}
