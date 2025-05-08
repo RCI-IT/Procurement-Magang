@@ -59,13 +59,13 @@ export default function EditPermintaanLapangan() {
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
+  //const handleChange = (e) => {
+    //const { name, value } = e.target;
+   //setFormData({
+      //...formData,
+      //[name]: value,
+    //});
+  //};
 
   const handleDetailChange = (index, field, value) => {
     const newDetail = [...formData.detail];
@@ -139,18 +139,22 @@ export default function EditPermintaanLapangan() {
       <div className="flex-1 p-6 overflow-y-auto">
         <h1 className="text-lg font-bold text-blue-900 mb-4">Edit Permintaan Lapangan</h1>
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-semibold">Nomor</label>
-            <input type="text" name="nomor" value={formData.nomor} readOnly className="w-full border p-2 rounded" />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-semibold">Tanggal</label>
-            <input type="date" name="tanggal" value={formData.tanggal?.split("T")[0] || ""} readOnly className="w-full border p-2 rounded" />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-semibold">Keterangan</label>
-            <textarea name="keterangan" value={formData.keterangan} onChange={handleChange} className="w-full border p-2 rounded" />
-          </div>
+        <div className="mb-4">
+  <label className="block text-sm font-semibold">Nomor</label>
+  <div className="w-full border p-2 rounded bg-gray-100">{formData.nomor}</div>
+</div>
+
+<div className="mb-4">
+  <label className="block text-sm font-semibold">Tanggal</label>
+  <div className="w-full border p-2 rounded bg-gray-100">
+    {formData.tanggal ? formData.tanggal.split("T")[0] : ""}
+  </div>
+</div>
+
+<div className="mb-4">
+  <label className="block text-sm font-semibold">Lokasi</label>
+  <div className="w-full border p-2 rounded bg-gray-100">{formData.lokasi}</div>
+</div>
 
           <h2 className="text-md font-semibold mt-4 mb-2">Detail Permintaan</h2>
           <table className="w-full border-collapse text-sm border border-gray-300">
