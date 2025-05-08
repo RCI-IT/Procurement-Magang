@@ -30,7 +30,6 @@ export default function Header({ username }) {
   let breadcrumbs = [];
   let currentPath = "";
 
-  // Tambahkan breadcrumb Home
   breadcrumbs.push({ label: "Home", path: "/home" });
 
   pathSegments.forEach((segment) => {

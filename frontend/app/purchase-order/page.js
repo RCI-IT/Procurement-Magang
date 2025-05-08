@@ -60,7 +60,7 @@ const PurchaseOrderTable = () => {
     }
 
     setFilteredData(filtered);
-    setCurrentPage(1); // Reset ke halaman pertama saat filter berubah
+    setCurrentPage(1); 
   }, [search, data, sortBy]);
 
   const totalPages = Math.ceil(filteredData.length / rowsToShow);

@@ -31,7 +31,7 @@ export default function EditPermintaanLapangan() {
         const result = await response.json();
         if (result) {
           setFormData(result);
-          await fetchMaterialNames(); // Panggil setelah detail dimuat
+          await fetchMaterialNames(); 
         } else {
           router.push("/?page=permintaan-lapangan");
         }
@@ -86,7 +86,7 @@ export default function EditPermintaanLapangan() {
       isReceived: formData.isReceived,
       keterangan: formData.keterangan,
       detail: formData.detail.map((item) => ({
-        id: item.id, // Penting untuk update!
+        id: item.id, 
         materialId: item.materialId,
         qty: item.qty,
         satuan: item.satuan,

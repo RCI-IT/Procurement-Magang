@@ -82,7 +82,6 @@ export default function EditMaterial() {
     setLoading(true);
     setError("");
 
-    // Periksa apakah ada perubahan pada data
     const hasChange =
     name !== "" ||
     vendorId !== "" ||
@@ -128,8 +127,8 @@ export default function EditMaterial() {
         icon: "success",
         title: "Berhasil",
         text: "Material berhasil diperbarui!",
-        background: '#fff',  // Mengubah background menjadi putih
-        color: '#000',  // Mengubah warna teks menjadi hitam
+        background: '#fff',  
+        color: '#000',  
         confirmButtonColor: 'blue',
         timer: 2000,
       }).then(() => {
@@ -141,8 +140,8 @@ export default function EditMaterial() {
         icon: "error",
         title: "Terjadi kesalahan",
         text: error.message,
-        background: '#fff',  // Mengubah background menjadi putih
-        color: '#000',  // Mengubah warna teks menjadi hitam
+        background: '#fff',  
+        color: '#000',  
         confirmButtonColor: '#f44336',
       });
     } finally {

@@ -112,19 +112,19 @@ export default function PermintaanLapangan({ setActiveContent }) {
     }
   };
 
-  // Sorting
+  
   const sortedData = [...updatedData].sort((a, b) => {
     const dateA = new Date(a.tanggal);
     const dateB = new Date(b.tanggal);
     return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
   });
 
-  // Filtering
+  
   const filteredData = sortedData.filter((item) =>
     item.nomor?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Pagination
+  
   useEffect(() => {
     setTotalPages(Math.ceil(filteredData.length / rowsToShow));
   }, [filteredData.length, rowsToShow]);

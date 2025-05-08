@@ -103,6 +103,7 @@ export default function User() {
         <Sidebar />
         <main className="p-6 flex-1 overflow-auto">
           <Header username={username} />
+          <br></br>
           <h1 className="text-3xl font-bold mb-4">User</h1>
           <div className="flex justify-between items-center flex-wrap gap-3 mb-4">
             <div className="flex gap-3">
