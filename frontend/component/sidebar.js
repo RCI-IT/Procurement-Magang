@@ -14,7 +14,7 @@ export default function Sidebar() {
   }, []);
 
   const handleNavigation = (page) => {
-    router.push(`/?page=${page}`);
+    router.push(`${page}`);
   };
 
   const menuItems = [
@@ -25,7 +25,7 @@ export default function Sidebar() {
     { id: "purchase-order", label: "Purchase Order", icon: "🛒", page: "purchase-order", roles: ["USER_PURCHASE", "ADMIN"] },
     { id: "vendor", label: "Vendor", icon: "🏭", page: "vendor", roles: ["ADMIN", "USER_PURCHASE"] },
     { id: "kategori", label: "Kategori", icon: "🏷️", page: "kategori", roles: ["ADMIN", "USER_PURCHASE"] },
-    { id: "user-control", label: "Users Control", icon: "👤", page: "user-control", roles: ["ADMIN"] },
+    { id: "user-control", label: "Users Control", icon: "👤", page: "usercontrol", roles: ["ADMIN"] },
   ];
 
   const filteredMenus = menuItems.filter((item) => item.roles.includes(userRole));

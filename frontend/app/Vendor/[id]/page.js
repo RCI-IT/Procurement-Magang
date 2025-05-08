@@ -58,9 +58,9 @@ export default function VendorPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <Sidebar />
+      
       <div className="flex-1 p-6 space-y-6">
-        <Header username={username} />
+       
 
         <div className="bg-white shadow-md p-6 rounded-md">
           <h1 className="text-3xl font-bold">{vendor?.name} </h1>

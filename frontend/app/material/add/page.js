@@ -115,10 +115,10 @@ export default function AddMaterialPage() {
 
   return (
     <div className="flex h-screen">
-       <Sidebar />
+      
       <div className="flex-1 p-6">
       <div className="w-full">
-        <Header username={username} />
+        
         </div>
         <h1 className="text-2xl font-bold mb-6">Tambah Material</h1>
         <form

@@ -116,9 +116,9 @@ const PurchaseOrderTable = () => {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
+     
       <div className="p-4 flex-1 bg-white shadow-md rounded-md overflow-auto">
-        <Header username={username} />
+       
         <h1 className="text-3xl font-bold mb-4 mt-4">Purchase Order</h1>
 
         <div className="mb-4 flex justify-between items-end flex-wrap gap-2">

@@ -154,10 +154,10 @@ export default function EditMaterial() {
 
   return (
     <div className="flex min-h-screen bg-white">
-      <Sidebar />
+      
       <div className="p-6 flex-1 bg-white text-black">
         <div className="w-full">
-          <Header username={username} />
+          
         </div>
 
         <h2 className="text-3xl font-bold text-center text-black mb-8">Edit Material</h2>

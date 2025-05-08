@@ -142,9 +142,9 @@ export default function DetailPurchaseOrder() {
   }, 0) || 0;
   return (
     <div className="flex h-screen">
-      <Sidebar />
+     
       <div className="flex-1 p-6">
-        <Header username={username} />
+        
         <div className="flex justify-end space-x-2 no-print">
           <button onClick={handleEdit} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32">
             Edit

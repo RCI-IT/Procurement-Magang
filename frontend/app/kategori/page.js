@@ -144,9 +144,9 @@ const paginatedCategories = sortedCategories.slice(
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex flex-1">
-        <Sidebar />
+        
         <main className="p-6 flex-1 overflow-auto">
-          <Header username={username} /><br></br>
+         
           <h1 className="text-3xl font-bold mb-4">Kategori</h1>
           <div className="mb-4 flex flex-wrap justify-between items-center">
             <div className="flex items-center space-x-2 mb-2 md:mb-0">

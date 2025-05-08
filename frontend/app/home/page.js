@@ -54,7 +54,7 @@ export default function Home() {
         </div>
       ) : (
         <>
-          <Header username={username} />
+          
 
           <h1 className="text-5xl font-extrabold mb-10 tracking-wide text-black bg-clip-text">Procurement</h1>
 

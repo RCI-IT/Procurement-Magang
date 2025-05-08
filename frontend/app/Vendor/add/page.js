@@ -42,9 +42,9 @@ export default function AddVendorPage() {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      
       <main className="flex-1 p-6">
-        <Header />
+       
         <h1 className="text-3xl font-bold mb-4">Tambah Vendor</h1>
         <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
           <div>

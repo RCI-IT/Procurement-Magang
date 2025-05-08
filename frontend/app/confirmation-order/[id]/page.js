@@ -212,10 +212,10 @@ const ActionButtons = ({ onKonfirmasi }) => (
 
   return (
     <div className="flex h-screen">
-      <Sidebar / >
+      
       <div className="w-full max-w-6xl mx-auto px-8">
               <div>
-            <Header username={username} />
+           
             </div>
       <div className="text-right space-x-2">
       <button

@@ -15,18 +15,18 @@ export default function Header({ username }) {
   };
 
   const breadcrumbMap = {
+    "home": "Home",
     "permintaan-lapangan": "Permintaan Lapangan",
     "purchase-order": "Purchase Order",
     "material": "Material",
     "vendor": "Vendor",
     "confirmation-order": "Confirmation Order",
     "kategori": "Kategori",
-    "login": "Login",
     "usercontrol": "User Control",
-    "home": "Home",
+    "login": "Login",
   };
 
-  const pathSegments = pathname.split("/").filter((segment) => segment);
+  const pathSegments = pathname.split("/").filter(Boolean);
   let breadcrumbs = [];
   let currentPath = "";
 
@@ -34,54 +34,54 @@ export default function Header({ username }) {
 
   pathSegments.forEach((segment) => {
     currentPath += `/${segment}`;
-    let label = "";
 
+    let label = "";
     if (breadcrumbMap[segment]) {
       label = breadcrumbMap[segment];
-    } else if (segment.match(/^\d+$/)) {
-      label = "Detail";
-    } else if (segment === "edit") {
-      label = "Edit";
     } else if (segment === "add") {
       label = "Tambah";
-    } else if (segment === "[id]") {
-      label = "ID";
+    } else if (segment === "edit") {
+      label = "Edit";
+    } else if (/^\d+$/.test(segment)) {
+      label = "Detail";
     } else {
-      label = segment.charAt(0).toUpperCase() + segment.slice(1);
+      label = segment.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
     }
 
     breadcrumbs.push({ label, path: currentPath });
   });
 
   const handleBreadcrumbClick = (path) => {
-    if (pathname !== path) {
+    if (path !== pathname) {
       router.push(path);
     }
   };
 
   return (
     <div className="w-full shadow-md bg-white">
-      <nav className="flex items-center justify-between px-6 py-4">
-        <div className="flex-1 flex items-center space-x-2">
-          {breadcrumbs.map((crumb, index) => (
-            <span key={index} className="flex items-center">
-              {index > 0 && <span className="mx-2 text-gray-400">/</span>}
-              <button
-                onClick={() => handleBreadcrumbClick(crumb.path)}
-                className={`hover:underline ${
-                  pathname === crumb.path
-                    ? "text-gray-600 cursor-default"
-                    : "text-blue-600"
-                }`}
-                disabled={pathname === crumb.path}
-              >
-                {crumb.label}
-              </button>
-            </span>
+  <nav className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-4 gap-4">
+
+        {/* Breadcrumb */}
+        <div className="text-sm text-gray-600 flex gap-2 flex-wrap items-center">
+          {breadcrumbs.map((crumb, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              {idx !== 0 && <span>/</span>}
+              {idx === breadcrumbs.length - 1 ? (
+                <span className="font-semibold text-blue-700">{crumb.label}</span>
+              ) : (
+                <button
+                  onClick={() => handleBreadcrumbClick(crumb.path)}
+                  className="hover:underline hover:text-blue-600 transition"
+                >
+                  {crumb.label}
+                </button>
+              )}
+            </div>
           ))}
         </div>
 
-        <div className="relative flex items-center">
+        {/* User Dropdown */}
+        <div className="relative">
           <button
             className="flex items-center bg-blue-600 px-4 py-2 rounded-full shadow-md hover:bg-blue-700 text-white transition duration-200"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}

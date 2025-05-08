@@ -135,7 +135,7 @@ export default function EditPermintaanLapangan() {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
+     
       <div className="flex-1 p-6 overflow-y-auto">
         <h1 className="text-lg font-bold text-blue-900 mb-4">Edit Permintaan Lapangan</h1>
         <form onSubmit={handleSubmit}>

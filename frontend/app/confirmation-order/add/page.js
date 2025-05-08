@@ -164,10 +164,10 @@ const handleSubmit = async (e) => {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
+      
       <div className="flex-1 p-6">
         <div>
-          <Header username={username} />
+          
         </div>
         <h1 className="text-2xl font-bold mb-6">Tambah Confirmation Order</h1> 
         <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 shadow-md rounded-lg">

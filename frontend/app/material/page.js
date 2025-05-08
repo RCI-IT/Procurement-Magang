@@ -119,9 +119,9 @@ export default function Material() {
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex flex-1">
-        <Sidebar />
+        
         <main className="p-6 flex-1 overflow-auto">
-          <Header username={username} />
+          
           <h1 className="text-3xl font-bold my-4">Material</h1>
 
           <div className="flex justify-between items-center flex-wrap gap-2 mb-4">

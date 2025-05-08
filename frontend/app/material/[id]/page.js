@@ -116,10 +116,10 @@ export default function MaterialPage() {
 
   return (
     <div className="flex">
-    <Sidebar />
+    
     <div className="p-6 flex-1">
     <div className="w-full">
-        <Header username={username} />
+       
         </div>
         <div className="mb-6 bg-white shadow-md p-4 rounded-md">
           <div className="flex justify-between items-center">

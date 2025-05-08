@@ -129,9 +129,9 @@ const responseData = await response.json();
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
+     
       <div className="w-full max-w-4xl mx-auto px-8 py-6">
-        <Header username="Admin" />
+        
         <h2 className="text-xl font-bold text-blue-900 mb-4">Edit Confirmation Order</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">

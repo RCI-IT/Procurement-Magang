@@ -144,9 +144,9 @@ export default function PermintaanLapangan({ setActiveContent }) {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
+     
       <div className="p-6 bg-white flex-1 h-screen shadow-md rounded-lg overflow-y-auto">
-        <Header username={username} />
+     
         <h1 className="text-3xl font-bold mb-2 mt-4">Permintaan Lapangan</h1>
 
         <div className="mb-4 flex justify-between items-end">
