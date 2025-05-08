@@ -189,19 +189,21 @@ export default function MaterialPage() {
             })}
           </div>
         </div>
-<div>
-<button
-  onClick={() => router.push(`/material/${id}/edit`)}
-  className="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
->
-  Edit Material
-</button>
+        <div className="mt-6 flex gap-4">
+  <button
+    onClick={() => router.push(`/material/${id}/edit`)}
+    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+  >
+    Edit Material
+  </button>
+  <button
+    onClick={() => router.back()}
+    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+  >
+    Kembali
+  </button>
 </div>
-        <div>
-          <button onClick={() => router.back()} className="mt-6 bg-gray-500 text-white px-4 py-2 rounded">
-            Kembali
-          </button>
-        </div>
+
       </div>
     </div>
   );
