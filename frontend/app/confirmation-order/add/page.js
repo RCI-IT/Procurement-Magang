@@ -87,6 +87,20 @@ export default function AddConfirmationOrder() {
     }));
   };
 
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`);
+        const data = await response.json();
+        setVendors(data);
+      } catch (error) {
+        console.error("Gagal mengambil data vendor:", error);
+      }
+    };
+  
+    fetchVendors();
+  }, []);
+  
 
 
 const handleSubmit = async (e) => {
@@ -194,16 +208,22 @@ const handleSubmit = async (e) => {
               </select>
             </div>
             {formData.idPL && (
-              <div>
-                <label className="block font-medium">Pilih Vendor:</label>
-                <select name="idVendor" value={formData.idVendor} onChange={handleChange} className="border px-4 py-2 w-full" required>
-                  <option value="">Pilih Vendor</option>
-                  {vendors.map((vendor) => (
-                    <option key={vendor.id} value={vendor.id}>{vendor.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
+  <div className="border-b pb-4">
+    <label className="block font-medium">Daftar Barang di PL:</label>
+    {allItems.length > 0 ? (
+      <ul className="text-gray-800">
+        {allItems.map((item) => (
+          <li key={item.id} className="border p-2">
+            {item.material?.name} - Qty: {item.qty} {item.satuan}
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="text-gray-500">Tidak ada barang pada PL ini</p>
+    )}
+  </div>
+)}
+
           </div>
 
           {formData.idVendor && (

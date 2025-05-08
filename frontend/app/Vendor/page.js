@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "../../component/sidebar";
-import Header from "../../component/Header";
 import { Eye, Trash2 } from "lucide-react";
 import Swal from 'sweetalert2';
 
