@@ -62,7 +62,6 @@ export default function Header({ username }) {
   return (
     <div className="w-full shadow-md bg-white">
       <nav className="flex items-center justify-between px-6 py-4">
-        {/* Breadcrumbs */}
         <div className="flex-1 flex items-center space-x-2">
           {breadcrumbs.map((crumb, index) => (
             <span key={index} className="flex items-center">

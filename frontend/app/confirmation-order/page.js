@@ -120,7 +120,6 @@ const ConfirmationOrderTable = () => {
         <h1 className="text-3xl font-bold mb-4 mt-4">Confirmation Order</h1>
 
         <div className="mb-4 flex justify-between items-end flex-wrap gap-2">
-          {/* Kiri: Rows dan Sort */}
           <div className="flex space-x-2">
           <label className="mr-2">Urutkan:</label>
             <select
@@ -144,7 +143,6 @@ const ConfirmationOrderTable = () => {
            
           </div>
 
-          {/* Kanan: Search & Tambah */}
           <div className="flex space-x-2">
             <input
               type="text"

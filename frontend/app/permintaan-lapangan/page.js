@@ -149,7 +149,6 @@ export default function PermintaanLapangan({ setActiveContent }) {
         <Header username={username} />
         <h1 className="text-3xl font-bold mb-2 mt-4">Permintaan Lapangan</h1>
 
-        {/* Filter + Controls */}
         <div className="mb-4 flex justify-between items-end">
           <div className="flex space-x-2">
           <label className="mr-2">Urutkan:</label>
@@ -204,7 +203,6 @@ export default function PermintaanLapangan({ setActiveContent }) {
           </div>
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto">
           <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
             <thead className="bg-blue-500 text-white">
