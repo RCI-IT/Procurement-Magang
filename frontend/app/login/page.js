@@ -8,13 +8,33 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Cek jika sudah ada yang login di localStorage
   useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    if (isLoggedIn === "true") {
+      router.push("/home"); // Jika sudah login, langsung arahkan ke halaman home
+    } else {
+      fetchUsers();
+    }
+  }, [router]);
+
+  // Ambil data users dari API
+  const fetchUsers = () => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`)
-      .then(response => response.json())
-      .then(data => setUsers(data))
-      .catch(error => console.error("Error fetching users:", error));
-  }, []);
+      .then((response) => response.json())
+      .then((data) => {
+        setUsers(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError("Error fetching users");
+        setLoading(false);
+        console.error("Error fetching users:", error);
+      });
+  };
 
   const handleLogin = () => {
     const validUser = users.find(
@@ -31,6 +51,14 @@ export default function Login() {
       alert("Invalid credentials");
     }
   };
+
+  if (loading) {
+    return <div className="text-center">Loading...</div>; // Menampilkan loading saat mengambil data users
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500">{error}</div>; // Menampilkan pesan error jika gagal fetch
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white text-blue-500">

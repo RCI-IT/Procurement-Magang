@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { FaUserCircle } from "react-icons/fa";
 
-export default function Header({ username }) {
+export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
+  const [username, setUsername] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []); // Ambil username dari localStorage saat pertama kali render
 
   const handleLogout = () => {
     localStorage.clear();
@@ -57,10 +65,23 @@ export default function Header({ username }) {
     }
   };
 
+  // Menangani klik di luar dropdown untuk menutupnya
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".user-dropdown")) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+
   return (
     <div className="w-full shadow-md bg-white">
-  <nav className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-4 gap-4">
-
+      <nav className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-4 gap-4">
         {/* Breadcrumb */}
         <div className="text-sm text-gray-600 flex gap-2 flex-wrap items-center">
           {breadcrumbs.map((crumb, idx) => (
@@ -81,7 +102,7 @@ export default function Header({ username }) {
         </div>
 
         {/* User Dropdown */}
-        <div className="relative">
+        <div className="relative user-dropdown">
           <button
             className="flex items-center bg-blue-600 px-4 py-2 rounded-full shadow-md hover:bg-blue-700 text-white transition duration-200"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}

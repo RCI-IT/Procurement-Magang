@@ -1,15 +1,36 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Sidebar from "./sidebar";
 import Header from "./Header";
-import { usePathname } from "next/navigation";
 
 export default function LayoutWrapper({ children }) {
   const pathname = usePathname();
-  const isNoLayout = pathname === "/login" || pathname === "/home";
+  const [username, setUsername] = useState("");
 
-  if (isNoLayout) {
-    return <div>{children}</div>;
+  // Ambil username dari localStorage saat komponen mount
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []); // Dependensi kosong untuk hanya berjalan sekali saat mount
+
+  const isLogin = pathname === "/login";
+  const isHome = pathname === "/home";
+
+  if (isLogin) {
+    return <div>{children}</div>; // Tidak tampilkan layout sama sekali
+  }
+
+  if (isHome) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Header username={username} />
+        <main className="flex-1 overflow-auto p-6">{children}</main>
+      </div>
+    );
   }
 
   return (
@@ -17,7 +38,7 @@ export default function LayoutWrapper({ children }) {
       <div className="flex flex-1">
         <Sidebar />
         <main className="flex-1 overflow-auto">
-          <Header />
+          <Header username={username} />
           <div className="p-6">{children}</div>
         </main>
       </div>

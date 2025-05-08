@@ -54,7 +54,7 @@ export default function Home() {
           <p className="text-gray-500 mt-4">Tetap Sabar ... :)</p>
         </div>
       ) : (
-        <><Header /> <br></br>
+        <>
           <h1 className="text-5xl font-extrabold mb-10 tracking-wide text-black bg-clip-text">Procurement</h1>
 
           <div className="grid grid-cols-3 gap-x-10 gap-y-10 justify-items-center w-full max-w-5xl px-6 py-10">
@@ -65,7 +65,7 @@ export default function Home() {
         key={menu.id}
         className={`${isLast ? 'col-start-2' : ''}`}
       >
-        <Link href={`/?page=${menu.page}`}>
+        <Link href={`${menu.page}`}>
           <div className="flex flex-col items-center justify-center bg-blue-500 p-6 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-300 hover:bg-blue-400 text-white cursor-pointer w-72 h-44">
             <span className="text-6xl mb-4">{menu.icon}</span>
             <span className="text-xl font-semibold text-center">{menu.label}</span>
