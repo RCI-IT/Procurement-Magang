@@ -10,12 +10,13 @@ export default function Header() {
   const [username, setUsername] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  // Ambil username dari localStorage saat pertama kali render
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
     if (storedUsername) {
       setUsername(storedUsername);
     }
-  }, []); // Ambil username dari localStorage saat pertama kali render
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -38,8 +39,10 @@ export default function Header() {
   let breadcrumbs = [];
   let currentPath = "";
 
+  // Menambahkan breadcrumb untuk Home secara default
   breadcrumbs.push({ label: "Home", path: "/home" });
 
+  // Membuat breadcrumbs berdasarkan path
   pathSegments.forEach((segment) => {
     currentPath += `/${segment}`;
 
@@ -59,8 +62,9 @@ export default function Header() {
     breadcrumbs.push({ label, path: currentPath });
   });
 
+  // Menangani klik di breadcrumb
   const handleBreadcrumbClick = (path) => {
-    if (path !== pathname) {
+    if (path !== pathname && path !== breadcrumbs[breadcrumbs.length - 1]?.path) {
       router.push(path);
     }
   };
@@ -88,8 +92,10 @@ export default function Header() {
             <div key={idx} className="flex items-center gap-2">
               {idx !== 0 && <span>/</span>}
               {idx === breadcrumbs.length - 1 ? (
+                // Breadcrumb yang aktif, tidak bisa diklik
                 <span className="font-semibold text-blue-700">{crumb.label}</span>
               ) : (
+                // Breadcrumb yang bukan aktif bisa diklik
                 <button
                   onClick={() => handleBreadcrumbClick(crumb.path)}
                   className="hover:underline hover:text-blue-600 transition"
@@ -125,6 +131,7 @@ export default function Header() {
         </div>
       </nav>
 
+      {/* CSS untuk animasi dropdown */}
       <style jsx>{`
         @keyframes fadeIn {
           from {
