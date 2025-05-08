@@ -26,7 +26,7 @@ export default function Login() {
       localStorage.setItem("username", validUser.username);
       localStorage.setItem("role", validUser.role);
 
-      router.push("/");
+      router.push("/home");
     } else {
       alert("Invalid credentials");
     }

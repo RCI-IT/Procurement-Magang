@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -53,9 +54,7 @@ export default function Home() {
           <p className="text-gray-500 mt-4">Tetap Sabar ... :)</p>
         </div>
       ) : (
-        <>
-          
-
+        <><Header /> <br></br>
           <h1 className="text-5xl font-extrabold mb-10 tracking-wide text-black bg-clip-text">Procurement</h1>
 
           <div className="grid grid-cols-3 gap-x-10 gap-y-10 justify-items-center w-full max-w-5xl px-6 py-10">
