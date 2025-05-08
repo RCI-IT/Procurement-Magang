@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import AddPermintaanLapanganForm from "./add/page";
 import Sidebar from "../../component/sidebar";
 import Header from "../../component/Header.js";
 import { Eye, Trash2 } from "lucide-react";
@@ -13,12 +12,12 @@ const months = [
   "Juli", "Agustus", "September", "Oktober", "November", "Desember"
 ];
 
-export default function PermintaanLapangan({ setActiveContent }) {
+export default function PermintaanLapangan({ }) {
   const [rowsToShow, setRowsToShow] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAddFormVisible] = useState(false);
+  const [] = useState(false);
   const [updatedData, setUpdatedData] = useState([]);
   const [sortOrder, setSortOrder] = useState("desc");
   const router = useRouter();
@@ -134,10 +133,8 @@ export default function PermintaanLapangan({ setActiveContent }) {
     currentPage * rowsToShow
   );
 
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-  };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handlePrevPage = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
@@ -148,6 +145,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
       <div className="p-6 bg-white flex-1 h-screen shadow-md rounded-lg overflow-y-auto">
      
         <h1 className="text-3xl font-bold mb-2 mt-4">Permintaan Lapangan</h1>
+
 
         <div className="mb-4 flex justify-between items-end">
           <div className="flex space-x-2">
@@ -202,6 +200,7 @@ export default function PermintaanLapangan({ setActiveContent }) {
             )}
           </div>
         </div>
+
 
         <div className="overflow-x-auto">
           <table className="table-auto border-collapse border border-gray-300 w-full mt-4">

@@ -7,7 +7,6 @@ import categoriesRoutes from "./routes/categories";
 import usersRoutes from "./routes/users";
 import confirmationRoutes from "./routes/confirmation";
 import purchaseRoutes from "./routes/purchase";
-//import purchaseRoutes from './routes/purchase';
 import path from "path";
 
 
@@ -30,7 +29,6 @@ app.use("/categories", categoriesRoutes);
 app.use("/users", usersRoutes);
 app.use("/confirmation", confirmationRoutes);
 app.use("/purchase", purchaseRoutes);
-//app.use('/purchase', purchaseRoutes); // sesuai endpoint yang kamu mau
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ error: "Internal Server Error", message: err.message });

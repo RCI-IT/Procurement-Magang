@@ -69,7 +69,7 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
 
   try {
     await prisma.user.delete({ where: { id } });
-    res.status(204).send(); // Mengirimkan response tanpa body
+    res.status(204).send();
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to delete user' });

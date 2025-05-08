@@ -142,7 +142,6 @@ const ConfirmationOrderTable = () => {
             </select>
            
           </div>
-
           <div className="flex space-x-2">
             <input
               type="text"

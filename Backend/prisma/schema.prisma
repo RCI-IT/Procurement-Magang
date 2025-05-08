@@ -73,7 +73,7 @@ model ConfirmationDetails {
   code                 String
   keterangan           String?
   satuan               String
-  status               DetailStatus       @default(PENDING) // ⬅️ Tambahan
+  status               DetailStatus       @default(PENDING)
   permintaanDetail     PermintaanDetails  @relation(fields: [permintaanDetailId], references: [id], onDelete: Cascade)
   confirmationOrder    ConfirmationOrder  @relation(fields: [confirmationOrderId], references: [id], onDelete: Cascade)
 }
