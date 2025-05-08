@@ -131,22 +131,39 @@ export default function VendorPage() {
           </table>
 
 {materials.length > itemsPerPage && (
-  <div className="flex justify-between mt-4">
+  <div className="flex justify-center mt-6">
+  <nav className="inline-flex rounded-md shadow-sm" aria-label="Pagination">
     <button
-      onClick={() => setCurrentPage(1)}
+      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
       disabled={currentPage === 1}
-      className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
+      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
     >
-      Prev
+      «
     </button>
+    {[...Array(totalPages)].map((_, index) => {
+      const page = index + 1;
+      return (
+        <button
+          key={page}
+          onClick={() => setCurrentPage(page)}
+          className={`px-3 py-2 border border-gray-300 ${
+            currentPage === page ? "text-white bg-blue-600" : "text-blue-600 hover:bg-gray-100"
+          }`}
+        >
+          {page}
+        </button>
+      );
+    })}
     <button
-      onClick={() => setCurrentPage(totalPages)}
+      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
       disabled={currentPage === totalPages}
-      className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
+      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
     >
-      Next
+      »
     </button>
-  </div>
+  </nav>
+</div>
+
 )}
 
         </div>

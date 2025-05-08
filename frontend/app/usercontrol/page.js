@@ -106,6 +106,7 @@ export default function User() {
           <h1 className="text-3xl font-bold mb-4">User</h1>
           <div className="flex justify-between items-center flex-wrap gap-3 mb-4">
             <div className="flex gap-3">
+            <label className="mr-2">Urutkan :</label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -116,7 +117,7 @@ export default function User() {
                 <option value="newest">Terbaru</option>
                 <option value="oldest">Terlama</option>
               </select>
-
+              <label className="mr-2">Tampilkan:</label>
               <select
                 value={rowsToShow}
                 onChange={(e) => {
@@ -190,23 +191,39 @@ export default function User() {
               </tbody>
             </table>
 
-            <div className="flex justify-between mt-4">
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
-              >
-                Previous
-              </button>
+            <div className="flex justify-center mt-6">
+  <nav className="inline-flex rounded-md shadow-sm" aria-label="Pagination">
+    <button
+      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+      disabled={currentPage === 1}
+      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
+    >
+      «
+    </button>
+    {[...Array(totalPages)].map((_, index) => {
+      const page = index + 1;
+      return (
+        <button
+          key={page}
+          onClick={() => setCurrentPage(page)}
+          className={`px-3 py-2 border border-gray-300 ${
+            currentPage === page ? "text-white bg-blue-500" : "text-blue-600 hover:bg-gray-100"
+          }`}
+        >
+          {page}
+        </button>
+      );
+    })}
+    <button
+      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+      disabled={currentPage === totalPages}
+      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
+    >
+      »
+    </button>
+  </nav>
+</div>
 
-              <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
           </div>
         </main>
       </div>

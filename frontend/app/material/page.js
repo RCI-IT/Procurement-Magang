@@ -6,15 +6,15 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../../component/sidebar.js";
 import Header from "../../component/Header.js";
 import { Eye, Trash2 } from "lucide-react";
-import Swal from "sweetalert2"; 
+import Swal from "sweetalert2";
 
 export default function Material() {
   const [materials, setMaterials] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [rowsToShow, setRowsToShow] = useState(5); 
-  const [currentPage, setCurrentPage] = useState(1); 
-  const [totalPages, setTotalPages] = useState(0); 
+  const [rowsToShow, setRowsToShow] = useState(5);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState("terbaru");
   const router = useRouter();
   const [username, setUsername] = useState("");
 
@@ -35,29 +35,24 @@ export default function Material() {
 
         setMaterials(materialData);
         setVendors(vendorData);
-        setTotalPages(Math.ceil(materialData.length / rowsToShow)); 
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, [rowsToShow, currentPage]); 
+  }, []);
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
+    if (storedUsername) setUsername(storedUsername);
   }, []);
 
   const handleVendorClick = (vendorId) => {
-    if (!vendorId) return;
-    router.push(`/vendor/${vendorId}`);
+    if (vendorId) router.push(`/vendor/${vendorId}`);
   };
 
   const handleMaterialClick = (materialId) => {
-    if (!materialId) return;
     localStorage.setItem("selectedMaterialId", materialId);
     router.push(`/material/${materialId}`);
   };
@@ -68,8 +63,6 @@ export default function Material() {
       text: "Material ini akan dihapus permanen!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
       confirmButtonText: "Ya, hapus!",
       cancelButtonText: "Batal",
     });
@@ -85,13 +78,36 @@ export default function Material() {
       if (!response.ok) throw new Error("Gagal menghapus material");
 
       setMaterials((prev) => prev.filter((material) => material.id !== id));
-
       Swal.fire("Berhasil!", "Material berhasil dihapus.", "success");
     } catch (error) {
       console.error("Error deleting material:", error);
       Swal.fire("Gagal!", `Gagal menghapus material: ${error.message}`, "error");
     }
   };
+
+  const sortedMaterials = [...materials]
+    .filter((m) => m.name.toLowerCase().includes(searchQuery))
+    .sort((a, b) => {
+      const vendorA = vendors.find((v) => v.id === a.vendorId)?.name || "";
+      const vendorB = vendors.find((v) => v.id === b.vendorId)?.name || "";
+      switch (sortBy) {
+        case "nama":
+          return a.name.localeCompare(b.name);
+        case "vendor":
+          return vendorA.localeCompare(vendorB);
+        case "harga":
+          return a.price - b.price;
+        case "terbaru":
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        case "terlama":
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        default:
+          return 0;
+      }
+    });
+
+  const totalPages = Math.ceil(sortedMaterials.length / rowsToShow);
+  const currentData = sortedMaterials.slice((currentPage - 1) * rowsToShow, currentPage * rowsToShow);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -106,23 +122,38 @@ export default function Material() {
       <div className="flex flex-1">
         <Sidebar />
         <main className="p-6 flex-1 overflow-auto">
-          <div className="w-full">
-            <Header username={username} />
-          </div><br></br>
-          <h1 className="text-3xl font-bold mb-4">Material</h1>
-          <div className="mb-4 flex justify-between items-center">
-            <div className="flex space-x-2"></div>
-            <div className="flex space-x-2">
+          <Header username={username} />
+          <h1 className="text-3xl font-bold my-4">Material</h1>
+
+          <div className="flex justify-between items-center flex-wrap gap-2 mb-4">
+            <div className="flex space-x-2 items-center">
+            <label className="mr-2">Urutkan:</label>
             <select
-                id="rowsToShow"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="border border-gray-300 rounded px-2 py-1 text-sm"
+              >
+                <option value="terbaru">Terbaru</option>
+                <option value="terlama">Terlama</option>
+                <option value="nama">Nama</option>
+                <option value="vendor">Vendor</option>
+                <option value="harga">Harga</option>
+              </select>
+              <label className="mr-2">Tampilkan:</label>
+              <select
                 value={rowsToShow}
                 onChange={(e) => setRowsToShow(Number(e.target.value))}
                 className="border border-gray-300 rounded px-2 py-1 text-sm"
               >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={15}>15</option>
+                {[5, 10, 15].map((num) => (
+                  <option key={num} value={num}>{num}</option>
+                ))}
               </select>
+
+             
+            </div>
+
+            <div className="flex items-center space-x-2">
               <input
                 type="text"
                 placeholder="Cari Material"
@@ -138,8 +169,9 @@ export default function Material() {
               </button>
             </div>
           </div>
+
           <div className="overflow-x-auto">
-            <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
+            <table className="table-auto border-collapse border border-gray-300 w-full mt-2">
               <thead className="bg-blue-500 text-white">
                 <tr>
                   <th className="border px-4 py-2">No</th>
@@ -151,77 +183,89 @@ export default function Material() {
                 </tr>
               </thead>
               <tbody>
-                {materials
-                  .filter((m) => m.name.toLowerCase().includes(searchQuery))
-                  .slice((currentPage - 1) * rowsToShow, currentPage * rowsToShow)
-                  .map((material, index) => {
-                    const vendor = vendors.find((v) => v.id === material.vendorId);
-                    return (
-                      <tr key={material.id}>
-                        <td className="border px-4 py-2 text-center">{(currentPage - 1) * rowsToShow + index + 1}</td>
-                        <td className="border px-4 py-2 text-center">{material.name}</td>
-                        <td className="border px-4 py-2">
-                          <div className="flex justify-center items-center">
-                            <img
-                              src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${material.image}`}
-                              alt={material.image}
-                              className="w-16 h-16 object-cover"
-                            />
-                          </div>
-                        </td>
-                        <td className="text-center border px-4 py-2">
-                          {vendor ? (
-                            <button
-                              onClick={() => handleVendorClick(material.vendorId)}
-                              className="text-blue-500 underline"
-                            >
-                              {vendor.name}
-                            </button>
-                          ) : (
-                            "Tidak Ada Vendor"
-                          )}
-                        </td>
-                        <td className="text-center border px-4 py-2">
-                          Rp {new Intl.NumberFormat("id-ID", { useGrouping: true }).format(
-                            material.price
-                          )}
-                        </td>
-                        <td className="border px-4 py-2 text-center">
-                          <button
-                            onClick={() => handleMaterialClick(material.id)}
-                            className="bg-blue-500 text-white rounded px-2 py-1"
-                          >
-                            <Eye className="text-white" />
+                {currentData.length > 0 ? currentData.map((material, index) => {
+                  const vendor = vendors.find((v) => v.id === material.vendorId);
+                  return (
+                    <tr key={material.id}>
+                      <td className="border px-4 py-2 text-center">{(currentPage - 1) * rowsToShow + index + 1}</td>
+                      <td className="border px-4 py-2 text-center">{material.name}</td>
+                      <td className="border px-4 py-2 text-center">
+                        <img
+                          src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${material.image}`}
+                          alt={material.image}
+                          className="w-16 h-16 object-cover mx-auto"
+                        />
+                      </td>
+                      <td className="border px-4 py-2 text-center">
+                        {vendor ? (
+                          <button onClick={() => handleVendorClick(material.vendorId)} className="text-blue-500 underline">
+                            {vendor.name}
                           </button>
-                          <button
-                            onClick={() => handleDelete(material.id)}
-                            className="bg-red-500 text-white rounded px-2 py-1 ml-2"
-                          >
-                            <Trash2 className="text-white" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                        ) : "Tidak Ada Vendor"}
+                      </td>
+                      <td className="border px-4 py-2 text-center">
+                        Rp {new Intl.NumberFormat("id-ID").format(material.price)}
+                      </td>
+                      <td className="border px-4 py-2 text-center">
+                        <button
+                          onClick={() => handleMaterialClick(material.id)}
+                          className="bg-blue-500 text-white rounded px-2 py-1"
+                        >
+                          <Eye className="text-white" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(material.id)}
+                          className="bg-red-500 text-white rounded px-2 py-1 ml-2"
+                        >
+                          <Trash2 className="text-white" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                }) : (
+                  <tr>
+                    <td colSpan="6" className="text-center py-4 text-gray-500">
+                      Tidak ada data ditemukan.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
-          <div className="flex justify-between items-center mt-4">
-            <button
-              onClick={handlePrevPage}
-              disabled={currentPage === 1}
-              className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-              className="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
+
+          <div className="flex justify-center mt-6">
+  <nav className="inline-flex rounded-md shadow-sm" aria-label="Pagination">
+    <button
+      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+      disabled={currentPage === 1}
+      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
+    >
+      «
+    </button>
+    {[...Array(totalPages)].map((_, index) => {
+      const page = index + 1;
+      return (
+        <button
+          key={page}
+          onClick={() => setCurrentPage(page)}
+          className={`px-3 py-2 border border-gray-300 ${
+            currentPage === page ? "text-white bg-blue-500" : "text-blue-600 hover:bg-gray-100"
+          }`}
+        >
+          {page}
+        </button>
+      );
+    })}
+    <button
+      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+      disabled={currentPage === totalPages}
+      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
+    >
+      »
+    </button>
+  </nav>
+</div>
+
         </main>
       </div>
     </div>
