@@ -162,9 +162,18 @@ export const deletePermintaanLapangan = async (req: Request, res: Response) => {
 export const editPermintaanLapangan = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { nomor, tanggal, lokasi, picLapangan, status, isConfirmed, isReceived, keterangan, detail } = req.body;
+    const {
+      nomor,
+      tanggal,
+      lokasi,
+      picLapangan,
+      status,
+      isConfirmed,
+      isReceived,
+      keterangan,
+      detail,
+    } = req.body;
 
-    // Pastikan permintaan ada di database
     const existingPermintaan = await prisma.permintaanLapangan.findUnique({
       where: { id: Number(id) },
     });
@@ -174,7 +183,6 @@ export const editPermintaanLapangan = async (req: Request, res: Response): Promi
       return;
     }
 
-    // Update permintaan utama
     await prisma.permintaanLapangan.update({
       where: { id: Number(id) },
       data: {
@@ -189,35 +197,43 @@ export const editPermintaanLapangan = async (req: Request, res: Response): Promi
       },
     });
 
-    // Jika ada detail baru, update juga
-    if (detail && Array.isArray(detail)) {
+    if (Array.isArray(detail)) {
       await Promise.all(
-        detail.map((item) =>
-          prisma.permintaanDetails.upsert({
-            where: { id: item.id || 0 }, // Jika ID ada, update, jika tidak, buat baru
-            update: {
-              materialId: item.materialId,
-              qty: item.qty,
-              satuan: item.satuan,
-              mention: item.mention,
-              code: item.code,
-            },
-            create: {
-              permintaanId: Number(id),
-              materialId: item.materialId,
-              qty: item.qty,
-              satuan: item.satuan,
-              mention: item.mention,
-              code: item.code,
-            },
-          })
-        )
+        detail.map(async (item) => {
+          if (item.id) {
+            await prisma.permintaanDetails.update({
+              where: { id: item.id },
+              data: {
+                materialId: item.materialId,
+                qty: item.qty,
+                satuan: item.satuan,
+                mention: item.mention,
+                code: item.code,
+                keterangan: item.keterangan,
+                status: item.status || "PENDING",
+              },
+            });
+          } else {
+            await prisma.permintaanDetails.create({
+              data: {
+                permintaanId: Number(id),
+                materialId: item.materialId,
+                qty: item.qty,
+                satuan: item.satuan,
+                mention: item.mention,
+                code: item.code,
+                keterangan: item.keterangan,
+                status: item.status || "PENDING",
+              },
+            });
+          }
+        })
       );
     }
 
     res.status(200).json({ message: "Permintaan berhasil diperbarui" });
   } catch (error) {
     console.error("Gagal memperbarui permintaan lapangan:", error);
-    res.status(500).json({ error: "Gagal memperbarui permintaan lapangan" });
+    res.status(500).json({ error: "Terjadi kesalahan saat memperbarui data" });
   }
 };

@@ -31,12 +31,14 @@ export default function EditPermintaanLapangan() {
         const result = await response.json();
         if (result) {
           setFormData(result);
-          fetchMaterialNames(result.detail);
+          await fetchMaterialNames(); // Panggil setelah detail dimuat
         } else {
           router.push("/?page=permintaan-lapangan");
         }
       } catch (error) {
         console.error("Gagal mengambil data permintaan lapangan:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -52,7 +54,6 @@ export default function EditPermintaanLapangan() {
         return acc;
       }, {});
       setMaterials(materialMap);
-      setLoading(false);
     } catch (error) {
       console.error("Gagal mengambil nama material:", error);
     }
@@ -76,18 +77,28 @@ export default function EditPermintaanLapangan() {
     e.preventDefault();
 
     const payload = {
+      nomor: formData.nomor,
+      tanggal: formData.tanggal,
+      lokasi: formData.lokasi,
+      picLapangan: formData.picLapangan,
+      status: formData.status,
+      isConfirmed: formData.isConfirmed,
+      isReceived: formData.isReceived,
       keterangan: formData.keterangan,
       detail: formData.detail.map((item) => ({
+        id: item.id, // Penting untuk update!
         materialId: item.materialId,
         qty: item.qty,
         satuan: item.satuan,
+        mention: item.mention,
+        code: item.code,
+        keterangan: item.keterangan,
+        status: item.status,
       })),
     };
 
-    console.log("Payload yang dikirim:", payload);
-
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}/edit`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -125,7 +136,7 @@ export default function EditPermintaanLapangan() {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-6 overflow-y-auto">
         <h1 className="text-lg font-bold text-blue-900 mb-4">Edit Permintaan Lapangan</h1>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -149,34 +160,57 @@ export default function EditPermintaanLapangan() {
                 <th className="border border-white p-2 text-center">Spesifikasi</th>
                 <th className="border border-white p-2 text-center">QTY</th>
                 <th className="border border-white p-2 text-center">Satuan</th>
+                <th className="border border-white p-2 text-center">Code</th> 
+                <th className="border border-white p-2 text-center">Keterangan</th> 
               </tr>
             </thead>
             <tbody>
-              {formData.detail.map((item, index) => (
-                <tr key={index} className="text-center">
-                  <td className="border border-gray-300 p-2">{materials[item.materialId] || "Memuat..."}</td>
-                  <td className="border border-gray-300 p-2">
-                    <input type="text" value={item.mention || ""} readOnly className="w-full border p-1 rounded bg-gray-100" />
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    <input
-                      type="number"
-                      value={item.qty || ""}
-                      onChange={(e) => handleDetailChange(index, "qty", e.target.value)}
-                      className="w-full border p-1 rounded"
-                    />
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    <input
-                      type="text"
-                      value={item.satuan || ""}
-                      onChange={(e) => handleDetailChange(index, "satuan", e.target.value)}
-                      className="w-full border p-1 rounded"
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+    {formData.detail.map((item, index) => (
+      <tr key={index} className="text-center">
+        <td className="border border-gray-300 p-2">{materials[item.materialId] || "Memuat..."}</td>
+        <td className="border border-gray-300 p-2">
+          <input
+            type="text"
+            value={item.mention || ""}
+            onChange={(e) => handleDetailChange(index, "mention", e.target.value)}
+            className="w-full border p-1 rounded"
+          />
+        </td>
+        <td className="border border-gray-300 p-2">
+          <input
+            type="number"
+            value={item.qty}
+            onChange={(e) => handleDetailChange(index, "qty", e.target.value)}
+            className="w-full border p-1 rounded"
+          />
+        </td>
+        <td className="border border-gray-300 p-2">
+          <input
+            type="text"
+            value={item.satuan}
+            onChange={(e) => handleDetailChange(index, "satuan", e.target.value)}
+            className="w-full border p-1 rounded"
+          />
+        </td>
+        <td className="border border-gray-300 p-2">
+          <input
+            type="text"
+            value={item.code || ""}
+            onChange={(e) => handleDetailChange(index, "code", e.target.value)}
+            className="w-full border p-1 rounded"
+          />
+        </td>
+        <td className="border border-gray-300 p-2">
+          <input
+            type="text"
+            value={item.keterangan || ""}
+            onChange={(e) => handleDetailChange(index, "keterangan", e.target.value)}
+            className="w-full border p-1 rounded"
+          />
+        </td>
+      </tr>
+    ))}
+  </tbody>
           </table>
 
           <div className="flex justify-between mt-6">
