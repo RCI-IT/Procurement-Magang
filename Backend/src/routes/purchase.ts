@@ -7,9 +7,9 @@ import {
 
 const router = express.Router();
 
-router.get("/", getAllPurchaseOrders);      // GET semua purchase
-router.get("/:id", getPurchaseOrderById);    // GET berdasarkan ID
-router.delete("/:id", deletePurchaseOrder);  // DELETE berdasarkan ID
+router.get("/", getAllPurchaseOrders);
+router.get("/:id", getPurchaseOrderById);
+router.delete("/:id", deletePurchaseOrder);
 
 export default router;
     

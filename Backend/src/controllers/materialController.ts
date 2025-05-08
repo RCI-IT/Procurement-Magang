@@ -20,8 +20,6 @@ export const createMaterial = async (req: Request, res: Response): Promise<void>
     console.log("Received Data:", req.body);
 
     const { name, description, price, categoryId, vendorId } = req.body;
-
-    // Konversi data ke angka
     const parsedCategoryId = parseInt(categoryId, 10);
     const parsedPrice = parseFloat(price);
     const parsedVendorId = parseInt(vendorId, 10);
@@ -100,8 +98,6 @@ export const editMaterial = async (req: Request, res: Response): Promise<void> =
   try {
     const { id } = req.params;
     const { name, description, price, categoryId, vendorId } = req.body;
-
-    // Konversi data ke tipe yang sesuai
     const parsedId = parseInt(id, 10);
     const parsedCategoryId = parseInt(categoryId, 10);
     const parsedPrice = parseFloat(price);
@@ -111,25 +107,20 @@ export const editMaterial = async (req: Request, res: Response): Promise<void> =
       res.status(400).json({ error: "Invalid ID, categoryId, price, or vendorId" });
       return;
     }
-
-    // Cek apakah material dengan ID tersebut ada di database
     const material = await prisma.materials.findUnique({ where: { id: parsedId } });
 
     if (!material) {
       res.status(404).json({ error: "Material not found" });
       return;
     }
-
-    // Jika ada file gambar baru, hapus gambar lama dan simpan yang baru
     let newImage = material.image;
     if (req.file) {
       if (material.image && material.image !== "default-image.jpg") {
-        fs.unlinkSync(`uploads/${material.image}`); // Hapus gambar lama
+        fs.unlinkSync(`uploads/${material.image}`);
       }
       newImage = req.file.filename;
     }
 
-    // Update material di database
     const updatedMaterial = await prisma.materials.update({
       where: { id: parsedId },
       data: {
@@ -160,7 +151,7 @@ export const getMaterialById = async (req: Request, res: Response): Promise<void
 
     const material = await prisma.materials.findUnique({
       where: { id: parsedId },
-      include: { vendor: true, category: true }, // Tambahkan relasi vendor & kategori
+      include: { vendor: true, category: true },
     });
 
     if (!material) {
@@ -168,7 +159,6 @@ export const getMaterialById = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    // Format ulang response agar lebih rapi
     const formattedResponse = {
       id: material.id,
       name: material.name,

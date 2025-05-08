@@ -16,13 +16,11 @@ export const createPermintaanLapangan = async (req: Request, res: Response) => {
   try {
     const { nomor, tanggal, lokasi, picLapangan, keterangan, detail } = req.body;
 
-    // ✅ Validasi input agar tidak ada data yang kosong atau tidak sesuai
     if (!nomor || !tanggal || !lokasi || !picLapangan || !Array.isArray(detail)) {
       res.status(400).json({ error: "Harap isi semua field yang diperlukan" });
       return;
     }
 
-    // ✅ Pastikan `detail` berisi array dengan objek yang memiliki properti yang benar
     const isDetailValid = detail.every((item: any) =>
       item.materialId && item.qty && item.satuan
     );
@@ -31,12 +29,10 @@ export const createPermintaanLapangan = async (req: Request, res: Response) => {
       res.status(400).json({ error: "Detail material tidak valid" });
       return;
     }
-
-    // ✅ Membuat permintaan lapangan baru
     const newPermintaan = await prisma.permintaanLapangan.create({
       data: {
         nomor,
-        tanggal: new Date(tanggal), // Pastikan format tanggal benar
+        tanggal: new Date(tanggal),
         lokasi,
         picLapangan,
         keterangan,
@@ -45,8 +41,8 @@ export const createPermintaanLapangan = async (req: Request, res: Response) => {
             materialId: item.materialId,
             qty: item.qty,
             satuan: item.satuan,
-            mention: item.mention || null, // Bisa null jika tidak diisi
-            code: item.code || "", // Default string kosong jika tidak ada
+            mention: item.mention || null,
+            code: item.code || "",
             keterangan: item.keterangan || null,
           })),
         },
@@ -60,7 +56,6 @@ export const createPermintaanLapangan = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error("Error saat membuat permintaan lapangan:", error);
 
-    // ✅ Tangani error Prisma (misalnya duplikasi nomor)
     if (error.code === "P2002") {
       res.status(400).json({ error: "Nomor permintaan sudah ada" });
       return;
@@ -73,7 +68,7 @@ export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
   try {
     const permintaanList = await prisma.permintaanLapangan.findMany({
       include: {
-        user: true, // ⬅️ Tambahkan ini untuk menampilkan info user pembuat
+        user: true,
         detail: {
           include: {
             material: {
@@ -81,12 +76,11 @@ export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
                 vendor: true,
               },
             },
-            confirmationDetails: true, // ⬅️ Cek apakah sudah masuk PO
+            confirmationDetails: true,
           },
         },
       },
     });
-//    // Filter PL yang masih punya barang belum masuk PO const filteredPermintaanList = permintaanList .map((pl: any) => ({   ...pl,   detail: pl.detail.filter((item: any) => item.confirmationDetails.length === 0), })) .filter((pl: any) => pl.detail.length > 0);
     res.status(200).json(permintaanList);
   } catch (error) {
     console.error(error);
@@ -97,14 +91,12 @@ export const getPermintaanById = async (req: Request, res: Response): Promise<vo
   try {
     const { id } = req.params;
 
-    // Pastikan ID valid
     const parsedId = Number(id);
     if (isNaN(parsedId)) {
       res.status(400).json({ error: "Invalid ID format" });
       return;
     }
 
-    // Cari permintaan berdasarkan ID, termasuk user
     const permintaan = await prisma.permintaanLapangan.findUnique({
       where: { id: parsedId },
       include: {

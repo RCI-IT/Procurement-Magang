@@ -61,15 +61,12 @@ export const deletePurchaseDetails = async (purchaseOrderId: number): Promise<vo
   export const deletePurchaseOrder = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     try {
-      // Menghapus semua PurchaseDetails yang terkait dengan PurchaseOrder
       await deletePurchaseDetails(parseInt(id, 10));
   
-      // Menghapus PurchaseOrder
       const deletedPurchaseOrder = await prisma.purchaseOrder.delete({
         where: { id: parseInt(id, 10) },
       });
   
-      // Mengubah status ConfirmationOrder terkait menjadi PENDING
       if (deletedPurchaseOrder) {
         await prisma.confirmationOrder.update({
           where: { id: deletedPurchaseOrder.confirmationOrderId },
