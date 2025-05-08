@@ -25,6 +25,10 @@ const LoadingIcon = () => {
             strokeLinecap="round"
             strokeLinejoin="round"
           >
+<<<<<<< HEAD
+=======
+
+>>>>>>> c90ce9c2e07274ee99bb09cc8b9af9b2b5beb806
             <animate
               attributeName="stroke-dashoffset"
               from="100"

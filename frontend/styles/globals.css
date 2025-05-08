@@ -31,19 +31,16 @@
     print-color-adjust: exact;
   }
 
-  /* Menyembunyikan kolom status dan judulnya saat print */
   .status-column,
   .status-header {
     display: none !important;
   }
 
-  /* Memastikan kolom Keterangan berada di posisi paling kanan */
   .keterangan-column {
     text-align: center;
     position: relative !important;
   }
 
-  /* Menghilangkan elemen yang tidak diperlukan saat print */
   .no-print,
   .sidebar {
     display: none !important;
@@ -146,11 +143,10 @@
 
 .pdf-format th, 
 .pdf-format td {
-  padding: 10px 12px; /* Tambah padding agar tidak terlalu menempel ke garis */
+  padding: 10px 12px;
   text-align: auto;
 }
 
-/* Header lebih rapi dan proporsional */
 .pdf-format .header {
   text-align: center;
   font-weight: bold;
@@ -158,19 +154,17 @@
   margin-bottom: 12px;
 }
 
-/* Area tanda tangan lebih rapi */
 .pdf-format .signature-box {
-  height: 60px; /* Ukuran tetap tapi proporsional */
+  height: 60px; 
   text-align: center;
   vertical-align: bottom;
 }
 
-/* Styling tambahan untuk bagian tanda tangan */
 .pdf-format .signature-table td {
   text-align: center;
   font-weight: bold;
   padding-top: 15px;
-  padding-bottom: 10px; /* Tambahkan jarak di bawah */
+  padding-bottom: 10px; 
 }
 
 body {
@@ -179,7 +173,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Menghilangkan kolom status pada tabel */
 @media print {
   .status-column,
   .status-header {
@@ -188,7 +181,6 @@ body {
 }
 
 
-/* Memastikan kolom Keterangan berada di posisi paling kanan */
 .keterangan-column {
   text-align: center;
   position: relative !important;
