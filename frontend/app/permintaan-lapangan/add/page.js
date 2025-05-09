@@ -2,14 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "../../../component/sidebar.js";
-import Header from "../../../component/Header.js";
 import Swal from 'sweetalert2';
 
 export default function AddPermintaanLapanganForm({  }) {
   const router = useRouter();
   const [materials, setMaterials] = useState([]);
-  const [username, setUsername] = useState(""); 
+  const [, setUsername] = useState(""); 
   const [formData, setFormData] = useState({
     nomor: "",
     tanggal: { day: "", month: "", year: "" },
@@ -219,8 +217,7 @@ export default function AddPermintaanLapanganForm({  }) {
           </div>
           <div>
             <label className="block font-medium">Lokasi:</label>
-            <input
-              type="text"
+            <textarea
               name="lokasi"
               value={formData.lokasi}
               onChange={handleChange}
