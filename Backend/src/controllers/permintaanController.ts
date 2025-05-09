@@ -76,7 +76,6 @@ export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
                 vendor: true,
               },
             },
-            confirmationDetails: true,
           },
         },
       },
@@ -90,21 +89,20 @@ export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
 export const getPermintaanById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-
     const parsedId = Number(id);
     if (isNaN(parsedId)) {
       res.status(400).json({ error: "Invalid ID format" });
       return;
     }
 
+    // Remove the inclusion of confirmationDetails
     const permintaan = await prisma.permintaanLapangan.findUnique({
       where: { id: parsedId },
       include: {
         user: true,
         detail: {
           include: {
-            material: true,
-            confirmationDetails: true,
+            material: true,  // No confirmationDetails here
           },
         },
       },
@@ -116,6 +114,7 @@ export const getPermintaanById = async (req: Request, res: Response): Promise<vo
     }
 
     res.status(200).json(permintaan);
+    return;
   } catch (error) {
     console.error("Error fetching permintaan by ID:", error);
     res.status(500).json({ error: "Gagal mengambil permintaan lapangan" });
@@ -135,6 +134,43 @@ export const updateStatusPermintaan = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Gagal mengupdate status permintaan' });
+  }
+};
+export const updateStatusPermintaanDetail = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const allowedStatuses = [
+      'PENDING', 'APPROVED', 'REJECTED', 'IN_PROGRESS', 'CLOSED', 'CANCELLED', 'READ'
+    ];
+
+    if (!allowedStatuses.includes(status)) {
+      res.status(400).json({ error: 'Status tidak valid' });
+      return;
+    }
+
+    const existingDetail = await prisma.permintaanDetails.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingDetail) {
+      res.status(404).json({ error: 'Data permintaan detail tidak ditemukan' });
+      return;
+    }
+
+    const updatedDetail = await prisma.permintaanDetails.update({
+      where: { id: Number(id) },
+      data: {
+        status,
+        updatedAt: new Date(),
+      },
+    });
+
+    res.status(200).json(updatedDetail);
+  } catch (error) {
+    console.error('Gagal mengupdate status permintaan detail:', error);
+    res.status(500).json({ error: 'Gagal mengupdate status permintaan detail' });
   }
 };
 export const deletePermintaanLapangan = async (req: Request, res: Response) => {

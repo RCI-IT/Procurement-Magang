@@ -66,16 +66,17 @@ model ConfirmationOrder {
   purchaseOrder       PurchaseOrder?        @relation("COToPO")
 }
 model ConfirmationDetails {
-  id                   Int                @id @default(autoincrement())
-  confirmationOrderId  Int
-  permintaanDetailId   Int
-  qty                  Int
-  code                 String
-  keterangan           String?
-  satuan               String
-  status               DetailStatus       @default(PENDING)
-  permintaanDetail     PermintaanDetails  @relation(fields: [permintaanDetailId], references: [id], onDelete: Cascade)
-  confirmationOrder    ConfirmationOrder  @relation(fields: [confirmationOrderId], references: [id], onDelete: Cascade)
+  id                  Int                @id @default(autoincrement())
+  confirmationOrderId Int
+  materialId          Int
+  qty                 Int
+  satuan              String
+  mention             String?
+  code                String
+  keterangan          String?
+  status              DetailStatus       @default(PENDING)
+  confirmationOrder   ConfirmationOrder  @relation(fields: [confirmationOrderId], references: [id], onDelete: Cascade)
+  material            Materials          @relation(fields: [materialId], references: [id], onDelete: Cascade)
 }
 model PermintaanDetails {
   id                  Int                   @id @default(autoincrement())
@@ -89,7 +90,6 @@ model PermintaanDetails {
   code                String
   keterangan          String?
   status              PLDStatus            @default(PENDING)
-  confirmationDetails ConfirmationDetails[]
   material            Materials             @relation(fields: [materialId], references: [id], onDelete: Cascade)
   permintaan          PermintaanLapangan    @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
 }
@@ -107,6 +107,7 @@ model Materials {
   vendor          Vendors             @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   permintaan      PermintaanDetails[]
   PurchaseDetails PurchaseDetails[]
+  confirmationDetails ConfirmationDetails[] 
 }
 model Categories {
   id        Int         @id @default(autoincrement())

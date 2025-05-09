@@ -1,12 +1,11 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import "../../../styles/globals.css";
 import html2pdf from "html2pdf.js";
-import Sidebar from "../../../component/sidebar.js";
 import { useRouter } from "next/navigation";
-import Header from "../../../component/Header.js"
 import Swal from 'sweetalert2';
 
 export default function ConfirmationOrderDetail() {
@@ -16,7 +15,7 @@ export default function ConfirmationOrderDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [, setUsername] = useState("");
   const [selectedItems, setSelectedItems] = useState([]);
 
   const handlePrint = () => {
@@ -129,14 +128,14 @@ useEffect(() => {
 
   if (loading) return <p className="text-center text-gray-500">Loading...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
-
-  const totalHarga =
-  ConfirmationDetail?.confirmationDetails?.reduce((sum, coItem) => {
-    const material = coItem.permintaanDetail?.material;
-    const harga = material?.price || 0;
-    const qty = coItem.qty || 0; 
-    return sum + (harga * qty);
+  const totalHarga = ConfirmationDetail?.confirmationDetails?.reduce((sum, item) => {
+    const harga = item.material?.price || 0;
+    const qty = item.qty || 0;
+    return sum + qty * harga;
   }, 0) || 0;
+  console.log("Total Harga: ", totalHarga); // Log totalHarga to debug
+  
+
   
  const handleCheckboxChange = (confirmationDetailId) => {
     setSelectedItems((prevSelected) => {
@@ -277,7 +276,7 @@ const ActionButtons = ({ onKonfirmasi }) => (
         <tr className="border">
           <td className="border px-2 py-1 font-semibold text-center">PL Number</td>
           <td className="border px-2 py-1 text-center">
-            {ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.permintaan?.nomor || "N/A"}
+          {ConfirmationDetails?.confirmationDetails?.[0]?.permintaanDetail?.permintaan?.nomor || "N/A"}
           </td>
         </tr>
       </tbody>
@@ -305,8 +304,8 @@ const ActionButtons = ({ onKonfirmasi }) => (
   <tbody>
   {ConfirmationDetail?.confirmationDetails?.length > 0 ? (
   ConfirmationDetail.confirmationDetails.map((item, index) => {
-    const material = item.permintaanDetail?.material;
-    const harga = material?.price || 0;
+    const material = item.material; // Access directly from item.material
+    const harga = material && material.price ? material.price : 0;
     const qty = item.qty || 0;
     const total = harga * qty;
 
@@ -314,51 +313,49 @@ const ActionButtons = ({ onKonfirmasi }) => (
       <tr key={index}>
         <td className="border px-4 py-2 text-center">{index + 1}</td>
         <td className="border px-4 py-2">{item.code}</td>
-        <td className="border px-4 py-2">{material?.name || 'N/A'}</td>
+        <td className="border px-4 py-2">{item.material ? item.material.name : 'N/A'}</td>
         <td className="border px-4 py-2 text-center">Rp{harga.toLocaleString()}</td>
         <td className="border px-4 py-2 text-center">{qty}</td>
         <td className="border px-4 py-2 text-center">{item.satuan || 'N/A'}</td>
         <td className="border px-4 py-2 text-center">Rp{total.toLocaleString()}</td>
         <td className="border px-4 py-2 text-center status-column">
-  {item.status === "ACC" ? (
-    <span className="text-green-600 font-semibold">ACC </span>
-  ) : (
-    <input
-      type="checkbox"
-      checked={selectedItems.includes(item.id)}
-      onChange={() => handleCheckboxChange(item.id)}
-      className="w-6 h-6"
-    />
-  )}
-</td>
-
-
+          {item.status === "ACC" ? (
+            <span className="text-green-600 font-semibold">ACC</span>
+          ) : (
+            <input
+              type="checkbox"
+              checked={selectedItems.includes(item.id)}
+              onChange={() => handleCheckboxChange(item.id)}
+              className="w-6 h-6"
+            />
+          )}
+        </td>
       </tr>
     );
   })
 ) : (
   <tr>
-    <td colSpan={7} className="text-center text-gray-500 py-4">
+    <td colSpan={8} className="text-center text-gray-500 py-4">
       Tidak ada data
     </td>
   </tr>
 )}
 
-
-    <tr className="font-semibold">
-      <td colSpan="4" className="bg-blue-600 text-white p-2 text-left">Terbilang</td>
-      <td colSpan="2" rowSpan={2} className="p-2 text-center border">TOTAL</td>
-      <td colSpan="1" rowSpan={2} className="p-2 text-center border">Rp{totalHarga.toLocaleString()}</td>
-      <td colSpan="1" rowSpan={2} className="p-2 text-center border  status-column">
+<tr className="font-semibold">
+  <td colSpan="4" className="bg-blue-600 text-white p-2 text-left">Terbilang</td>
+  <td colSpan="2" rowSpan={2} className="p-2 text-center border">TOTAL</td>
+  <td colSpan="1" rowSpan={2} className="p-2 text-center border">Rp{totalHarga.toLocaleString()}</td>
+  <td colSpan="1" rowSpan={2} className="p-2 text-center border status-column">
     <ActionButtons onKonfirmasi={handleKonfirmasi} />
   </td>
-
-    </tr>
+</tr>
 <tr>
 <td colSpan="4" className="border p-2 text-gray-800 bg-white italic text-left">
-        {terbilang(totalHarga) || "-"}
-      </td>
+  {terbilang(totalHarga) || "Tidak ada total"}
+</td>
 </tr>
+
+
     <tr className="bg-white font-bold">
       
 
