@@ -1,18 +1,19 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import html2pdf from "html2pdf.js";
 import "../../../styles/globals.css";
-import Sidebar from "../../../component/sidebar";
-import Header from "../../../component/Header.js"
+import Swal from 'sweetalert2';
 
 
 export default function DetailPermintaanLapangan() {
   const { id } = useParams();
   const router = useRouter();
   const [data, setData] = useState(null);
-  const [username, setUsername] = useState("");
+  const [, setUsername] = useState("");
+  const [userRole, setUserRole] = useState("");
 
   const parseDate = (dateString) => {
     if (!dateString) return { day: "-", month: "-", year: "-" };
@@ -32,8 +33,55 @@ export default function DetailPermintaanLapangan() {
   const handleEdit = () => {
     router.push(`/permintaan-lapangan/${id}/edit`);
   };
-
+  const handleStatusChange = async (itemId, newStatus) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/permintaan/${itemId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
   
+      const result = await response.json();
+  
+      if (response.ok) {
+        // Update the status in the local state
+        setData((prevData) => {
+          const updatedDetail = prevData.detail.map((item) =>
+            item.id === itemId ? { ...item, status: newStatus } : item
+          );
+          return { ...prevData, detail: updatedDetail };
+        });
+  
+        // SweetAlert for success
+        Swal.fire({
+          icon: 'success',
+          title: 'Status berhasil diperbarui',
+          text: `Status telah diubah menjadi ${newStatus}`,
+          confirmButtonText: 'OK',
+        });
+      } else {
+        // SweetAlert for error
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal memperbarui status',
+          text: result.error || 'Terjadi kesalahan dalam memperbarui status.',
+          confirmButtonText: 'OK',
+        });
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+  
+      // SweetAlert for exception
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Terjadi kesalahan, coba lagi.',
+        confirmButtonText: 'OK',
+      });
+    }
+  };
 
   const handlePrint = () => {
     window.print();
@@ -81,14 +129,19 @@ export default function DetailPermintaanLapangan() {
         });
     }, 500);
   };
-  
-  
+  useEffect(() => {
+    const storedUserRole = localStorage.getItem("role");
+    if (storedUserRole) {
+      setUserRole(storedUserRole);
+    }
+  }, []);
     useEffect(() => {
       const storedUsername = localStorage.getItem("username");
       if (storedUsername) {
         setUsername(storedUsername);
       }
     }, []);
+
   useEffect(() => {
     if (!id) return;
     const fetchData = async () => {
@@ -211,19 +264,27 @@ export default function DetailPermintaanLapangan() {
           <td className="border border-gray-300 p-2">{item.qty}</td>
           <td className="border border-gray-300 p-2">{item.satuan}</td>
           <td className="border border-gray-300 p-2">{item.keterangan}</td>
-          <td colSpan="1" className="border border-gray-300 p-2 text-center status-column">
-  <span className={`px-2 py-1 rounded-full text-sm font-semibold
-    ${item.status === 'PENDING' && 'bg-yellow-100 text-yellow-700'}
-    ${item.status === 'APPROVED' && 'bg-green-100 text-green-700'}
-    ${item.status === 'REJECTED' && 'bg-red-100 text-red-700'}
-    ${item.status === 'IN_PROGRESS' && 'bg-blue-100 text-blue-700'}
-    ${item.status === 'CLOSED' && 'bg-gray-200 text-gray-700'}
-    ${item.status === 'CANCELLED' && 'bg-pink-100 text-pink-700'}
-    ${item.status === 'READ' && 'bg-purple-100 text-purple-700'}
-  `}>
-    {item.status.replace('_', ' ')}
-  </span>
+          <td className="border border-gray-300 p-2 text-center status-column">
+  {userRole === "ADMIN" || userRole === "USER_PURCHASE" ? (
+    <select
+      value={item.status}
+      onChange={(e) => handleStatusChange(item.id, e.target.value)}
+      className="border rounded p-1"
+    >
+      <option value="PENDING">PENDING</option>
+      <option value="APPROVED">APPROVED</option>
+      <option value="REJECTED">REJECTED</option>
+      <option value="IN_PROGRESS">IN_PROGRESS</option>
+      <option value="CLOSED">CLOSED</option>
+      <option value="CANCELLED">CANCELLED</option>
+      <option value="READ">READ</option>
+    </select>
+  ) : (
+    <span>{item.status}</span> // Show the current status if the user cannot change it
+  )}
 </td>
+
+
 
         </tr>
       ))
@@ -318,7 +379,7 @@ export default function DetailPermintaanLapangan() {
           <div id="back-button" className="text-right mt-6">
           <button
   id="kembali-btn"
-  onClick={() => router.push("/?page=permintaan-lapangan")}
+  onClick={() => router.back()}
   className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 no-print"
 >
   Kembali

@@ -17,7 +17,12 @@ export const createVendor = async (req: Request, res: Response) => {
 };
 export const getAllVendors = async (req: Request, res: Response) => {
   try {
-    const vendors = await prisma.vendors.findMany();
+    const vendors = await prisma.vendors.findMany({
+      include: {
+        materials: true,  // Ini akan menyertakan semua material yang terkait dengan setiap vendor
+      },
+    });
+
     res.status(200).json(vendors);
   } catch (error) {
     console.error(error);
@@ -76,8 +81,12 @@ export const getVendorById = async (req: Request, res: Response): Promise<void> 
   try {
     const { id } = req.params;
 
+    // Fetch vendor with related materials (join)
     const vendor = await prisma.vendors.findUnique({
       where: { id: Number(id) },
+      include: {
+        materials: true,  // Include related materials using the vendorId
+      },
     });
 
     if (!vendor) {

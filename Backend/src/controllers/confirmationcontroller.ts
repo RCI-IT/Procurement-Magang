@@ -3,94 +3,83 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// CREATE Confirmation Order
 export const createConfirmationOrder = async (req: Request, res: Response): Promise<void> => {
   try {
     const { nomorCO, tanggalCO, lokasiCO, permintaanId, items } = req.body;
 
-    const permintaan = await prisma.permintaanLapangan.findUnique({
-      where: { id: permintaanId },
-      include: { detail: true },
+    // Validasi input untuk pastikan data yang diperlukan lengkap
+    if (!nomorCO || !tanggalCO || !lokasiCO || !permintaanId || !Array.isArray(items) || items.length === 0) {
+      res.status(400).json({ message: "Semua data diperlukan dan item tidak boleh kosong." });
+      return;
+    }
+
+    // Validasi untuk setiap item, memastikan semua field yang diperlukan ada
+    const validatedItems = items.map((item: any) => {
+      if (!item.materialId || !item.qty || !item.satuan || !item.code || !item.status || !item.keterangan) {
+        throw new Error('Semua field item harus terisi!');
+      }
+
+      return {
+        materialId: item.materialId,
+        qty: item.qty,
+        satuan: item.satuan,
+        code: item.code,
+        status: item.status,
+        keterangan: item.keterangan,
+      };
     });
 
-    if (!permintaan) {
-      res.status(404).json({ message: "Permintaan Lapangan tidak ditemukan" });
-      return;
-    }
-
-    if (permintaan.detail.length === 0) {
-      res.status(400).json({ message: "Permintaan Lapangan tidak memiliki barang" });
-      return;
-    }
-
-    if (!Array.isArray(items) || items.length === 0) {
-      res.status(400).json({ message: "Tidak ada item yang dipilih" });
-      return;
-    }
+    // Buat confirmation order jika semua validasi sukses
     const confirmationOrder = await prisma.confirmationOrder.create({
       data: {
         nomorCO,
-        tanggalCO,
+        tanggalCO: new Date(tanggalCO),
         lokasiCO,
         permintaan: {
           connect: { id: permintaanId },
         },
         confirmationDetails: {
-          create: items.map((item) => ({
-            permintaanDetailId: item.permintaanDetailId,
-            qty: item.qty,
-            satuan: item.satuan,
-            code: item.kodeBarang,
-            status: item.status,
-            keterangan: item.namaBarang,
-          })),
+          create: validatedItems,
         },
       },
     });
 
-    await prisma.permintaanDetails.updateMany({
-      where: {
-        id: {
-          in: items.map((item) => item.permintaanDetailId),
-        },
-      },
-      data: {
-        status: 'IN_PROGRESS',
-      },
-    });
-
-    res.status(201).json({ message: "Confirmation Order berhasil dibuat" });
+    // Respons sukses
+    res.status(201).json({ message: "Confirmation Order berhasil dibuat", confirmationOrder });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Terjadi kesalahan", error });
+    console.error("Error createConfirmationOrder:", error);
+    res.status(500).json({
+      message: "Terjadi kesalahan saat membuat Confirmation Order",
+      error: error instanceof Error ? error.message : error,
+    });
   }
 };
-export const getAllConfirmationOrders = async (req: Request, res: Response): Promise<void> => {
+// GET All Confirmation Orders
+export const getAllConfirmationOrders = async (_req: Request, res: Response): Promise<void> => {
   try {
     const confirmationOrders = await prisma.confirmationOrder.findMany({
       include: {
         confirmationDetails: {
           include: {
-            permintaanDetail: {
+            material: {
               include: {
-                material: {
-                  include: {
-                    vendor: true,
-                  },
-                },
-                permintaan: true,
+                vendor: true,
               },
             },
           },
         },
+        permintaan: true,
       },
     });
 
     res.status(200).json(confirmationOrders);
   } catch (error) {
     console.error("Error getAllConfirmationOrders:", error);
-    res.status(500).json({ message: "Terjadi kesalahan", error });
+    res.status(500).json({ message: "Terjadi kesalahan saat mengambil data", error });
   }
 };
+// GET Confirmation Order by ID
 export const getConfirmationOrderById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -100,18 +89,14 @@ export const getConfirmationOrderById = async (req: Request, res: Response): Pro
       include: {
         confirmationDetails: {
           include: {
-            permintaanDetail: {
+            material: {
               include: {
-                material: {
-                  include: {
-                    vendor: true,
-                  },
-                },
-                permintaan: true,
+                vendor: true,
               },
             },
           },
         },
+        permintaan: true,
       },
     });
 
@@ -126,6 +111,7 @@ export const getConfirmationOrderById = async (req: Request, res: Response): Pro
     res.status(500).json({ message: "Terjadi kesalahan", error });
   }
 };
+// UPDATE Confirmation Order
 export const updateConfirmationOrder = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -133,11 +119,6 @@ export const updateConfirmationOrder = async (req: Request, res: Response): Prom
 
     if (!id || isNaN(Number(id))) {
       res.status(400).json({ message: "ID tidak valid" });
-      return;
-    }
-
-    if (!nomorCO || !tanggalCO || !lokasiCO || !status || !Array.isArray(confirmationDetails)) {
-      res.status(400).json({ message: "Data tidak lengkap atau format salah" });
       return;
     }
 
@@ -168,11 +149,12 @@ export const updateConfirmationOrder = async (req: Request, res: Response): Prom
       await prisma.confirmationDetails.createMany({
         data: confirmationDetails.map((detail: any) => ({
           confirmationOrderId: Number(id),
-          permintaanDetailId: detail.permintaanDetailId,
+          materialId: detail.materialId,
           qty: detail.qty,
           code: detail.code,
           satuan: detail.satuan,
           keterangan: detail.keterangan || "",
+          status: detail.status || "WAITING",
         })),
       });
     }
@@ -183,6 +165,7 @@ export const updateConfirmationOrder = async (req: Request, res: Response): Prom
     res.status(500).json({ message: "Terjadi kesalahan saat mengupdate confirmation order" });
   }
 };
+// DELETE Confirmation Order
 export const deleteConfirmationOrder = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -211,6 +194,7 @@ export const deleteConfirmationOrder = async (req: Request, res: Response): Prom
     res.status(500).json({ message: "Terjadi kesalahan saat menghapus", error });
   }
 };
+// ACC Confirmation Details dan buat Purchase Order
 export const accConfirmationDetails = async (req: Request, res: Response): Promise<void> => {
   const { confirmationDetailIds } = req.body;
 
@@ -224,14 +208,12 @@ export const accConfirmationDetails = async (req: Request, res: Response): Promi
       where: { id: { in: confirmationDetailIds } },
       include: {
         confirmationOrder: true,
-        permintaanDetail: {
-          include: { material: true },
-        },
+        material: true,
       },
     });
 
     if (details.length === 0) {
-      res.status(404).json({ error: 'No confirmation details found' });
+      res.status(404).json({ error: 'Confirmation details tidak ditemukan' });
       return;
     }
 
@@ -241,7 +223,7 @@ export const accConfirmationDetails = async (req: Request, res: Response): Promi
       (d) => d.confirmationOrderId === confirmationOrderId
     );
     if (!isSameConfirmationOrder) {
-      res.status(400).json({ error: 'Semua Confirmation Details harus berasal dari Confirmation Order yang sama' });
+      res.status(400).json({ error: 'Semua item harus berasal dari Confirmation Order yang sama' });
       return;
     }
 
@@ -271,12 +253,12 @@ export const accConfirmationDetails = async (req: Request, res: Response): Promi
       });
 
       let nextNumber = 1;
-if (lastPO) {
-  const match = lastPO.nomorPO.match(/PO-\d{2}\/\d{2}\/\d{2}-(\d{3})$/);
-  if (match) {
-    nextNumber = parseInt(match[1]) + 1;
-  }
-}
+      if (lastPO) {
+        const match = lastPO.nomorPO.match(/PO-\d{2}\/\d{2}\/\d{2}-(\d{3})$/);
+        if (match) {
+          nextNumber = parseInt(match[1]) + 1;
+        }
+      }
 
       const nomorPO = `PO-${datePrefix}-${String(nextNumber).padStart(3, '0')}`;
 
@@ -295,7 +277,7 @@ if (lastPO) {
         prisma.purchaseDetails.create({
           data: {
             purchaseOrderId: existingPO!.id,
-            materialId: detail.permintaanDetail.material.id,
+            materialId: detail.material.id,
             qty: detail.qty,
             code: detail.code,
             satuan: detail.satuan,
@@ -304,6 +286,7 @@ if (lastPO) {
         })
       )
     );
+
     res.status(200).json({
       message: 'Confirmation Details berhasil ACC dan dipindahkan ke Purchase Order',
       purchaseOrder: existingPO,
