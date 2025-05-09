@@ -192,7 +192,7 @@ const paginatedCategories = sortedCategories.slice(
                   setSearchQuery(e.target.value.toLowerCase());
                   setCurrentPage(1);
                 }}
-                className="border border-gray-300 rounded px-2 py-1 w-48"
+                className="border border-gray-300 rounded px-4 py-2 w-48"
               />
               <button
                 onClick={() => setShowModal(true)}

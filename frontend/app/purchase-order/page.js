@@ -149,7 +149,7 @@ const PurchaseOrderTable = () => {
             placeholder="Cari PO..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border border-gray-300 rounded px-2 py-1 text-sm"
+            className="border border-gray-300 rounded px-4 py-2 text-sm"
           />
         </div>
 

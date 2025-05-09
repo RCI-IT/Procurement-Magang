@@ -153,7 +153,7 @@ export default function VendorPage() {
                 placeholder="Cari Vendor"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1"
+                className="border border-gray-300 rounded px-4 py-2"
               />
               <button
                 onClick={() => router.push("/vendor/add")}

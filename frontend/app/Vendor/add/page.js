@@ -40,6 +40,10 @@ export default function AddVendorPage() {
     }
   };
 
+  const handleCancel = () => {
+    router.push("/vendor");
+  };
+
   return (
     <div className="flex min-h-screen">
       
@@ -88,12 +92,21 @@ export default function AddVendorPage() {
               className="border rounded px-3 py-2 w-full"
             />
           </div>
+          <div className="flex justify-end space-x-4">
+          <button
+              type="button"
+              onClick={handleCancel}
+              className="bg-gray-500 text-white rounded px-4 py-2 w-32"
+            >
+              Batal
+            </button>
           <button
             type="submit"
-            className="bg-blue-500 text-white rounded px-4 py-2"
+            className="bg-blue-500 text-white rounded px-4 py-2 w-32"
           >
             Simpan
           </button>
+          </div>
         </form>
       </main>
     </div>

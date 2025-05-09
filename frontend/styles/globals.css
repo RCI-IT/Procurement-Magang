@@ -147,7 +147,36 @@
 .pdf-format td {
   padding: 10px 12px;
   text-align: auto;
+  vertical-align: middle;
 }
+
+.text-center {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Tambahan untuk pusatkan isi sel */
+.center-cell {
+  display: flex;
+  align-items: center;       /* Vertikal center */
+  justify-content: center;   /* Horizontal center */
+  height: 100%;              /* Pastikan penuh */
+  width: 100%;               /* Tambahan: isi seluruh sel */
+  padding: 0;                /* Hilangkan padding default */
+  margin: 0;
+  line-height: normal;
+}
+
+/* Jika tidak pakai flex, bisa alternatif pakai ini */
+.table-cell-center {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+  padding: 0;
+}
+
+
+
 
 .pdf-format .header {
   text-align: center;

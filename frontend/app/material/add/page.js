@@ -198,23 +198,24 @@ export default function AddMaterialPage() {
             </select>
           </div>
 
-          <div className="flex justify-between mt-6">
-            <button
-              type="button"
-              onClick={() => window.history.back()}
-              className="bg-red-500 text-white rounded px-4 py-2 w-40"
-            >
-              Batal
-            </button>
+          <div className="flex justify-end space-x-4 mt-6">
+  <button
+    type="button"
+    onClick={() => window.history.back()}
+    className="bg-red-500 text-white rounded px-4 py-2 w-40"
+  >
+    Batal
+  </button>
 
-            <button
-              type="submit"
-              className="bg-green-500 text-white rounded px-4 py-2 w-40"
-              disabled={loading}
-            >
-              {loading ? "Menambahkan..." : "Tambah Material"}
-            </button>
-          </div>
+  <button
+    type="submit"
+    className="bg-green-500 text-white rounded px-4 py-2 w-40"
+    disabled={loading}
+  >
+    {loading ? "Menambahkan..." : "Tambah Material"}
+  </button>
+</div>
+
         </form>
       </div>
     </div>
