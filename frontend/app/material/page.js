@@ -16,6 +16,7 @@ export default function Material() {
   const [sortBy, setSortBy] = useState("terbaru");
   const router = useRouter();
   const [username, setUsername] = useState("");
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,7 +45,9 @@ export default function Material() {
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
+    const storedRole = localStorage.getItem("role");
     if (storedUsername) setUsername(storedUsername);
+    if (storedRole) setUserRole(storedRole);
   }, []);
 
   const handleVendorClick = (vendorId) => {
@@ -160,12 +163,14 @@ export default function Material() {
                 onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
                 className="border border-gray-300 rounded px-2 py-1 text-sm"
               />
+              {userRole !== "USER_LAPANGAN" && (
               <button
                 onClick={() => router.push("/material/add")}
                 className="bg-blue-500 text-white rounded px-4 py-2"
               >
                 + Material
               </button>
+              )}
             </div>
           </div>
 
