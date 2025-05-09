@@ -188,7 +188,7 @@ export default function PermintaanLapangan({ }) {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="border border-gray-300 rounded px-2 py-1 text-sm"
+              className="border border-gray-300 rounded px-4 py-2 text-sm"
             />
             {userRole !== "USER_PURCHASE" && (
               <button
