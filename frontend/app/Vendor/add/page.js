@@ -63,15 +63,16 @@ export default function AddVendorPage() {
             />
           </div>
           <div>
-            <label className="block">Alamat</label>
-            <input
-              type="text"
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-              className="border rounded px-3 py-2 w-full"
-            />
-          </div>
+  <label className="block">Alamat</label>
+  <textarea
+    name="address"
+    value={form.address}
+    onChange={handleChange}
+    className="border rounded px-3 py-2 w-full"
+    rows="4"  
+  />
+</div>
+
           <div>
             <label className="block">Kota</label>
             <input
