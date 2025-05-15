@@ -1,18 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ES2019",              // ES6 baik, tapi ES2019 mendukung fitur modern.
-    "module": "commonjs",           // Tetap gunakan CommonJS untuk Node.js.
-    "outDir": "./dist",             // Output file hasil build.
-    "rootDir": "./src",             // Direktori sumber kode.
-    "strict": true,                 // Aktifkan pemeriksaan tipe yang ketat.
-    "esModuleInterop": true,
-    "skipLibCheck": true,           // Lewati pemeriksaan tipe pada file deklarasi.
-    "forceConsistentCasingInFileNames": true, // Hindari masalah case-sensitive.
-    "moduleResolution": "node",    // Pastikan module resolution sesuai Node.js.
-    "resolveJsonModule": true,     // Izinkan impor file JSON.
-    "typeRoots": ["./node_modules/@types"], // Direktori tipe.
-    "allowSyntheticDefaultImports": true // Izinkan impor default dari modul non-ESM.
+    "target": "ES2019",                            // Mendukung fitur modern JavaScript.
+    "module": "commonjs",                          // Cocok untuk aplikasi Node.js.
+    "outDir": "./dist",                            // Folder output hasil kompilasi.
+    "rootDir": "./src",                            // Folder sumber TypeScript.
+    "strict": true,                                // Aktifkan pemeriksaan tipe ketat.
+    "esModuleInterop": true,                       // Izinkan impor default dari modul CommonJS.
+    "skipLibCheck": true,                          // Lewati pengecekan tipe pada dependensi.
+    "forceConsistentCasingInFileNames": true,      // Hindari masalah nama file case-sensitive.
+    "moduleResolution": "node",                    // Gunakan resolusi modul ala Node.js.
+    "resolveJsonModule": true,                     // Izinkan impor file JSON.
+    "typeRoots": ["./node_modules/@types"],        // Tempat mencari definisi tipe global.
+    "allowSyntheticDefaultImports": true           // Izinkan default import meskipun modul tidak ekspor default.
   },
-  "include": ["src/**/*.ts", "src/server.ts"],        // Sertakan semua file TypeScript di dalam `src`.
-  "exclude": ["node_modules", "dist"] // Kecualikan `node_modules` dan folder output.
+  "include": ["src/**/*.ts"],                      // Sertakan semua file .ts di dalam folder src.
+  "exclude": ["node_modules", "dist"]              // Kecualikan folder yang tidak perlu.
 }

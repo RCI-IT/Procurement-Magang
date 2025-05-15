@@ -58,7 +58,7 @@ export const deletePurchaseDetails = async (purchaseOrderId: number): Promise<vo
       throw new Error("Gagal menghapus Purchase Details");
     }
   };
-  export const deletePurchaseOrder = async (req: Request, res: Response): Promise<void> => {
+export const deletePurchaseOrder = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     try {
       await deletePurchaseDetails(parseInt(id, 10));
