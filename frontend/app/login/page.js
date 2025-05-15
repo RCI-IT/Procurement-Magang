@@ -10,6 +10,8 @@ export default function Login() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [message, setMessage] = useState("");
 
   // Cek jika sudah ada yang login di localStorage
   useEffect(() => {
@@ -34,6 +36,55 @@ export default function Login() {
         setLoading(false);
         console.error("Error fetching users:", error);
       });
+  };
+  const login = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setToken(data.token);
+        localStorage.setItem("token", data.token); // simpan token di localStorage
+        setMessage("Login successful!");
+        router.push("/home");
+      } else {
+        setMessage(data.message || "Login failed");
+      }
+    } catch (error) {
+      setMessage("Network error", error);
+    }
+  }
+
+  const getDashboard = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}auth/dashboard`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // kirim token di header Authorization
+        },
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setMessage(`Dashboard data: ${JSON.stringify(data)}`);
+      } else {
+        setMessage(data.message || "Failed to get dashboard");
+      }
+    } catch (error) {
+      setMessage("Network error", error);
+    }
+  };
+
+  const logout = () => {
+    setToken("");
+    localStorage.removeItem("token");
+    setMessage("Logged out");
   };
 
   const handleLogin = () => {
@@ -79,7 +130,7 @@ export default function Login() {
           className="w-full p-2 mb-4 rounded-md text-blue-500"
         />
         <button
-          onClick={handleLogin}
+          onClick={login}
           className="w-full bg-white text-blue-500 p-2 rounded-md hover:bg-blue-100"
         >
           Login
