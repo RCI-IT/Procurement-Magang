@@ -1,0 +1,53 @@
+// api.js
+const API_BASE = "https://your-api.example.com";
+
+// Simpan accessToken di memori (bukan localStorage untuk keamanan)
+let accessToken = null;
+
+export const login = async (email, password) => {
+  const res = await fetch(`${API_BASE}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include", // penting agar cookie (refreshToken) dikirim
+    body: JSON.stringify({ email, password }),
+  });
+
+  const data = await res.json();
+  accessToken = data.accessToken; // simpan di memori
+};
+
+export const getProtectedResource = async () => {
+  let res = await fetch(`${API_BASE}/protected`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (res.status === 401) {
+    // Token expired, coba refresh
+    await refreshAccessToken();
+
+    // Coba ulangi request
+    res = await fetch(`${API_BASE}/protected`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+  }
+
+  return await res.json();
+};
+
+const refreshAccessToken = async () => {
+  const res = await fetch(`${API_BASE}/refresh-token`, {
+    method: "POST",
+    credentials: "include", // kirim cookie refresh token
+  });
+
+  if (!res.ok) {
+    throw new Error("Gagal refresh token");
+  }
+
+  const data = await res.json();
+  accessToken = data.accessToken;
+};
