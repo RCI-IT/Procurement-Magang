@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-import * as bcrypt from 'bcryptjs';
-import jwt from "jsonwebtoken"
+import * as bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import users from "../utils/users";
 
 // Gunakan UUID atau JWT di produksi
@@ -35,14 +35,14 @@ const prisma = new PrismaClient();
 // LOGIN
 export const login = async (req: Request, res: Response): Promise<void> => {
   const { username, password } = req.body;
-  if (!username || !password ) {
-    res.status(400).json({ error: 'All fields are required' });
+  if (!username || !password) {
+    res.status(400).json({ error: "All fields are required" });
     return;
   }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { username }
+      where: { username },
     });
 
     if (!user) {
@@ -51,9 +51,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    const isMatchNoCrypt = await (password === user.password)
+    const isMatchNoCrypt = await (password === user.password);
     if (!isMatch && !isMatchNoCrypt) {
-      res.status(400).json({ message: "Invalid credentials"});
+      res.status(400).json({ message: "Invalid credentials" });
       return;
     }
 
@@ -68,14 +68,29 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const token = jwt.sign(
       { userId: user.id, username: user.username },
       process.env.JWT_SECRET!,
-      { expiresIn: '1h' } // Token akan expire dalam 1 jam
+      { expiresIn: "1h" } // Token akan expire dalam 1 jam
     );
 
-     // Kirim token ke client
-     res.json({
-      message: "Login successful",
-      token, // atau token: token
-    });
+    const refreshToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_REFRESH_SECRET!,
+      {
+        expiresIn: "7d", // lebih lama
+      }
+    );
+
+    // Kirim token ke client
+    res
+      .cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
+      })
+      .json({
+        message: "Login successful",
+        token, // atau token: token
+      });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Login failed" });
