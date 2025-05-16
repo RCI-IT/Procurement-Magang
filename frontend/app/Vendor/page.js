@@ -3,12 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, Trash2 } from "lucide-react";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
 export default function VendorPage() {
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [username, setUsername] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [rowsToShow, setRowsToShow] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,8 +19,14 @@ export default function VendorPage() {
   }, []);
 
   const fetchData = async () => {
+    const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) throw new Error("Gagal fetch vendor");
       const data = await res.json();
       setVendors(data);
@@ -30,11 +35,6 @@ export default function VendorPage() {
     }
   };
 
-  useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) setUsername(storedUsername);
-  }, []);
-
   const handleVendorClick = (vendorId) => {
     if (!vendorId) return;
     router.push(`/vendor/${vendorId}`);
@@ -42,44 +42,48 @@ export default function VendorPage() {
 
   const handleDelete = async (vendorId) => {
     const result = await Swal.fire({
-      title: 'Yakin ingin hapus vendor ini?',
-      icon: 'warning',
+      title: "Yakin ingin hapus vendor ini?",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonText: 'Ya, Hapus!',
-      cancelButtonText: 'Batal',
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
     });
 
     if (!result.isConfirmed) return;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`, {
-        method: 'DELETE',
-      });
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      if (!res.ok) throw new Error('Gagal hapus vendor');
+      if (!res.ok) throw new Error("Gagal hapus vendor");
 
       Swal.fire({
-        title: 'Berhasil!',
-        text: 'Vendor berhasil dihapus.',
-        icon: 'success',
-        confirmButtonText: 'OK',
+        title: "Berhasil!",
+        text: "Vendor berhasil dihapus.",
+        icon: "success",
+        confirmButtonText: "OK",
       });
 
       fetchData();
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
 
       Swal.fire({
-        title: 'Gagal!',
-        text: 'Terjadi kesalahan saat menghapus vendor.',
-        icon: 'error',
-        confirmButtonText: 'OK',
+        title: "Gagal!",
+        text: "Terjadi kesalahan saat menghapus vendor.",
+        icon: "error",
+        confirmButtonText: "OK",
       });
     }
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
   };
 
   const filteredVendors = vendors
@@ -95,7 +99,6 @@ export default function VendorPage() {
         return aVal.localeCompare(bVal);
       }
     });
-    
 
   const totalPages = Math.ceil(filteredVendors.length / rowsToShow);
 
@@ -107,9 +110,7 @@ export default function VendorPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex flex-1">
-        
         <main className="p-6 flex-1 overflow-auto">
-         
           <h1 className="text-3xl font-bold mb-4">Vendor</h1>
 
           <div className="mb-4 flex justify-between items-center flex-wrap gap-4">
@@ -178,11 +179,21 @@ export default function VendorPage() {
             <tbody>
               {displayedVendors.map((vendor, index) => (
                 <tr key={vendor.id}>
-                  <td className="border px-4 py-2 text-center">{(currentPage - 1) * rowsToShow + index + 1}</td>
-                  <td className="border px-4 py-2 text-center">{vendor.name}</td>
-                  <td className="border px-4 py-2 text-center">{vendor.address}</td>
-                  <td className="border px-4 py-2 text-center">{vendor.city}</td>
-                  <td className="border px-4 py-2 text-center">{vendor.phone}</td>
+                  <td className="border px-4 py-2 text-center">
+                    {(currentPage - 1) * rowsToShow + index + 1}
+                  </td>
+                  <td className="border px-4 py-2 text-center">
+                    {vendor.name}
+                  </td>
+                  <td className="border px-4 py-2 text-center">
+                    {vendor.address}
+                  </td>
+                  <td className="border px-4 py-2 text-center">
+                    {vendor.city}
+                  </td>
+                  <td className="border px-4 py-2 text-center">
+                    {vendor.phone}
+                  </td>
                   <td className="border px-4 py-2 text-center">
                     <button
                       onClick={() => handleVendorClick(vendor.id)}
@@ -203,38 +214,44 @@ export default function VendorPage() {
           </table>
 
           <div className="flex justify-center mt-6">
-  <nav className="inline-flex rounded-md shadow-sm" aria-label="Pagination">
-    <button
-      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-      disabled={currentPage === 1}
-      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-    >
-      «
-    </button>
-    {[...Array(totalPages)].map((_, index) => {
-      const page = index + 1;
-      return (
-        <button
-          key={page}
-          onClick={() => setCurrentPage(page)}
-          className={`px-3 py-2 border border-gray-300 ${
-            currentPage === page ? "text-white bg-blue-500" : "text-blue-600 hover:bg-gray-100"
-          }`}
-        >
-          {page}
-        </button>
-      );
-    })}
-    <button
-      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-      disabled={currentPage === totalPages}
-      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-    >
-      »
-    </button>
-  </nav>
-</div>
-
+            <nav
+              className="inline-flex rounded-md shadow-sm"
+              aria-label="Pagination"
+            >
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
+              >
+                «
+              </button>
+              {[...Array(totalPages)].map((_, index) => {
+                const page = index + 1;
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-2 border border-gray-300 ${
+                      currentPage === page
+                        ? "text-white bg-blue-500"
+                        : "text-blue-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
+              >
+                »
+              </button>
+            </nav>
+          </div>
         </main>
       </div>
     </div>

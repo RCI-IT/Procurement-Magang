@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState} from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "../../../component/sidebar";
-import Header from "../../../component/Header";
 import Swal from "sweetalert2";
 
 export default function AddUserPage() {
@@ -12,13 +10,15 @@ export default function AddUserPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("ADMIN");
-  const [loggedInUsername, setLoggedInUsername] = useState("");
+  // const [loggedInUsername, setLoggedInUsername] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) setLoggedInUsername(storedUsername);
-  }, []);
+  const token = localStorage.getItem("token");
+
+  // useEffect(() => {
+  //   const storedUsername = localStorage.getItem("username");
+  //   if (storedUsername) setLoggedInUsername(storedUsername);
+  // }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,6 +28,7 @@ export default function AddUserPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ username, fullName, email, password, role }),
       });
@@ -56,9 +57,7 @@ export default function AddUserPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex flex-1">
-        
         <main className="p-6 flex-1 overflow-auto">
-        
           <h1 className="text-3xl font-bold mb-4">Tambah User</h1>
 
           <form onSubmit={handleSubmit} className="space-y-4 max-w-md">

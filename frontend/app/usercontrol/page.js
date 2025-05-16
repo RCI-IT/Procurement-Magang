@@ -26,13 +26,19 @@ export default function User() {
   const [rowsToShow, setRowsToShow] = useState(5);
   const [sortBy, setSortBy] = useState("username");
   const [currentPage, setCurrentPage] = useState(1);
-  const [username, setUsername] = useState("");
+  // const [username, setUsername] = useState("");
   const router = useRouter();
+  
+  const token = localStorage.getItem("token")
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!res.ok) throw new Error("Gagal ambil data user");
         const data = await res.json();
         setUsers(data);
@@ -43,10 +49,10 @@ export default function User() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) setUsername(storedUsername);
-  }, []);
+  // useEffect(() => {
+  //   const storedUsername = localStorage.getItem("username");
+  //   if (storedUsername) setUsername(storedUsername);
+  // }, []);
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
@@ -59,10 +65,16 @@ export default function User() {
     if (!result.isConfirmed) return;
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus user");
 
@@ -90,23 +102,32 @@ export default function User() {
     .sort((a, b) => {
       if (sortBy === "username") return a.username.localeCompare(b.username);
       if (sortBy === "role") return a.role.localeCompare(b.role);
-      if (sortBy === "newest") return new Date(b.createdAt) - new Date(a.createdAt);
-      if (sortBy === "oldest") return new Date(a.createdAt) - new Date(b.createdAt);
+      if (sortBy === "newest")
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      if (sortBy === "oldest")
+        return new Date(a.createdAt) - new Date(b.createdAt);
       return 0;
     });
 
   const totalPages = Math.ceil(filteredUsers.length / rowsToShow);
-  const paginatedUsers = filteredUsers.slice((currentPage - 1) * rowsToShow, currentPage * rowsToShow);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * rowsToShow,
+    currentPage * rowsToShow
+  );
 
   return (
-    <div className="user-container"> 
+    <div className="user-container">
       <div className="user-content">
         <main className="user-main">
           <h1 className="user-header">User</h1>
           <div className="user-controls">
             <div className="user-controls-left">
               <label>Urutkan:</label>
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="user-select">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="user-select"
+              >
                 <option value="username">Username</option>
                 <option value="role">Role</option>
                 <option value="newest">Terbaru</option>
@@ -139,7 +160,10 @@ export default function User() {
                 }}
                 className="user-input"
               />
-              <button onClick={() => router.push("/usercontrol/add")} className="user-button-add">
+              <button
+                onClick={() => router.push("/usercontrol/add")}
+                className="user-button-add"
+              >
                 + User
               </button>
             </div>
@@ -185,7 +209,9 @@ export default function User() {
             <div className="user-pagination">
               <nav>
                 <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
                   disabled={currentPage === 1}
                 >
                   «
@@ -203,7 +229,9 @@ export default function User() {
                   );
                 })}
                 <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
                   disabled={currentPage === totalPages}
                 >
                   »

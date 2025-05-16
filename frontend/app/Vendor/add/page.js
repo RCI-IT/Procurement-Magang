@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "../../../component/sidebar";
-import Header from "../../../component/Header";
 import Swal from "sweetalert2";
 
 export default function AddVendorPage() {
@@ -21,11 +19,13 @@ export default function AddVendorPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token")
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(form),
       });
