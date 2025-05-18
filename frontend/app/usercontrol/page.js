@@ -26,12 +26,19 @@ export default function User() {
   const [rowsToShow, setRowsToShow] = useState(5);
   const [sortBy, setSortBy] = useState("username");
   const [currentPage, setCurrentPage] = useState(1);
+  const [token, setToken] = useState("");
   // const [username, setUsername] = useState("");
   const router = useRouter();
-  
-  const token = localStorage.getItem("token")
 
   useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    setToken(storedToken || "");
+  }, []);
+
+  useEffect(() => {
+    if (!token) {
+      router.push("/login");
+    }
     const fetchData = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
@@ -39,7 +46,42 @@ export default function User() {
             Authorization: `Bearer ${token}`,
           },
         });
-        if (!res.ok) throw new Error("Gagal ambil data user");
+        // if (!res.ok) throw new Error("Gagal ambil data user");
+        if (res.status === 401 || !res.ok) {
+          // Coba refresh token
+          const refreshRes = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+            {
+              method: "POST",
+              credentials: "include",
+            }
+          );
+
+          if (refreshRes.ok) {
+            const refreshData = await refreshRes.json();
+            const newToken = refreshData.newAccessToken;
+
+            // Simpan token baru
+            localStorage.setItem("token", newToken);
+
+            // Panggil ulang fetch data
+            const retryRes = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/users`,
+              {
+                headers: {
+                  Authorization: `Bearer ${newToken}`,
+                },
+                credentials: "include",
+              }
+            );
+
+            if (!retryRes.ok) throw new Error("Gagal setelah refresh token");
+            const retryData = await retryRes.json();
+            setUsers(retryData);
+          } else {
+            router.push("login");
+          }
+        }
         const data = await res.json();
         setUsers(data);
       } catch (err) {

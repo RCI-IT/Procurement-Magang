@@ -18,21 +18,31 @@ export default function Header() {
     }
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      // panggil backend untuk hapus cookie
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include", // penting agar cookie ikut terkirim
+      });
+    } catch (err) {
+      console.error("Gagal logout dari server:", err);
+    } finally {
+      localStorage.clear();
+      router.push("/login");
+    }
   };
 
   const breadcrumbMap = {
-    "home": "Home",
+    home: "Home",
     "permintaan-lapangan": "Permintaan Lapangan",
     "purchase-order": "Purchase Order",
-    "material": "Material",
-    "vendor": "Vendor",
+    material: "Material",
+    vendor: "Vendor",
     "confirmation-order": "Confirmation Order",
-    "kategori": "Kategori",
-    "usercontrol": "User Control",
-    "login": "Login",
+    kategori: "Kategori",
+    usercontrol: "User Control",
+    login: "Login",
   };
 
   const pathSegments = pathname.split("/").filter(Boolean);
@@ -56,7 +66,9 @@ export default function Header() {
     } else if (/^\d+$/.test(segment)) {
       label = "Detail";
     } else {
-      label = segment.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      label = segment
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
     }
 
     breadcrumbs.push({ label, path: currentPath });
@@ -64,7 +76,10 @@ export default function Header() {
 
   // Menangani klik di breadcrumb
   const handleBreadcrumbClick = (path) => {
-    if (path !== pathname && path !== breadcrumbs[breadcrumbs.length - 1]?.path) {
+    if (
+      path !== pathname &&
+      path !== breadcrumbs[breadcrumbs.length - 1]?.path
+    ) {
       router.push(path);
     }
   };
@@ -93,7 +108,9 @@ export default function Header() {
               {idx !== 0 && <span>/</span>}
               {idx === breadcrumbs.length - 1 ? (
                 // Breadcrumb yang aktif, tidak bisa diklik
-                <span className="font-semibold text-blue-700">{crumb.label}</span>
+                <span className="font-semibold text-blue-700">
+                  {crumb.label}
+                </span>
               ) : (
                 // Breadcrumb yang bukan aktif bisa diklik
                 <button

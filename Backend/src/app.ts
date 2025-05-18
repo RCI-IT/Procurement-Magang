@@ -10,19 +10,18 @@ import purchaseRoutes from "./routes/purchase";
 import authMiddleware from "./middleware/authMiddleware";
 import auth from "./routes/auth"
 import path from "path";
-
-// import cookieParser from "cookie-parser";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const corsOptions = {
-  origin: "*",
+  origin: "http://192.168.100.134:3000",
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: "Content-Type,Authorization",
-  credentials: true
+  credentials: true, 
 };
 
 app.use(cors(corsOptions));
-// app.use(cookieParser());
+app.use(cookieParser());
 
 app.use("/uploads", express.static(path.join(__dirname, "..", "..", "uploads")));
 app.use(express.json());
