@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
 import * as bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import users from "../utils/users";
 
 // Gunakan UUID atau JWT di produksi
@@ -68,7 +68,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const token = jwt.sign(
       { userId: user.id, username: user.username },
       process.env.JWT_SECRET!,
-      { expiresIn: "1h" } // Token akan expire dalam 1 jam
+      { expiresIn: "1m" } // Token akan expire dalam 1 jam
     );
 
     const refreshToken = jwt.sign(
@@ -84,7 +84,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
       })
       .json({
@@ -95,6 +95,36 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     console.error(err);
     res.status(500).json({ message: "Login failed" });
   }
+};
+
+export const refresh = async (req: Request, res: Response) => {
+  const token = req.cookies.refreshToken;
+  if (!token) {
+    res.sendStatus(401);
+  }
+
+  jwt.verify(
+    token,
+    process.env.JWT_REFRESH_SECRET!,
+    (err: jwt.VerifyErrors | null, user: string | JwtPayload | undefined) => {
+      if (err) return res.sendStatus(403);
+      const newAccessToken = jwt.sign(
+        { username: (user as any).username },
+        process.env.JWT_SECRET!,
+        { expiresIn: "15m" }
+      );
+      return res.json({ message: "Token Refresh", token, newAccessToken });
+    }
+  );
+};
+
+export const logout = (_req: Request, res: Response) => {
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+  });
+  res.json({ message: "Logout successful" });
 };
 
 // LOGOUT

@@ -2,7 +2,7 @@ import "../styles/globals.css";
 import LayoutWrapper from "../component/LayoutWrapper";
 
 export const metadata = {
-  title: "Your App Title",
+  title: "Procurement",
   description: "App description goes here",
 };
 

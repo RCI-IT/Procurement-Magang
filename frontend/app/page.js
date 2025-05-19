@@ -5,7 +5,6 @@ import Home from "./home/page";
 import PermintaanLapangan from "./permintaan-lapangan/page";
 import PurchaseOrder from "./purchase-order/page";
 import Material from "./material/page";
-import Setting from "./Setting";
 import AddPermintaanLapanganForm from "./permintaan-lapangan/add/page";
 import ConfirmationOrder from "./confirmation-order/page";
 import UserControl from "./usercontrol/page";
@@ -26,7 +25,7 @@ export default function MainPage() {
 
   useEffect(() => {
     if (!permintaanLapanganData) {
-      setPermintaanLapanganData([]); 
+      setPermintaanLapanganData([]);
     }
   }, [permintaanLapanganData, setPermintaanLapanganData]);
 
@@ -37,31 +36,29 @@ export default function MainPage() {
       case "permintaan-lapangan":
         return (
           <PermintaanLapangan
-            data={permintaanLapanganData || []} 
+            data={permintaanLapanganData || []}
             setActiveContent={setActiveContent}
           />
         );
       case "purchase-order":
         return <PurchaseOrder />;
-        case "confirmation-order":
+      case "confirmation-order":
         return <ConfirmationOrder />;
       case "material":
         return <Material />;
-      case "setting":
-        return <Setting />;
-            case "tambah-permintaan":
+      case "tambah-permintaan":
         return (
           <AddPermintaanLapanganForm
             onAddPermintaan={handleAddPermintaan}
             setActiveContent={setActiveContent}
           />
         );
-        case "user-control":
-          return <UserControl />;
-          case "vendor":
-            return <Vendor />;
-          case "kategori":
-            return <Kategori />;
+      case "user-control":
+        return <UserControl />;
+      case "vendor":
+        return <Vendor />;
+      case "kategori":
+        return <Kategori />;
       default:
         return <Home />;
     }

@@ -60,20 +60,56 @@ const menuItems = [
 
 export default function Home() {
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const [role, setRole] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = () => {
+    const fetchData = async () => {
       const loggedIn = localStorage.getItem("isLoggedIn");
       const token = localStorage.getItem("token");
+      const storedUsername = localStorage.getItem("username");
       const storedRole = localStorage.getItem("role");
 
       if (!loggedIn || !token) {
         router.push("/login");
-      } else {
-        setRole(storedRole);
+        return;
       }
+      // else {
+      //   setUsername(storedUsername);
+      //   setRole(storedRole);
+      // }
+
+      // let res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+      //   headers: { Authorization: `Bearer ${token}` },
+      //   credentials: "include",
+      // });
+      // if (res.status === 401) {
+      //   // Coba refresh token
+      //   const refreshRes = await fetch(
+      //     `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+      //     {
+      //       method: "POST",
+      //       credentials: "include",
+      //     }
+      //   );
+
+      //   const refreshData = await refreshRes.json();
+
+      //   if (refreshRes.ok) {
+      //     localStorage.setItem("token", refreshData.accessToken);
+      //     token = refreshData.token;
+
+      //     // Coba verifikasi ulang dengan token baru
+      //     res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+      //       headers: { Authorization: `Bearer ${token}` },
+      //       credentials: "include",
+      //     });
+      //   } else {
+      //     router.push("/login");
+      //     return;
+      //   }
+      // }
 
       setTimeout(() => {
         setIsLoading(false);
