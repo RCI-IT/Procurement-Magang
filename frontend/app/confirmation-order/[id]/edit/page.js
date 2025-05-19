@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Sidebar from "@/component/sidebar";
-import Header from "@/component/Header";
 import Swal from "sweetalert2";
 
 export default function EditPurchaseOrder() {
