@@ -2,88 +2,107 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Sidebar from "../../../component/sidebar";
-import Header from "../../../component/Header";
+import { fetchWithToken } from "../../../services/fetchWithToken"
 
 export default function MaterialPage() {
   const { id } = useParams();
   const router = useRouter();
 
-  const [material, setMaterial] = useState(null);
+  const [material, setMaterial] = useState([]);
   const [vendor, setVendor] = useState(null);
   const [relatedMaterials, setRelatedMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [username, setUsername] = useState("");
+
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    if (!id) {
-      setError("Material ID tidak ditemukan di URL.");
-      setLoading(false);
-      return;
-    }
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) setToken(storedToken);
+  }, []);
 
- 
-      const storedUsername = localStorage.getItem("username");
-      if (storedUsername) {
-        setUsername(storedUsername);
-      }
+  const getData = async () => {
+    const data = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
+
+    if (data) setMaterial(data);
+  };
+
+  useEffect(() => {
+    fetchData();
+    setLoading(false)
+  }, [token]);
+
+  const fetchData = () => {
+    getData();
+  };
 
 
-    const fetchMaterialDetails = async () => {
-      setLoading(true);
-      try {
-        const resMaterial = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`);
-        if (!resMaterial.ok) throw new Error("Material tidak ditemukan");
-        const materialData = await resMaterial.json();
+  // useEffect(() => {
+  //   if (!id) {
+  //     setError("Material ID tidak ditemukan di URL.");
+  //     setLoading(false);
+  //     return;
+  //   }
+  //   const fetchMaterialDetails = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const resMaterial = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`);
+  //       if (!resMaterial.ok) throw new Error("Material tidak ditemukan");
+  //       const materialData = await resMaterial.json();
 
-        let vendorData = null;
-        let relatedMaterialsData = [];
+  //       let vendorData = null;
+  //       let relatedMaterialsData = [];
 
-        let searchVendorId = null;
-        if (materialData.vendorId) {
-          searchVendorId = Number(materialData.vendorId);
-          const resVendor = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${searchVendorId}`);
-          if (resVendor.ok) vendorData = await resVendor.json();
-        } else if (materialData.vendor) {
-          const vendorName = materialData.vendor;
-          const resVendor = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/vendors?name=${encodeURIComponent(vendorName)}`
-          );
-          if (resVendor.ok) {
-            const vendorList = await resVendor.json();
-            vendorData = vendorList.find(
-              (v) => v.name.trim().toLowerCase() === vendorName.trim().toLowerCase()
-            ) || null;
-          }
-          if (vendorData) searchVendorId = vendorData.id;
-        }
+  //       let searchVendorId = null;
+  //       if (materialData.vendorId) {
+  //         searchVendorId = Number(materialData.vendorId);
+  //         const resVendor = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${searchVendorId}`);
+  //         if (resVendor.ok) vendorData = await resVendor.json();
+  //       } else if (materialData.vendor) {
+  //         const vendorName = materialData.vendor;
+  //         const resVendor = await fetch(
+  //           `${process.env.NEXT_PUBLIC_API_URL}/vendors?name=${encodeURIComponent(vendorName)}`
+  //         );
+  //         if (resVendor.ok) {
+  //           const vendorList = await resVendor.json();
+  //           vendorData = vendorList.find(
+  //             (v) => v.name.trim().toLowerCase() === vendorName.trim().toLowerCase()
+  //           ) || null;
+  //         }
+  //         if (vendorData) searchVendorId = vendorData.id;
+  //       }
 
-        if (searchVendorId) {
-          const resRelated = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/materials?vendorId=${searchVendorId}`
-          );
-          if (resRelated.ok) {
-            const allMaterials = await resRelated.json();
-            relatedMaterialsData = allMaterials.filter(
-              (item) => item.id !== materialData.id && item.vendorId === searchVendorId
-            );
-          }
-        }
+  //       if (searchVendorId) {
+  //         const resRelated = await fetch(
+  //           `${process.env.NEXT_PUBLIC_API_URL}/materials?vendorId=${searchVendorId}`
+  //         );
+  //         if (resRelated.ok) {
+  //           const allMaterials = await resRelated.json();
+  //           relatedMaterialsData = allMaterials.filter(
+  //             (item) => item.id !== materialData.id && item.vendorId === searchVendorId
+  //           );
+  //         }
+  //       }
 
-        setMaterial(materialData);
-        setVendor(vendorData);
-        setRelatedMaterials(relatedMaterialsData);
-        setError(null);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       setMaterial(materialData);
+  //       setVendor(vendorData);
+  //       setRelatedMaterials(relatedMaterialsData);
+  //       setError(null);
+  //     } catch (err) {
+  //       setError(err.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchMaterialDetails();
-  }, [id]);
+  //   fetchMaterialDetails();
+  // }, [id]);
+
   const parsePrice = (priceString) => {
     if (!priceString) return null;
 
@@ -112,7 +131,7 @@ export default function MaterialPage() {
 
   const materialImage = material?.imageUrl
     ? material.imageUrl
-    : `${process.env.NEXT_PUBLIC_API_URL}/uploads/default-image.jpg`;
+    : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${String(material.imageUrl)}`;
 
   return (
     <div className="flex">
@@ -154,7 +173,7 @@ export default function MaterialPage() {
             <img src={materialImage} alt={material.image} className="object-cover max-h-72" />
           </div>
           <div className="flex-grow">
-            <h3 className="text-2xl font-bold mb-2">{material.name}</h3>
+            <h3 className="text-2xl font-bold mb-2">{material.name} {material.imageUrl}</h3>
             <p className="text-xl text-blue-600 font-semibold mb-4">
   {formattedPrice}
 </p>

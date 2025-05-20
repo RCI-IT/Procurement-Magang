@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Header from "../../../component/Header";
-import Sidebar from "../../../component/sidebar";
 import Swal from "sweetalert2";
+import { fetchWithToken } from "../../../services/fetchWithToken";
+import { fetchWithAuth } from "../../../services/apiClient";
 
 export default function AddMaterialPage() {
   const router = useRouter();
@@ -18,37 +18,63 @@ export default function AddMaterialPage() {
   const [vendors, setVendors] = useState([]);
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
-  const [username, setUsername] = useState("");
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [vendorRes, categoryRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`),
-        ]);
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) setToken(storedToken);
+  }, []);
 
-        if (!vendorRes.ok || !categoryRes.ok) {
-          throw new Error("Gagal mengambil data dari server");
-        }
+  const getData = async () => {
+    const categoriesData = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/categories`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
+    const vendorsData = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
 
-        setVendors(await vendorRes.json());
-        setCategories(await categoryRes.json());
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setError(`Gagal memuat vendor atau kategori: ${error.message}`);
-      }
-    };
+    if (categoriesData) setCategories(categoriesData);
+    if (vendorsData) setVendors(vendorsData);
+  };
 
+  useEffect(() => {
     fetchData();
-  }, []);
+  }, [token]);
 
-  useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
-  }, []);
+  const fetchData = () => {
+    getData();
+  };
+
+  
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const [vendorRes, categoryRes] = await Promise.all([
+  //         fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`),
+  //         fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`),
+  //       ]);
+
+  //       if (!vendorRes.ok || !categoryRes.ok) {
+  //         throw new Error("Gagal mengambil data dari server");
+  //       }
+
+  //       setVendors(await vendorRes.json());
+  //       setCategories(await categoryRes.json());
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //       setError(`Gagal memuat vendor atau kategori: ${error.message}`);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -76,12 +102,15 @@ export default function AddMaterialPage() {
     }
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials`, {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/materials`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
-      if (!response.ok) {
+      if (!response) {
         throw new Error("Gagal menambahkan material");
       }
 
@@ -99,7 +128,7 @@ export default function AddMaterialPage() {
         confirmButtonText: "OK",
       });
 
-      router.back(); 
+      router.back();
     } catch (error) {
       console.error("Error adding material:", error);
 
@@ -115,11 +144,8 @@ export default function AddMaterialPage() {
 
   return (
     <div className="flex h-screen">
-      
       <div className="flex-1 p-6">
-      <div className="w-full">
-        
-        </div>
+        <div className="w-full"></div>
         <h1 className="text-2xl font-bold mb-6">Tambah Material</h1>
         <form
           onSubmit={handleSubmit}
@@ -199,23 +225,22 @@ export default function AddMaterialPage() {
           </div>
 
           <div className="flex justify-end space-x-4 mt-6">
-  <button
-    type="button"
-    onClick={() => window.history.back()}
-    className="bg-red-500 text-white rounded px-4 py-2 w-40"
-  >
-    Batal
-  </button>
+            <button
+              type="button"
+              onClick={() => window.history.back()}
+              className="bg-red-500 text-white rounded px-4 py-2 w-40"
+            >
+              Batal
+            </button>
 
-  <button
-    type="submit"
-    className="bg-green-500 text-white rounded px-4 py-2 w-40"
-    disabled={loading}
-  >
-    {loading ? "Menambahkan..." : "Tambah Material"}
-  </button>
-</div>
-
+            <button
+              type="submit"
+              className="bg-green-500 text-white rounded px-4 py-2 w-40"
+              disabled={loading}
+            >
+              {loading ? "Menambahkan..." : "Tambah Material"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
