@@ -21,6 +21,7 @@ export default function EditMaterial() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [vendors, setVendors] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [material, setMaterial] = useState(null);
   const [error, setError] = useState("");
   const [token, setToken] = useState(null);
 
@@ -30,6 +31,12 @@ export default function EditMaterial() {
   }, []);
 
   const getData = async () => {
+    const materialData = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
     const categoryData = await fetchWithToken(
       `${process.env.NEXT_PUBLIC_API_URL}/categories`,
       token,
@@ -42,76 +49,28 @@ export default function EditMaterial() {
       setToken,
       () => router.push("/login")
     );
-    const materialData = await fetchWithToken(
-      `${process.env.NEXT_PUBLIC_API_URL}/materials`,
-      token,
-      setToken,
-      () => router.push("/login")
-    );
 
+    if (materialData) setMaterial(materialData);
+    if (vendorData) setVendors(vendorData);
     if (categoryData) setCategories(categoryData);
-    if (vendorData) setCategories(vendorData);
-    if (materialData) setCategories(materialData);
   };
 
   useEffect(() => {
-    fetchData();
+    if (token) {
+      getData().finally(() => setInitialLoading(false));
+    }
   }, [token]);
 
-  const fetchData = () => {
-    getData();
-  };
-
-  // useEffect(() => {
-  //   if (!id) return;
-
-  //   const fetchData = async () => {
-  //     try {
-  //       const [materialRes, vendorRes, categoryRes] = await Promise.all([
-  //         fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`),
-  //         fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`),
-  //         fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`),
-  //       ]);
-
-  //       if (!materialRes.ok || !vendorRes.ok || !categoryRes.ok) {
-  //         throw new Error("Gagal mengambil data dari server");
-  //       }
-
-  //       const materialData = await materialRes.json();
-  //       const vendorData = await vendorRes.json();
-  //       const categoryData = await categoryRes.json();
-
-  //       const matchedVendor = vendorData.find(
-  //         (v) => v.name === materialData.vendor
-  //       );
-  //       const matchedCategory = categoryData.find(
-  //         (c) => c.name === materialData.category
-  //       );
-
-  //       setName(materialData.name || "");
-  //       setVendorId(matchedVendor ? String(matchedVendor.id) : "");
-  //       setCategoryId(matchedCategory ? String(matchedCategory.id) : "");
-
-  //       const numericPrice =
-  //         typeof materialData.price === "string"
-  //           ? materialData.price.replace(/[^\d]/g, "")
-  //           : String(materialData.price);
-  //       setPrice(numericPrice || "");
-
-  //       setDescription(materialData.description || "");
-  //       setOldImageUrl(materialData.imageUrl || null);
-
-  //       setVendors(vendorData);
-  //       setCategories(categoryData);
-  //     } catch (error) {
-  //       setError(error.message);
-  //     } finally {
-  //       setInitialLoading(false);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [id]);
+  useEffect(() => {
+    if (material) {
+      setName(material.name || "");
+      setVendorId(material.vendorId ? String(material.vendorId) : "");
+      setCategoryId(material.categoryId ? String(material.categoryId) : "");
+      setPrice(material.price ? String(material.price) : "");
+      setDescription(material.description || "");
+      setOldImageUrl(`${process.env.NEXT_PUBLIC_API_URL}/uploads/${material.imageUrl}` || null);
+    }
+  }, [material]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -188,25 +147,21 @@ export default function EditMaterial() {
     }
   };
 
-  if (initialLoading) {
+  if (initialLoading || categories.length === 0 || vendors.length === 0) {
     return <div className="p-6">Memuat data material...</div>;
   }
 
   return (
     <div className="flex min-h-screen bg-white">
       <div className="p-6 flex-1 bg-white text-black">
-        <div className="w-full"></div>
-
-        <h2 className="text-3xl font-bold text-center text-black mb-8">
-          Edit Material
-        </h2>
+        <h2 className="text-3xl font-bold text-center mb-8">Edit Material</h2>
         {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">
           <div>
-            <label className="block text-xl text-white">Gambar:</label>
+            <label className="block text-xl text-black">Gambar:</label>
             <div className="flex items-center gap-4 mb-4">
-              {oldImageUrl && (
+              {oldImageUrl && !image && (
                 <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
                   <img
                     src={oldImageUrl}
@@ -231,48 +186,48 @@ export default function EditMaterial() {
             <input
               type="file"
               onChange={(e) => setImage(e.target.files[0])}
-              className="file:border file:border-white-600 file:bg-white-800 file:black-white file:py-2 file:px-4 rounded-lg"
+              className="file:border file:border-white-600 file:bg-white-800 file:py-2 file:px-4 rounded-lg"
             />
           </div>
 
           <div>
-            <label className="block text-xl text-white">Nama Material:</label>
+            <label className="block text-xl text-black">Nama Material:</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
+              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xl text-white">Harga:</label>
+            <label className="block text-xl text-black">Harga:</label>
             <input
               type="number"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
-              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
+              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xl text-white">Deskripsi:</label>
+            <label className="block text-xl text-black">Deskripsi:</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
+              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
               required
             ></textarea>
           </div>
 
           <div>
-            <label className="block text-xl text-white">Kategori:</label>
+            <label className="block text-xl text-black">Kategori:</label>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
+              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Pilih Kategori</option>
@@ -285,11 +240,11 @@ export default function EditMaterial() {
           </div>
 
           <div>
-            <label className="block text-xl text-white">Vendor:</label>
+            <label className="block text-xl text-black">Vendor:</label>
             <select
               value={vendorId}
               onChange={(e) => setVendorId(e.target.value)}
-              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
+              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Pilih Vendor</option>
@@ -308,7 +263,7 @@ export default function EditMaterial() {
           >
             {loading ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
-          <br />
+
           <button
             type="button"
             onClick={() => router.back()}

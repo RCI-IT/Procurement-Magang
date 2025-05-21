@@ -26,7 +26,7 @@ export const fetchWithToken = async (url, token, setToken, onUnauthorized) => {
         credentials: "include",
       });
 
-      if (!res.ok) throw new Error("Gagal setelah refresh token");
+      if (!res) throw new Error("Gagal setelah refresh token");
     }
 
     return await res.json();
