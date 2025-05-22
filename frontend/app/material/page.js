@@ -41,8 +41,8 @@ export default function Material() {
           () => router.push("/login")
         );
 
-        if (materialData) setMaterials(materialData);
-        if (vendorData) setVendors(vendorData);
+        if (Array.isArray(materialData)) setMaterials(materialData);
+        if (Array.isArray(vendorData)) setVendors(vendorData);
       };
       getData();
     };
@@ -127,6 +127,13 @@ export default function Material() {
     (currentPage - 1) * rowsToShow,
     currentPage * rowsToShow
   );
+
+  if (!materials)
+    return (
+      <div className="text-center text-gray-500">Material tidak ditemukan.</div>
+    );
+
+
 
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);

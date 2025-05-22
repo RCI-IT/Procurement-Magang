@@ -148,13 +148,13 @@ export default function KategoriPage() {
     currentPage * rowsPerPage
   );
 
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-  };
+  // const handleNextPage = () => {
+  //   if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  // };
 
-  const handlePrevPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
+  // const handlePrevPage = () => {
+  //   if (currentPage > 1) setCurrentPage(currentPage - 1);
+  // };
 
   return (
     <div className="flex flex-col min-h-screen">

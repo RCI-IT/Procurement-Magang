@@ -3,9 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import { fetchWithAuth } from "../../../services/apiClient";
 
 export default function AddVendorPage() {
   const router = useRouter();
+
+  
   const [form, setForm] = useState({
     name: "",
     address: "",
@@ -19,13 +22,11 @@ export default function AddVendorPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token")
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`, {
+      const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/vendors`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(form),
       });

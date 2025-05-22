@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { fetchWithToken } from "../../../../services/fetchWithToken";
+import { fetchWithAuth } from "../../../../services/apiClient";
 import Swal from "sweetalert2";
 
 export default function EditMaterial() {
@@ -68,7 +69,10 @@ export default function EditMaterial() {
       setCategoryId(material.categoryId ? String(material.categoryId) : "");
       setPrice(material.price ? String(material.price) : "");
       setDescription(material.description || "");
-      setOldImageUrl(`${process.env.NEXT_PUBLIC_API_URL}/uploads/${material.imageUrl}` || null);
+      setOldImageUrl(
+        `${process.env.NEXT_PUBLIC_API_URL}/uploads/${material.imageUrl}` ||
+          null
+      );
     }
   }, [material]);
 
@@ -77,14 +81,39 @@ export default function EditMaterial() {
     setLoading(true);
     setError("");
 
-    const hasChange =
-      name !== "" ||
-      vendorId !== "" ||
-      price !== "" ||
-      categoryId !== "" ||
-      description !== "" ||
-      image !== null;
+    let hasChange = false;
+    const formData = new FormData();
 
+    // Daftar field yang akan dicek
+    const fields = [
+      { key: "name", value: name, original: material.name },
+      { key: "vendorId", value: vendorId, original: String(material.vendorId) },
+      { key: "price", value: price, original: String(material.price) },
+      {
+        key: "categoryId",
+        value: categoryId,
+        original: String(material.categoryId),
+      },
+      {
+        key: "description",
+        value: description,
+        original: material.description,
+      },
+    ];
+
+    for (const field of fields) {
+      if (field.value !== field.original) {
+        formData.append(field.key, field.value);
+        hasChange = true;
+      }
+    }
+
+    // Cek perubahan gambar
+    if (image) {
+      formData.append("image", image);
+      hasChange = true;
+    }
+    
     if (!hasChange) {
       Swal.fire({
         icon: "warning",
@@ -98,18 +127,10 @@ export default function EditMaterial() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("vendorId", Number(vendorId));
-    formData.append("price", Number(price));
-    formData.append("categoryId", Number(categoryId));
-    formData.append("description", description);
-    if (image) {
-      formData.append("image", image);
-    }
+    console.log(formData);
 
     try {
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`,
         {
           method: "PUT",

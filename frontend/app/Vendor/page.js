@@ -4,35 +4,40 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
+import { fetchWithToken } from "@/services/fetchWithToken";
+import { fetchWithAuth } from "@/services/apiClient";
 
 export default function VendorPage() {
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [rowsToShow, setRowsToShow] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);  
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) setToken(storedToken);
+  }, []);
 
   const router = useRouter();
 
+  const getData = async() => {
+    const data = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
+      token,
+      setToken,
+      () => router.push("/login")
+    )
+    if (data) setVendors(data);
+  };
+
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [token]);
 
-  const fetchData = async () => {
-    const token = localStorage.getItem("token");
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!res.ok) throw new Error("Gagal fetch vendor");
-      const data = await res.json();
-      setVendors(data);
-    } catch (error) {
-      console.error("Error:", error);
-    }
+  const fetchData = () => {
+    getData();
   };
 
   const handleVendorClick = (vendorId) => {
@@ -42,7 +47,7 @@ export default function VendorPage() {
 
   const handleDelete = async (vendorId) => {
     const result = await Swal.fire({
-      title: "Yakin ingin hapus vendor ini?",
+      title: "Yakin ingin hapus vendor ini dan seluruh material terkait vendor?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Ya, Hapus!",
@@ -52,8 +57,7 @@ export default function VendorPage() {
     if (!result.isConfirmed) return;
 
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`,
         {
           method: "DELETE",

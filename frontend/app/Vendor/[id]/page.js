@@ -2,51 +2,56 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Sidebar from "../../../component/sidebar"; 
-import Header from "../../../component/Header";
-
+import { fetchWithToken } from "../../../services/fetchWithToken";
 export default function VendorPage() {
   const { id: vendorId } = useParams();
   const router = useRouter();
 
-  const [vendor, setVendor] = useState(null);
-  const [username, setUsername] = useState("");
+  const [vendor, setVendor] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [error, setError] = useState(null);
+
+
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) setUsername(storedUsername);
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) setToken(storedToken);
   }, []);
 
+  const getData = async () => {
+    const vendorData = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
+
+    const materialsData = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/materials`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
+
+    const filteredMaterials = materialsData.filter((item) => String(item.vendorId) === String(vendorId));
+
+    if (vendorData) setVendor(vendorData);
+    if (Array.isArray(filteredMaterials)) setMaterials(filteredMaterials);
+    setError(null);
+  };
+
   useEffect(() => {
-    const fetchVendorData = async () => {
-      try {
-        const resVendor = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`);
-        if (!resVendor.ok) throw new Error("Gagal mengambil data vendor");
-        const vendorData = await resVendor.json();
+    fetchData();
+    setLoading(false)
+  }, [token]);
 
-        const resMaterials = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials`);
-        if (!resMaterials.ok) throw new Error("Gagal mengambil daftar material");
-        const allMaterials = await resMaterials.json();
-
-        const filteredMaterials = allMaterials.filter((item) => String(item.vendorId) === String(vendorId));
-
-        setVendor(vendorData);
-        setMaterials(filteredMaterials);
-        setCurrentPage(1); 
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (vendorId) fetchVendorData();
-  }, [vendorId]);
+  const fetchData = () => {
+    getData();
+  };
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -55,16 +60,17 @@ export default function VendorPage() {
 
   if (loading) return <p className="text-center text-blue-500">Loading...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
+  if (!vendor) return <div className="text-center text-gray-500">Vendor tidak ditemukan.</div>
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      
       <div className="flex-1 p-6 space-y-6">
-       
-
         <div className="bg-white shadow-md p-6 rounded-md">
           <h1 className="text-3xl font-bold">{vendor?.name} </h1>
-          <p className="text-gray-600 mt-2">{vendor?.address || "Alamat tidak tersedia"}, {vendor?.city || "kota tidak tersedia"}</p>
+          <p className="text-gray-600 mt-2">
+            {vendor?.address || "Alamat tidak tersedia"},{" "}
+            {vendor?.city || "kota tidak tersedia"}
+          </p>
           <p className="text-lg mt-2">📞 {vendor?.phone || "Tidak tersedia"}</p>
         </div>
 
@@ -77,7 +83,7 @@ export default function VendorPage() {
                 value={itemsPerPage}
                 onChange={(e) => {
                   setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1); 
+                  setCurrentPage(1);
                 }}
                 className="border rounded px-2 py-1 text-sm"
               >
@@ -102,7 +108,9 @@ export default function VendorPage() {
               {currentMaterials.length > 0 ? (
                 currentMaterials.map((material, index) => (
                   <tr key={material.id} className="text-center border-b">
-                    <td className="p-2 border">{indexOfFirstItem + index + 1}</td>
+                    <td className="p-2 border">
+                      {indexOfFirstItem + index + 1}
+                    </td>
                     <td className="p-2 border">{material.name}</td>
                     <td className="p-2 border">
                       {material.image ? (
@@ -115,8 +123,14 @@ export default function VendorPage() {
                         "No Image"
                       )}
                     </td>
-                    <td className="p-2 border">Rp {material.price.toLocaleString("id-ID")}</td>
-                    <td className="p-2 border">{material.category ? material.category.name : "Tidak ada kategori"}</td>
+                    <td className="p-2 border">
+                      Rp {material.price.toLocaleString("id-ID")}
+                    </td>
+                    <td className="p-2 border">
+                      {material.category
+                        ? material.category.name
+                        : "Tidak ada kategori"}
+                    </td>
                   </tr>
                 ))
               ) : (
@@ -129,42 +143,49 @@ export default function VendorPage() {
             </tbody>
           </table>
 
-{materials.length > itemsPerPage && (
-  <div className="flex justify-center mt-6">
-  <nav className="inline-flex rounded-md shadow-sm" aria-label="Pagination">
-    <button
-      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-      disabled={currentPage === 1}
-      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-    >
-      «
-    </button>
-    {[...Array(totalPages)].map((_, index) => {
-      const page = index + 1;
-      return (
-        <button
-          key={page}
-          onClick={() => setCurrentPage(page)}
-          className={`px-3 py-2 border border-gray-300 ${
-            currentPage === page ? "text-white bg-blue-600" : "text-blue-600 hover:bg-gray-100"
-          }`}
-        >
-          {page}
-        </button>
-      );
-    })}
-    <button
-      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-      disabled={currentPage === totalPages}
-      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-    >
-      »
-    </button>
-  </nav>
-</div>
-
-)}
-
+          {materials.length > itemsPerPage && (
+            <div className="flex justify-center mt-6">
+              <nav
+                className="inline-flex rounded-md shadow-sm"
+                aria-label="Pagination"
+              >
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
+                >
+                  «
+                </button>
+                {[...Array(totalPages)].map((_, index) => {
+                  const page = index + 1;
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 border border-gray-300 ${
+                        currentPage === page
+                          ? "text-white bg-blue-600"
+                          : "text-blue-600 hover:bg-gray-100"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
+                >
+                  »
+                </button>
+              </nav>
+            </div>
+          )}
         </div>
 
         <div className="mt-4 space-x-2">

@@ -1,47 +1,68 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Sidebar from '../../../../component/sidebar';
-import Header from '../../../../component/Header';
-import Swal from 'sweetalert2';
-
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Swal from "sweetalert2";
+import { fetchWithToken } from "../../../../services/fetchWithToken";
+import { fetchWithAuth } from "../../../../services/apiClient";
 
 export default function EditVendorPage() {
   const { id: vendorId } = useParams();
   const router = useRouter();
-
-  const [username, setUsername] = useState('');
   const [vendor, setVendor] = useState({
-    name: '',
-    address: '',
-    city: '',
-    phone: '',
+    name: "",
+    address: "",
+    city: "",
+    phone: "",
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username');
-    if (storedUsername) setUsername(storedUsername);
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) setToken(storedToken);
   }, []);
 
-  useEffect(() => {
-    const fetchVendor = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`);
-        if (!res.ok) throw new Error('Gagal mengambil data vendor');
-        const data = await res.json();
-        setVendor(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const getData = async () => {
+    const vendorData = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
 
-    if (vendorId) fetchVendor();
-  }, [vendorId]);
+    if (vendorData) setVendor(vendorData);
+    setError(null)
+  };
+
+  useEffect(() => {
+    fetchData();
+    setLoading(false);
+  }, [token]);
+
+  const fetchData = () => {
+    getData();
+  };
+
+  // useEffect(() => {
+  //   const fetchVendor = async () => {
+  //     try {
+  //       const res = await fetch(
+  //         `${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`
+  //       );
+  //       if (!res.ok) throw new Error("Gagal mengambil data vendor");
+  //       const data = await res.json();
+  //       setVendor(data);
+  //     } catch (err) {
+  //       setError(err.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   if (vendorId) fetchVendor();
+  // }, [vendorId]);
 
   const handleChange = (e) => {
     setVendor({ ...vendor, [e.target.name]: e.target.value });
@@ -51,52 +72,52 @@ export default function EditVendorPage() {
     e.preventDefault();
     try {
       const result = await Swal.fire({
-        title: 'Konfirmasi',
-        text: 'Apakah Anda yakin ingin menyimpan perubahan?',
-        icon: 'question',
+        title: "Konfirmasi",
+        text: "Apakah Anda yakin ingin menyimpan perubahan?",
+        icon: "question",
         showCancelButton: true,
-        confirmButtonText: 'Ya, simpan',
-        cancelButtonText: 'Batal',
+        confirmButtonText: "Ya, simpan",
+        cancelButtonText: "Batal",
       });
-  
+
       if (result.isConfirmed) {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(vendor),
-        });
-  
-        if (!res.ok) throw new Error('Gagal memperbarui vendor');
-  
+        const res = await fetchWithAuth(
+          `${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(vendor),
+          }
+        );
+
+        if (!res.ok) throw new Error("Gagal memperbarui vendor");
+
         await Swal.fire({
-          title: 'Berhasil!',
-          text: 'Vendor berhasil diperbarui.',
-          icon: 'success',
-          confirmButtonText: 'OK',
+          title: "Berhasil!",
+          text: "Vendor berhasil diperbarui.",
+          icon: "success",
+          confirmButtonText: "OK",
         });
-  
+
         router.push(`/vendor/${vendorId}`);
       }
     } catch (err) {
       console.error(err);
       Swal.fire({
-        title: 'Gagal!',
-        text: 'Terjadi kesalahan saat memperbarui vendor.',
-        icon: 'error',
-        confirmButtonText: 'OK',
+        title: "Gagal!",
+        text: "Terjadi kesalahan saat memperbarui vendor.",
+        icon: "error",
+        confirmButtonText: "OK",
       });
     }
   };
-  
 
   if (loading) return <p className="text-center text-blue-500">Loading...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      
       <div className="flex-1 p-6 space-y-6">
-        
         <br></br>
 
         <div className="bg-white shadow-md p-6 rounded-md max-w-xl mx-auto">

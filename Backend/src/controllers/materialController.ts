@@ -102,7 +102,7 @@ export const deleteMaterial = async (
     }
 
     // Hapus file jika ada gambar
-    const fileName = String(material.image)
+    const fileName = String(material.image);
     const filePath = path.join(__dirname, "../../uploads", fileName);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
@@ -125,23 +125,25 @@ export const editMaterial = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { name, description, price, categoryId, vendorId } = req.body;
-    const parsedId = parseInt(id, 10);
-    const parsedCategoryId = parseInt(categoryId, 10);
-    const parsedPrice = parseFloat(price);
-    const parsedVendorId = parseInt(vendorId, 10);
+    const { error, value } = req.body;
 
-    if (
-      isNaN(parsedId) ||
-      isNaN(parsedCategoryId) ||
-      isNaN(parsedPrice) ||
-      isNaN(parsedVendorId)
-    ) {
-      res
-        .status(400)
-        .json({ error: "Invalid ID, categoryId, price, or vendorId" });
-      return;
-    }
+    // const { name, description, price, categoryId, vendorId } = req.body;
+    const parsedId = parseInt(id, 10);
+    // const parsedCategoryId = parseInt(categoryId, 10);
+    // const parsedPrice = parseFloat(price);
+    // const parsedVendorId = parseInt(vendorId, 10);
+
+    // if (
+    //   isNaN(parsedId) ||
+    //   isNaN(parsedCategoryId) ||
+    //   isNaN(parsedPrice) ||
+    //   isNaN(parsedVendorId)
+    // ) {
+    //   res
+    //     .status(400)
+    //     .json({ error: "Invalid ID, categoryId, price, or vendorId" });
+    //   return;
+    // }
     const material = await prisma.materials.findUnique({
       where: { id: parsedId },
     });
@@ -153,19 +155,17 @@ export const editMaterial = async (
     let newImage = material.image;
     if (req.file) {
       if (material.image && material.image !== "default-image.jpg") {
-        fs.unlinkSync(`uploads/${material.image}`);
+        const oldImagePath = path.resolve("uploads", material.image); // relatif dari root project
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
       }
       newImage = req.file.filename;
     }
-
     const updatedMaterial = await prisma.materials.update({
       where: { id: parsedId },
       data: {
-        name,
-        description,
-        price: parsedPrice,
-        categoryId: parsedCategoryId,
-        vendorId: parsedVendorId,
+        ...value,
         image: newImage,
       },
     });

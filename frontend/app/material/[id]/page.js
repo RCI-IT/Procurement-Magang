@@ -60,86 +60,14 @@ export default function MaterialPage() {
     getData();
   };
 
-  // useEffect(() => {
-  //   if (!id) {
-  //     setError("Material ID tidak ditemukan di URL.");
-  //     setLoading(false);
-  //     return;
-  //   }
-  //   const fetchMaterialDetails = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const resMaterial = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`);
-  //       if (!resMaterial.ok) throw new Error("Material tidak ditemukan");
-  //       const materialData = await resMaterial.json();
-
-  //       let vendorData = null;
-  //       let relatedMaterialsData = [];
-
-  //       let searchVendorId = null;
-  //       if (materialData.vendorId) {
-  //         searchVendorId = Number(materialData.vendorId);
-  //         const resVendor = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${searchVendorId}`);
-  //         if (resVendor.ok) vendorData = await resVendor.json();
-  //       } else if (materialData.vendor) {
-  //         const vendorName = materialData.vendor;
-  //         const resVendor = await fetch(
-  //           `${process.env.NEXT_PUBLIC_API_URL}/vendors?name=${encodeURIComponent(vendorName)}`
-  //         );
-  //         if (resVendor.ok) {
-  //           const vendorList = await resVendor.json();
-  //           vendorData = vendorList.find(
-  //             (v) => v.name.trim().toLowerCase() === vendorName.trim().toLowerCase()
-  //           ) || null;
-  //         }
-  //         if (vendorData) searchVendorId = vendorData.id;
-  //       }
-
-  //       if (searchVendorId) {
-  //         const resRelated = await fetch(
-  //           `${process.env.NEXT_PUBLIC_API_URL}/materials?vendorId=${searchVendorId}`
-  //         );
-  //         if (resRelated.ok) {
-  //           const allMaterials = await resRelated.json();
-  //           relatedMaterialsData = allMaterials.filter(
-  //             (item) => item.id !== materialData.id && item.vendorId === searchVendorId
-  //           );
-  //         }
-  //       }
-
-  //       setMaterial(materialData);
-  //       setVendor(vendorData);
-  //       setRelatedMaterials(relatedMaterialsData);
-  //       setError(null);
-  //     } catch (err) {
-  //       setError(err.message);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchMaterialDetails();
-  // }, [id]);
-
-  const parsePrice = (priceString) => {
-    if (!priceString) return null;
-
-    const cleanPrice = priceString.replace("Rp ", "").replace(/\./g, "");
-
-    const priceNumber = Number(cleanPrice);
-
-    return !isNaN(priceNumber) ? priceNumber : null;
-  };
-
-  const materialPrice = parsePrice(material?.price);
   const formattedPrice =
-    materialPrice !== null
+    material?.price !== null
       ? new Intl.NumberFormat("id-ID", {
           style: "currency",
           currency: "IDR",
           minimumFractionDigits: 0,
           maximumFractionDigits: 0,
-        }).format(materialPrice)
+        }).format(material?.price)
       : "Harga tidak tersedia";
 
   if (loading)
@@ -192,9 +120,7 @@ export default function MaterialPage() {
             />
           </div>
           <div className="flex-grow">
-            <h3 className="text-2xl font-bold mb-2">
-              {material.name}
-            </h3>
+            <h3 className="text-2xl font-bold mb-2">{material.name}</h3>
             <p className="text-xl text-blue-600 font-semibold mb-4">
               {formattedPrice}
             </p>
