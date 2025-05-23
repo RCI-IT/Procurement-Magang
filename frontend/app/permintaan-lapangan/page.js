@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
+import { fetchWithAuth } from "@/services/apiClient";
 
 const months = [
   "Januari",
@@ -27,7 +28,6 @@ export default function PermintaanLapangan({}) {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-  const [] = useState(false);
   const [updatedData, setUpdatedData] = useState([]);
   const [sortOrder, setSortOrder] = useState("desc");
   const router = useRouter();
@@ -57,13 +57,12 @@ export default function PermintaanLapangan({}) {
   useEffect(() => {
     const fetchPermintaanLapangan = async () => {
       try {
-        const response = await fetchWithToken(
+        const data = await fetchWithToken(
           `${process.env.NEXT_PUBLIC_API_URL}/permintaan`,
           token,
           setToken,
           () => router.push("/login")
         );
-        const data = await response.json();
 
         if (Array.isArray(data)) setUpdatedData(data);
       } catch (error) {
@@ -76,7 +75,7 @@ export default function PermintaanLapangan({}) {
   const handleDetail = async (id) => {
     if (userRole === "USER_PURCHASE" || userRole === "ADMIN") {
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`,
           {
             method: "PUT",
@@ -85,7 +84,7 @@ export default function PermintaanLapangan({}) {
           }
         );
 
-        if (!response.ok) throw new Error("Gagal memperbarui status ke READ");
+        if (!response) throw new Error("Gagal memperbarui status ke READ");
 
         setUpdatedData((prevData) =>
           prevData.map((item) =>

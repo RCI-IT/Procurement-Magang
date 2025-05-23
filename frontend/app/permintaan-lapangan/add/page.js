@@ -4,21 +4,19 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
+import { fetchWithAuth } from "@/services/apiClient";
 
 export default function AddPermintaanLapanganForm({}) {
   const router = useRouter();
   const [materials, setMaterials] = useState([]);
   const [token, setToken] = useState(null);
-  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    const role = localStorage.getItem("userRole");
     if (storedToken) setToken(storedToken);
-    if (role) setUserRole(role);
   }, []);
 
-  const getData = () => {
+  const getData = async() => {
     const materialData = await fetchWithToken(
       `${process.env.NEXT_PUBLIC_API_URL}/materials`,
       token,
@@ -139,7 +137,7 @@ export default function AddPermintaanLapanganForm({}) {
     };
 
     try {
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/permintaan`,
         {
           method: "POST",
@@ -148,7 +146,7 @@ export default function AddPermintaanLapanganForm({}) {
         }
       );
 
-      if (!response.ok) {
+      if (!response) {
         throw new Error("Gagal menambahkan permintaan lapangan");
       }
 

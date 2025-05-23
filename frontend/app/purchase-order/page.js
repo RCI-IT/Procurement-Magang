@@ -2,10 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "@/component/sidebar";
-import Header from "@/component/Header";
 import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
+import { fetchWithToken } from "@/services/fetchWithToken";
 
 const PurchaseOrderTable = () => {
   const [data, setData] = useState([]);
@@ -15,20 +14,31 @@ const PurchaseOrderTable = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [username, setUsername] = useState("");
-  const [, setUserRole] = useState(null);
   const [sortBy, setSortBy] = useState("terbaru");
+  const [userRole, setUserRole] = useState(null);
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    if (storedToken) setToken(storedToken);
+    if (role) setUserRole(role);
+  }, []);
   const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase`);
-        if (!response.ok) {
+        const response = await fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/purchase`,
+          token,
+          setToken,
+          () => router.push("/login")
+        );
+        if (!response) {
           throw new Error(`Gagal mengambil data: ${response.statusText}`);
         }
-        const result = await response.json();
-        setData(result);
+        setData(response);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -37,13 +47,6 @@ const PurchaseOrderTable = () => {
     };
 
     fetchData();
-  }, []);
-
-  useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    const storedRole = localStorage.getItem("role");
-    if (storedUsername) setUsername(storedUsername);
-    if (storedRole) setUserRole(storedRole);
   }, []);
 
   useEffect(() => {
@@ -60,7 +63,7 @@ const PurchaseOrderTable = () => {
     }
 
     setFilteredData(filtered);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   }, [search, data, sortBy]);
 
   const totalPages = Math.ceil(filteredData.length / rowsToShow);
@@ -81,9 +84,12 @@ const PurchaseOrderTable = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`, {
-          method: "DELETE",
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`,
+          {
+            method: "DELETE",
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Gagal menghapus Purchase Order");
@@ -116,15 +122,13 @@ const PurchaseOrderTable = () => {
 
   return (
     <div className="flex h-screen">
-     
       <div className="p-4 flex-1 bg-white shadow-md rounded-md overflow-auto">
-       
         <h1 className="text-3xl font-bold mb-4 mt-4">Purchase Order</h1>
 
         <div className="mb-4 flex justify-between items-end flex-wrap gap-2">
           <div className="flex space-x-2">
-          <label className="mr-2">Urutkan:</label>
-          <select
+            <label className="mr-2">Urutkan:</label>
+            <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="border border-gray-300 rounded px-2 py-1 text-sm"
@@ -172,7 +176,9 @@ const PurchaseOrderTable = () => {
               {paginatedData.length > 0 ? (
                 paginatedData.map((po, index) => (
                   <tr key={po.id} className="text-center border">
-                    <td className="border p-2">{(currentPage - 1) * rowsToShow + index + 1}</td>
+                    <td className="border p-2">
+                      {(currentPage - 1) * rowsToShow + index + 1}
+                    </td>
                     <td className="border p-2">{po.nomorPO}</td>
                     <td className="border p-2">
                       {po.tanggalPO
@@ -203,39 +209,45 @@ const PurchaseOrderTable = () => {
           </table>
         )}
 
-<div className="flex justify-center mt-6">
-  <nav className="inline-flex rounded-md shadow-sm" aria-label="Pagination">
-    <button
-      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-      disabled={currentPage === 1}
-      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-    >
-      «
-    </button>
-    {[...Array(totalPages)].map((_, index) => {
-      const page = index + 1;
-      return (
-        <button
-          key={page}
-          onClick={() => setCurrentPage(page)}
-          className={`px-3 py-2 border border-gray-300 ${
-            currentPage === page ? "text-white bg-blue-500" : "text-blue-600 hover:bg-gray-100"
-          }`}
-        >
-          {page}
-        </button>
-      );
-    })}
-    <button
-      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-      disabled={currentPage === totalPages}
-      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-    >
-      »
-    </button>
-  </nav>
-</div>
-
+        <div className="flex justify-center mt-6">
+          <nav
+            className="inline-flex rounded-md shadow-sm"
+            aria-label="Pagination"
+          >
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
+            >
+              «
+            </button>
+            {[...Array(totalPages)].map((_, index) => {
+              const page = index + 1;
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-2 border border-gray-300 ${
+                    currentPage === page
+                      ? "text-white bg-blue-500"
+                      : "text-blue-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            })}
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
+            >
+              »
+            </button>
+          </nav>
+        </div>
       </div>
     </div>
   );

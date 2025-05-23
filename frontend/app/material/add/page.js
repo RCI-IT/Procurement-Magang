@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
-import { fetchWithToken } from "../../../services/fetchWithToken";
-import { fetchWithAuth } from "../../../services/apiClient";
+import { fetchWithToken } from "@/services/fetchWithToken";
+import { fetchWithAuth } from "@/services/apiClient";
 
 export default function AddMaterialPage() {
   const router = useRouter();

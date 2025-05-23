@@ -3,10 +3,9 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "@/component/sidebar";
-import Header from "../../component/Header";
 import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
+import { fetchWithToken } from "@/services/fetchWithToken";
 
 const ConfirmationOrderTable = () => {
   const [data, setData] = useState([]);
@@ -16,20 +15,32 @@ const ConfirmationOrderTable = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [username, setUsername] = useState("");
   const [userRole, setUserRole] = useState(null);
   const [sortBy, setSortBy] = useState("terbaru");
+  const [token, setToken] = useState(null);
+
   const router = useRouter();
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    if (storedRole) setUserRole(storedRole);
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) setToken(storedToken);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation`);
-        if (!response.ok) {
+        const response = await fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/confirmation`,
+          token,
+          setToken,
+          () => router.push("/login")
+        );
+        if (!response) {
           throw new Error(`Gagal mengambil data: ${response.statusText}`);
         }
-        const result = await response.json();
-        setData(result);
+        setData(response);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -38,13 +49,6 @@ const ConfirmationOrderTable = () => {
     };
 
     fetchData();
-  }, []);
-
-  useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    const storedRole = localStorage.getItem("role");
-    if (storedUsername) setUsername(storedUsername);
-    if (storedRole) setUserRole(storedRole);
   }, []);
 
   useEffect(() => {
@@ -82,9 +86,12 @@ const ConfirmationOrderTable = () => {
     if (!result.isConfirmed) return;
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (!response.ok) throw new Error("Gagal menghapus data");
 
@@ -115,14 +122,12 @@ const ConfirmationOrderTable = () => {
 
   return (
     <div className="flex h-screen">
-      
       <div className="p-4 flex-1 bg-white shadow-md rounded-md overflow-auto">
-      
         <h1 className="text-3xl font-bold mb-4 mt-4">Confirmation Order</h1>
 
         <div className="mb-4 flex justify-between items-end flex-wrap gap-2">
           <div className="flex space-x-2">
-          <label className="mr-2">Urutkan:</label>
+            <label className="mr-2">Urutkan:</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -131,7 +136,7 @@ const ConfirmationOrderTable = () => {
               <option value="terbaru">Terbaru</option>
               <option value="terlama">Terlama</option>
             </select>
-          <label className="mr-2">Tampilkan:</label>
+            <label className="mr-2">Tampilkan:</label>
             <select
               value={rowsToShow}
               onChange={(e) => setRowsToShow(Number(e.target.value))}
@@ -141,7 +146,6 @@ const ConfirmationOrderTable = () => {
               <option value={10}>10</option>
               <option value={15}>15</option>
             </select>
-           
           </div>
           <div className="flex space-x-2">
             <input
@@ -181,7 +185,9 @@ const ConfirmationOrderTable = () => {
               {paginatedData.length > 0 ? (
                 paginatedData.map((co, index) => (
                   <tr key={co.id} className="text-center border">
-                    <td className="border p-2">{(currentPage - 1) * rowsToShow + index + 1}</td>
+                    <td className="border p-2">
+                      {(currentPage - 1) * rowsToShow + index + 1}
+                    </td>
                     <td className="border p-2">{co.nomorCO}</td>
                     <td className="border p-2">
                       {co.tanggalCO
@@ -195,7 +201,9 @@ const ConfirmationOrderTable = () => {
                     <td className="border p-2">{co.lokasiCO}</td>
                     <td className="border p-2">
                       <ActionButtons
-                        onView={() => router.push(`/confirmation-order/${co.id}`)}
+                        onView={() =>
+                          router.push(`/confirmation-order/${co.id}`)
+                        }
                         onDelete={() => handleDelete(co.id)}
                       />
                     </td>
@@ -212,39 +220,45 @@ const ConfirmationOrderTable = () => {
           </table>
         )}
 
-<div className="flex justify-center mt-6">
-  <nav className="inline-flex rounded-md shadow-sm" aria-label="Pagination">
-    <button
-      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-      disabled={currentPage === 1}
-      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-    >
-      «
-    </button>
-    {[...Array(totalPages)].map((_, index) => {
-      const page = index + 1;
-      return (
-        <button
-          key={page}
-          onClick={() => setCurrentPage(page)}
-          className={`px-3 py-2 border border-gray-300 ${
-            currentPage === page ? "text-white bg-blue-500" : "text-blue-600 hover:bg-gray-100"
-          }`}
-        >
-          {page}
-        </button>
-      );
-    })}
-    <button
-      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-      disabled={currentPage === totalPages}
-      className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-    >
-      »
-    </button>
-  </nav>
-</div>
-
+        <div className="flex justify-center mt-6">
+          <nav
+            className="inline-flex rounded-md shadow-sm"
+            aria-label="Pagination"
+          >
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
+            >
+              «
+            </button>
+            {[...Array(totalPages)].map((_, index) => {
+              const page = index + 1;
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-2 border border-gray-300 ${
+                    currentPage === page
+                      ? "text-white bg-blue-500"
+                      : "text-blue-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            })}
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
+            >
+              »
+            </button>
+          </nav>
+        </div>
       </div>
     </div>
   );

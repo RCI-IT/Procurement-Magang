@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { fetchWithToken } from "../../services/fetchWithToken";
-import { fetchWithAuth } from "../../services/apiClient";
+import { fetchWithToken } from "@/services/fetchWithToken";
+import { fetchWithAuth } from "@/services/apiClient";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { Eye, Trash2 } from "lucide-react";
