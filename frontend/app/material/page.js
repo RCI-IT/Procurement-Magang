@@ -14,7 +14,6 @@ export default function Material() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState("terbaru");
   const router = useRouter();
-  // const [username, setUsername] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,10 +51,12 @@ export default function Material() {
     fetchData();
   }, []);
 
-  // useEffect(() => {
-  //   const storedUsername = localStorage.getItem("username");
-  //   if (storedUsername) setUsername(storedUsername);
-  // }, []);
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    const storedRole = localStorage.getItem("role");
+    if (storedUsername) setUsername(storedUsername);
+    if (storedRole) setUserRole(storedRole);
+  }, []);
 
   const handleVendorClick = (vendorId) => {
     if (vendorId) router.push(`/vendor/${vendorId}`);
@@ -181,12 +182,14 @@ export default function Material() {
                 onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
                 className="border border-gray-300 rounded px-2 py-1 text-sm"
               />
+              {userRole !== "USER_LAPANGAN" && (
               <button
                 onClick={() => router.push("/material/add")}
                 className="bg-blue-500 text-white rounded px-4 py-2"
               >
                 + Material
               </button>
+              )}
             </div>
           </div>
 

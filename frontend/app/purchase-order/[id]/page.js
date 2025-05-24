@@ -4,8 +4,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import html2pdf from "html2pdf.js";
 import "../../../styles/globals.css";
-import Sidebar from "../../../component/sidebar";
-import Header from "../../../component/Header.js";
 
 export default function DetailPurchaseOrder() {
   const { id } = useParams();
@@ -28,10 +26,6 @@ export default function DetailPurchaseOrder() {
     const month = monthNames[date.getMonth()];
     const year = date.getFullYear();
     return { day, month, year };
-  };
-
-  const handleEdit = () => {
-    router.push(`/purchase-order/${id}/edit`);
   };
 
   const handlePrint = () => {
@@ -146,9 +140,6 @@ export default function DetailPurchaseOrder() {
       <div className="flex-1 p-6">
         
         <div className="flex justify-end space-x-2 no-print">
-          <button onClick={handleEdit} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32">
-            Edit
-          </button>
           <button onClick={handlePrint} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
             Cetak
           </button>

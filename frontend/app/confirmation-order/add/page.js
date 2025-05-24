@@ -175,16 +175,23 @@ export default function AddConfirmationOrder() {
       <div className="flex-1 p-6">
         <h1 className="text-2xl font-bold mb-6">Tambah Confirmation Order</h1>
         <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 shadow-md rounded-lg">
-          {/* Form Utama */}
           <div className="grid grid-cols-2 gap-4 border-b pb-4">
             <div>
               <label className="block font-medium">Nomor CO:</label>
               <input type="text" name="nomorCO" value={formData.nomorCO} onChange={handleChange} className="border px-4 py-2 w-full" required />
             </div>
             <div>
-              <label className="block font-medium">Lokasi CO:</label>
-              <input type="text" name="lokasiCO" value={formData.lokasiCO} onChange={handleChange} className="border px-4 py-2 w-full" required />
-            </div>
+  <label className="block font-medium">Lokasi CO:</label>
+  <textarea
+    name="lokasiCO"
+    value={formData.lokasiCO}
+    onChange={handleChange}
+    className="border px-4 py-2 w-full rounded"
+    rows="4"
+    required
+  />
+</div>
+
             <div>
               <label className="block font-medium">Tanggal CO:</label>
               <input type="date" name="tanggalCO" value={formData.tanggalCO} onChange={handleChange} className="border px-4 py-2 w-full" required />
