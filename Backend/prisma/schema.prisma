@@ -7,22 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 model PermintaanLapangan {
-  id                  Int                 @id @default(autoincrement())
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  nomor               String              @unique
+  id                  Int                  @id @default(autoincrement())
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  nomor               String               @unique
   tanggal             DateTime
   lokasi              String
   picLapangan         String
-  status              PermintaanStatus    @default(PENDING)
-  isConfirmed         Boolean             @default(false)
-  isReceived          Boolean             @default(false)
+  status              PermintaanStatus     @default(PENDING)
+  isConfirmed         Boolean              @default(false)
+  isReceived          Boolean              @default(false)
   keterangan          String?
-  confirmationOrderId Int?                @unique
   detail              PermintaanDetails[]
-  confirmationOrder   ConfirmationOrder?  @relation(fields: [confirmationOrderId], references: [id])
+  confirmationOrders  ConfirmationOrder[]  // <-- berubah jadi array
   userId              Int?
-  user                User?               @relation(fields: [userId], references: [id])
+  user                User?                @relation(fields: [userId], references: [id])
 }
 model PurchaseOrder {
   id                  Int               @id @default(autoincrement())
@@ -60,7 +59,8 @@ model ConfirmationOrder {
   keterangan          String?
   status              COStatus              @default(PENDING)
   confirmationDetails ConfirmationDetails[]
-  permintaan          PermintaanLapangan?
+  permintaanId        Int?                  // tetap
+  permintaan          PermintaanLapangan?   @relation(fields: [permintaanId], references: [id])
   userId              Int?
   user                User?                 @relation(fields: [userId], references: [id])
   purchaseOrder       PurchaseOrder?        @relation("COToPO")

@@ -8,6 +8,7 @@ import Swal from "sweetalert2";
 
 export default function Material() {
   const [token, setToken] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,6 +16,13 @@ export default function Material() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState("terbaru");
   const router = useRouter();
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    const storedRole = localStorage.getItem("role");
+    if (storedToken) setToken(storedToken);
+    if (storedRole) setUserRole(storedRole);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,11 +49,6 @@ export default function Material() {
     };
     fetchData();
   }, [token]);
-
-  useEffect(() => {
-    const storedRole = localStorage.getItem("role");
-    if (storedRole) setUserRole(storedRole);
-  }, []);
 
   const handleVendorClick = (vendorId) => {
     if (vendorId) router.push(`/vendor/${vendorId}`);
@@ -125,8 +128,6 @@ export default function Material() {
     return (
       <div className="text-center text-gray-500">Material tidak ditemukan.</div>
     );
-
-
 
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);

@@ -177,7 +177,7 @@ export const deletePermintaanLapangan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const existingCO = await prisma.confirmationOrder.findUnique({
+    const existingCO = await prisma.confirmationOrder.findMany({
       where: { permintaanId: Number(id) },
     });
 
