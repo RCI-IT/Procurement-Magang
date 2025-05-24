@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-//import Sidebar from "../../component/sidebar.js";
-//import Header from "../../component/Header.js";
+import { fetchWithToken } from "../../services/fetchWithToken"
 import { Eye, EyeOff, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import "../../styles/globals.css";
@@ -26,70 +25,36 @@ export default function User() {
   const [rowsToShow, setRowsToShow] = useState(5);
   const [sortBy, setSortBy] = useState("username");
   const [currentPage, setCurrentPage] = useState(1);
-  const [token, setToken] = useState("");
-  // const [username, setUsername] = useState("");
+  const [token, setToken] = useState(null);
   const router = useRouter();
+  
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    setToken(storedToken || "");
+    if (storedToken) setToken(storedToken);
   }, []);
 
   useEffect(() => {
-    if (!token) {
-      router.push("/login");
-    }
     const fetchData = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        // if (!res.ok) throw new Error("Gagal ambil data user");
-        if (res.status === 401 || !res.ok) {
-          // Coba refresh token
-          const refreshRes = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-            {
-              method: "POST",
-              credentials: "include",
-            }
-          );
-
-          if (refreshRes.ok) {
-            const refreshData = await refreshRes.json();
-            const newToken = refreshData.newAccessToken;
-
-            // Simpan token baru
-            localStorage.setItem("token", newToken);
-
-            // Panggil ulang fetch data
-            const retryRes = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/users`,
-              {
-                headers: {
-                  Authorization: `Bearer ${newToken}`,
-                },
-                credentials: "include",
-              }
-            );
-
-            if (!retryRes.ok) throw new Error("Gagal setelah refresh token");
-            const retryData = await retryRes.json();
-            setUsers(retryData);
-          } else {
-            router.push("login");
-          }
-        }
-        const data = await res.json();
-        setUsers(data);
-      } catch (err) {
-        console.error(err);
-      }
+      if (!token) return;
+  
+      const getData = async () => {
+        const data = await fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/users`,
+          token,
+          setToken,
+          () => router.push("/login")
+        );
+  
+        if (data) setUsers(data);
+      };
+  
+      getData();
     };
+  
     fetchData();
-  }, []);
+  }, [token]);
+  
 
   // useEffect(() => {
   //   const storedUsername = localStorage.getItem("username");
@@ -119,15 +84,16 @@ export default function User() {
       );
 
       if (!response.ok) throw new Error("Gagal menghapus user");
+      else {
+        setUsers((prev) => prev.filter((user) => user.id !== id));
 
-      setUsers((prev) => prev.filter((user) => user.id !== id));
-
-      Swal.fire({
-        title: "User berhasil dihapus!",
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+        Swal.fire({
+          title: "User berhasil dihapus!",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
     } catch (error) {
       console.error("Error deleting user:", error);
       Swal.fire({
@@ -139,17 +105,23 @@ export default function User() {
     }
   };
 
-  const filteredUsers = users
-    .filter((u) => u.username.toLowerCase().includes(searchQuery.toLowerCase()))
-    .sort((a, b) => {
-      if (sortBy === "username") return a.username.localeCompare(b.username);
-      if (sortBy === "role") return a.role.localeCompare(b.role);
-      if (sortBy === "newest")
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      if (sortBy === "oldest")
-        return new Date(a.createdAt) - new Date(b.createdAt);
-      return 0;
-    });
+  const filteredUsers =
+    Array.isArray(users) && users.length > 0
+      ? users
+          .filter((u) =>
+            u.username.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+          .sort((a, b) => {
+            if (sortBy === "username")
+              return a.username.localeCompare(b.username);
+            if (sortBy === "role") return a.role.localeCompare(b.role);
+            if (sortBy === "newest")
+              return new Date(b.createdAt) - new Date(a.createdAt);
+            if (sortBy === "oldest")
+              return new Date(a.createdAt) - new Date(b.createdAt);
+            return 0;
+          })
+      : [];
 
   const totalPages = Math.ceil(filteredUsers.length / rowsToShow);
   const paginatedUsers = filteredUsers.slice(

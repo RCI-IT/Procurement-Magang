@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { fetchWithToken } from "@/services/fetchWithToken";
 import { useRouter } from "next/navigation";
 import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 
 export default function Material() {
-  const token = localStorage.getItem("token")
+  const [token, setToken] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,44 +18,32 @@ export default function Material() {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const [materialRes, vendorRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials`, {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`, {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-        ]);
+      if (!token) return;
 
-        if (!materialRes.ok || !vendorRes.ok)
-          throw new Error("Gagal mengambil data");
+      const getData = async () => {
+        const materialData = await fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/materials`,
+          token,
+          setToken,
+          () => router.push("/login")
+        );
+        const vendorData = await fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
+          token,
+          setToken,
+          () => router.push("/login")
+        );
 
-        const [materialData, vendorData] = await Promise.all([
-          materialRes.json(),
-          vendorRes.json(),
-        ]);
-
-        setMaterials(materialData);
-        setVendors(vendorData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
+        if (Array.isArray(materialData)) setMaterials(materialData);
+        if (Array.isArray(vendorData)) setVendors(vendorData);
+      };
+      getData();
     };
-
     fetchData();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
     const storedRole = localStorage.getItem("role");
-    if (storedUsername) setUsername(storedUsername);
     if (storedRole) setUserRole(storedRole);
   }, []);
 
@@ -132,6 +121,13 @@ export default function Material() {
     currentPage * rowsToShow
   );
 
+  if (!materials)
+    return (
+      <div className="text-center text-gray-500">Material tidak ditemukan.</div>
+    );
+
+
+
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
@@ -183,12 +179,12 @@ export default function Material() {
                 className="border border-gray-300 rounded px-2 py-1 text-sm"
               />
               {userRole !== "USER_LAPANGAN" && (
-              <button
-                onClick={() => router.push("/material/add")}
-                className="bg-blue-500 text-white rounded px-4 py-2"
-              >
-                + Material
-              </button>
+                <button
+                  onClick={() => router.push("/material/add")}
+                  className="bg-blue-500 text-white rounded px-4 py-2"
+                >
+                  + Material
+                </button>
               )}
             </div>
           </div>

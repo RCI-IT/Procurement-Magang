@@ -2,125 +2,87 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Sidebar from "../../../component/sidebar";
-import Header from "../../../component/Header";
+import { fetchWithToken } from "../../../services/fetchWithToken";
 
 export default function MaterialPage() {
   const { id } = useParams();
   const router = useRouter();
 
-  const [material, setMaterial] = useState(null);
+  const [material, setMaterial] = useState([]);
   const [vendor, setVendor] = useState(null);
   const [relatedMaterials, setRelatedMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [username, setUsername] = useState("");
+
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    if (!id) {
-      setError("Material ID tidak ditemukan di URL.");
-      setLoading(false);
-      return;
-    }
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) setToken(storedToken);
+  }, []);
 
- 
-      const storedUsername = localStorage.getItem("username");
-      if (storedUsername) {
-        setUsername(storedUsername);
-      }
+  const getData = async () => {
+    const materialData = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
 
+    if (!materialData) return;
+    setMaterial(materialData);
 
-    const fetchMaterialDetails = async () => {
-      setLoading(true);
-      try {
-        const resMaterial = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`);
-        if (!resMaterial.ok) throw new Error("Material tidak ditemukan");
-        const materialData = await resMaterial.json();
+    const vendorData = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/vendors/${materialData.vendorId}`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
+    if (vendorData) setVendor(vendorData);
 
-        let vendorData = null;
-        let relatedMaterialsData = [];
+    const relatedMaterial = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/materials?vendorId=${materialData.vendorId}`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
+    if (relatedMaterial) setRelatedMaterials(relatedMaterial);
 
-        let searchVendorId = null;
-        if (materialData.vendorId) {
-          searchVendorId = Number(materialData.vendorId);
-          const resVendor = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors/${searchVendorId}`);
-          if (resVendor.ok) vendorData = await resVendor.json();
-        } else if (materialData.vendor) {
-          const vendorName = materialData.vendor;
-          const resVendor = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/vendors?name=${encodeURIComponent(vendorName)}`
-          );
-          if (resVendor.ok) {
-            const vendorList = await resVendor.json();
-            vendorData = vendorList.find(
-              (v) => v.name.trim().toLowerCase() === vendorName.trim().toLowerCase()
-            ) || null;
-          }
-          if (vendorData) searchVendorId = vendorData.id;
-        }
-
-        if (searchVendorId) {
-          const resRelated = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/materials?vendorId=${searchVendorId}`
-          );
-          if (resRelated.ok) {
-            const allMaterials = await resRelated.json();
-            relatedMaterialsData = allMaterials.filter(
-              (item) => item.id !== materialData.id && item.vendorId === searchVendorId
-            );
-          }
-        }
-
-        setMaterial(materialData);
-        setVendor(vendorData);
-        setRelatedMaterials(relatedMaterialsData);
-        setError(null);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMaterialDetails();
-  }, [id]);
-  const parsePrice = (priceString) => {
-    if (!priceString) return null;
-
-    const cleanPrice = priceString.replace("Rp ", "").replace(/\./g, "");
-
-    const priceNumber = Number(cleanPrice);
-
-    return !isNaN(priceNumber) ? priceNumber : null;
+    setError(null);
   };
 
-  const materialPrice = parsePrice(material?.price);
+  useEffect(() => {
+    fetchData();
+    setLoading(false);
+  }, [token]);
+
+  const fetchData = () => {
+    getData();
+  };
+
   const formattedPrice =
-    materialPrice !== null
+    material?.price !== null
       ? new Intl.NumberFormat("id-ID", {
           style: "currency",
           currency: "IDR",
-          minimumFractionDigits: 0, 
-          maximumFractionDigits: 0, 
-        }).format(materialPrice)
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(material?.price)
       : "Harga tidak tersedia";
-  
 
-  if (loading) return <div className="text-center text-blue-500">Loading...</div>;
-  if (error) return <div className="text-center text-red-500">Error: {error}</div>;
-  if (!material) return <div className="text-center text-gray-500">Material tidak ditemukan.</div>;
-
-  const materialImage = material?.imageUrl
-    ? material.imageUrl
-    : `${process.env.NEXT_PUBLIC_API_URL}/uploads/default-image.jpg`;
+  if (loading)
+    return <div className="text-center text-blue-500">Loading...</div>;
+  if (error)
+    return <div className="text-center text-red-500">Error: {error}</div>;
+  if (!material || !vendor || !relatedMaterials)
+    return (
+      <div className="text-center text-gray-500">Material tidak ditemukan.</div>
+    );
 
   return (
     <div className="flex">
-    
-    <div className="p-6 flex-1">
-    <div className="w-full">
-       
-        </div>
+      <div className="p-6 flex-1">
+        <div className="w-full"></div>
         <div className="mb-6 bg-white shadow-md p-4 rounded-md">
           <div className="flex justify-between items-center">
             <div>
@@ -151,38 +113,65 @@ export default function MaterialPage() {
 
         <div className="flex gap-6 items-start mb-8 bg-white shadow-md p-4 rounded-md">
           <div className="bg-gray-100 border border-gray-300 rounded p-4 flex justify-center">
-            <img src={materialImage} alt={material.image} className="object-cover max-h-72" />
+            <img
+              src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${material.imageUrl}`}
+              alt={material.image}
+              className="object-cover max-h-72"
+            />
           </div>
           <div className="flex-grow">
             <h3 className="text-2xl font-bold mb-2">{material.name}</h3>
             <p className="text-xl text-blue-600 font-semibold mb-4">
-  {formattedPrice}
-</p>
+              {formattedPrice}
+            </p>
 
             <p className="text-sm text-gray-500 mb-4">
-              Kategori: <span className="text-gray-700">{material.category || "Tidak ada kategori"}</span>
+              Kategori:{" "}
+              <span className="text-gray-700">
+                {material.category || "Tidak ada kategori"}
+              </span>
             </p>
             <h4 className="font-bold text-lg mb-2">Deskripsi</h4>
-            <p className="text-gray-700 text-sm">{material.description || "Tidak ada deskripsi"}</p>
+            <p className="text-gray-700 text-sm">
+              {material.description || "Tidak ada deskripsi"}
+            </p>
           </div>
         </div>
 
         <div className="bg-white shadow-md p-4 rounded-md">
-          <h4 className="font-bold text-lg mb-4">Material lainnya dari vendor ini</h4>
+          <h4 className="font-bold text-lg mb-4">
+            Material lainnya dari vendor ini
+          </h4>
           {relatedMaterials.length === 0 && (
-            <p className="text-center text-gray-500">Tidak ada material lain dari vendor ini.</p>
+            <p className="text-center text-gray-500">
+              Tidak ada material lain dari vendor ini.
+            </p>
           )}
           <div className="flex justify-start gap-4">
             {relatedMaterials.map((item) => {
               const relatedImage = item.image?.startsWith("http")
                 ? item.image
-                : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${item.image || "default-image.jpg"}`;
+                : `${process.env.NEXT_PUBLIC_API_URL}/uploads/${
+                    item.image || "default-image.jpg"
+                  }`;
               return (
-                <div key={item.id} className="border rounded p-4 text-center bg-white text-sm w-40 h-48 flex flex-col items-center shadow">
-                  <img src={relatedImage} alt={item.name} className="mb-2 w-20 h-20 object-cover" />
-                  <p className="font-semibold text-center break-words">{item.name}</p>
+                <div
+                  key={item.id}
+                  className="border rounded p-4 text-center bg-white text-sm w-40 h-48 flex flex-col items-center shadow"
+                >
+                  <img
+                    src={relatedImage}
+                    alt={item.name}
+                    className="mb-2 w-20 h-20 object-cover"
+                  />
+                  <p className="font-semibold text-center break-words">
+                    {item.name}
+                  </p>
                   <p className="text-red-500">
-                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.price)}
+                    {new Intl.NumberFormat("id-ID", {
+                      style: "currency",
+                      currency: "IDR",
+                    }).format(item.price)}
                   </p>
                 </div>
               );
@@ -190,20 +179,19 @@ export default function MaterialPage() {
           </div>
         </div>
         <div className="mt-6 flex gap-4">
-  <button
-    onClick={() => router.push(`/material/${id}/edit`)}
-    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-  >
-    Edit Material
-  </button>
-  <button
-    onClick={() => router.back()}
-    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-  >
-    Kembali
-  </button>
-</div>
-
+          <button
+            onClick={() => router.push(`/material/${id}/edit`)}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Edit Material
+          </button>
+          <button
+            onClick={() => router.back()}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            Kembali
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "../../services/authServices"; // path menyesuaikan struktur proyek kamu
+import { login } from "@/services/authServices"; // path menyesuaikan struktur proyek kamu
 
 export default function LoginPage() {
   const router = useRouter();

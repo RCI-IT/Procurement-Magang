@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Sidebar from "../../../../component/sidebar";
-import Header from "../../../../component/Header";
+import { fetchWithToken } from "../../../../services/fetchWithToken";
+import { fetchWithAuth } from "../../../../services/apiClient";
 import Swal from "sweetalert2";
 
 export default function EditMaterial() {
@@ -22,101 +22,121 @@ export default function EditMaterial() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [vendors, setVendors] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [material, setMaterial] = useState(null);
   const [error, setError] = useState("");
-  const [username, setUsername] = useState("");
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    if (!id) return;
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) setToken(storedToken);
+  }, []);
 
-    const fetchData = async () => {
-      try {
-        const [materialRes, vendorRes, categoryRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`),
-        ]);
+  const getData = async () => {
+    const materialData = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
+    const categoryData = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/categories`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
+    const vendorData = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
 
-        if (!materialRes.ok || !vendorRes.ok || !categoryRes.ok) {
-          throw new Error("Gagal mengambil data dari server");
-        }
+    if (materialData) setMaterial(materialData);
+    if (vendorData) setVendors(vendorData);
+    if (categoryData) setCategories(categoryData);
+  };
 
-        const materialData = await materialRes.json();
-        const vendorData = await vendorRes.json();
-        const categoryData = await categoryRes.json();
-
-        const matchedVendor = vendorData.find((v) => v.name === materialData.vendor);
-        const matchedCategory = categoryData.find((c) => c.name === materialData.category);
-
-        setName(materialData.name || "");
-        setVendorId(matchedVendor ? String(matchedVendor.id) : "");
-        setCategoryId(matchedCategory ? String(matchedCategory.id) : "");
-
-        const numericPrice = typeof materialData.price === "string"
-          ? materialData.price.replace(/[^\d]/g, "")
-          : String(materialData.price);
-        setPrice(numericPrice || "");
-
-        setDescription(materialData.description || "");
-        setOldImageUrl(materialData.imageUrl || null);
-
-        setVendors(vendorData);
-        setCategories(categoryData);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setInitialLoading(false);
-      }
-    };
-
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {
-      setUsername(storedUsername);
+  useEffect(() => {
+    if (token) {
+      getData().finally(() => setInitialLoading(false));
     }
+  }, [token]);
 
-    fetchData();
-  }, [id]);
+  useEffect(() => {
+    if (material) {
+      setName(material.name || "");
+      setVendorId(material.vendorId ? String(material.vendorId) : "");
+      setCategoryId(material.categoryId ? String(material.categoryId) : "");
+      setPrice(material.price ? String(material.price) : "");
+      setDescription(material.description || "");
+      setOldImageUrl(
+        `${process.env.NEXT_PUBLIC_API_URL}/uploads/${material.imageUrl}` ||
+          null
+      );
+    }
+  }, [material]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setError("");
 
-    const hasChange =
-    name !== "" ||
-    vendorId !== "" ||
-    price !== "" ||
-    categoryId !== "" ||
-    description !== "" ||
-    image !== null;
-  
-  if (!hasChange) {
-    Swal.fire({
-      icon: "warning",
-      title: "Oops",
-      text: "Harap ubah minimal satu data sebelum menyimpan!",
-      background: '#fff',
-      color: '#000',
-      confirmButtonColor: 'blue',
-    });
-    setLoading(false);
-    return;
-  }
-  
+    let hasChange = false;
     const formData = new FormData();
-    formData.append("name", name);
-    formData.append("vendorId", Number(vendorId));
-    formData.append("price", Number(price));
-    formData.append("categoryId", Number(categoryId));
-    formData.append("description", description);
-    if (image) {
-      formData.append("image", image);
+
+    // Daftar field yang akan dicek
+    const fields = [
+      { key: "name", value: name, original: material.name },
+      { key: "vendorId", value: vendorId, original: String(material.vendorId) },
+      { key: "price", value: price, original: String(material.price) },
+      {
+        key: "categoryId",
+        value: categoryId,
+        original: String(material.categoryId),
+      },
+      {
+        key: "description",
+        value: description,
+        original: material.description,
+      },
+    ];
+
+    for (const field of fields) {
+      if (field.value !== field.original) {
+        formData.append(field.key, field.value);
+        hasChange = true;
+      }
     }
 
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`, {
-        method: "PUT",
-        body: formData,
+    // Cek perubahan gambar
+    if (image) {
+      formData.append("image", image);
+      hasChange = true;
+    }
+    
+    if (!hasChange) {
+      Swal.fire({
+        icon: "warning",
+        title: "Oops",
+        text: "Harap ubah minimal satu data sebelum menyimpan!",
+        background: "#fff",
+        color: "#000",
+        confirmButtonColor: "blue",
       });
+      setLoading(false);
+      return;
+    }
+
+    console.log(formData);
+
+    try {
+      const response = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`,
+        {
+          method: "PUT",
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Gagal mengupdate material");
@@ -126,9 +146,9 @@ export default function EditMaterial() {
         icon: "success",
         title: "Berhasil",
         text: "Material berhasil diperbarui!",
-        background: '#fff',  
-        color: '#000',  
-        confirmButtonColor: 'blue',
+        background: "#fff",
+        color: "#000",
+        confirmButtonColor: "blue",
         timer: 2000,
       }).then(() => {
         router.back();
@@ -139,35 +159,30 @@ export default function EditMaterial() {
         icon: "error",
         title: "Terjadi kesalahan",
         text: error.message,
-        background: '#fff',  
-        color: '#000',  
-        confirmButtonColor: '#f44336',
+        background: "#fff",
+        color: "#000",
+        confirmButtonColor: "#f44336",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  if (initialLoading) {
+  if (initialLoading || categories.length === 0 || vendors.length === 0) {
     return <div className="p-6">Memuat data material...</div>;
   }
 
   return (
     <div className="flex min-h-screen bg-white">
-      
       <div className="p-6 flex-1 bg-white text-black">
-        <div className="w-full">
-          
-        </div>
-
-        <h2 className="text-3xl font-bold text-center text-black mb-8">Edit Material</h2>
+        <h2 className="text-3xl font-bold text-center mb-8">Edit Material</h2>
         {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">
           <div>
-            <label className="block text-xl text-white">Gambar:</label>
+            <label className="block text-xl text-black">Gambar:</label>
             <div className="flex items-center gap-4 mb-4">
-              {oldImageUrl && (
+              {oldImageUrl && !image && (
                 <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
                   <img
                     src={oldImageUrl}
@@ -192,48 +207,48 @@ export default function EditMaterial() {
             <input
               type="file"
               onChange={(e) => setImage(e.target.files[0])}
-              className="file:border file:border-white-600 file:bg-white-800 file:black-white file:py-2 file:px-4 rounded-lg"
+              className="file:border file:border-white-600 file:bg-white-800 file:py-2 file:px-4 rounded-lg"
             />
           </div>
 
           <div>
-            <label className="block text-xl text-white">Nama Material:</label>
+            <label className="block text-xl text-black">Nama Material:</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
+              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xl text-white">Harga:</label>
+            <label className="block text-xl text-black">Harga:</label>
             <input
               type="number"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
-              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
+              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xl text-white">Deskripsi:</label>
+            <label className="block text-xl text-black">Deskripsi:</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
+              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
               required
             ></textarea>
           </div>
 
           <div>
-            <label className="block text-xl text-white">Kategori:</label>
+            <label className="block text-xl text-black">Kategori:</label>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
+              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Pilih Kategori</option>
@@ -246,11 +261,11 @@ export default function EditMaterial() {
           </div>
 
           <div>
-            <label className="block text-xl text-white">Vendor:</label>
+            <label className="block text-xl text-black">Vendor:</label>
             <select
               value={vendorId}
               onChange={(e) => setVendorId(e.target.value)}
-              className="border p-3 w-full rounded-lg bg-white-800 text-black focus:ring-2 focus:ring-blue-500"
+              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Pilih Vendor</option>
@@ -269,7 +284,7 @@ export default function EditMaterial() {
           >
             {loading ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
-          <br />
+
           <button
             type="button"
             onClick={() => router.back()}

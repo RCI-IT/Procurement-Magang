@@ -14,8 +14,8 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 const corsOptions = {
-  origin: "http://192.168.100.134:3000",
-  methods: "GET,POST,PUT,DELETE",
+  origin: ['http://localhost:3000', 'http://192.168.110.254:3000'],
+  methods: "GET,POST,PUT,DELETE,OPTIONS",
   allowedHeaders: "Content-Type,Authorization",
   credentials: true, 
 };
@@ -23,7 +23,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
-app.use("/uploads", express.static(path.join(__dirname, "..", "..", "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

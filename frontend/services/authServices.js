@@ -23,11 +23,17 @@ export const refreshToken = async () => {
       credentials: "include",
     });
 
-    return res.data.token;
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    localStorage.setItem("token", data.newAccessToken)
+    return data.newAccessToken;
   } catch (err) {
-    return console.warn(err);
+    console.warn("Gagal refresh token:", err);
+    return null;
   }
 };
+
 
 export const logout = () => {
   localStorage.removeItem("token");

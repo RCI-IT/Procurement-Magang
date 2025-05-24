@@ -11,7 +11,11 @@
     "moduleResolution": "node",                    // Gunakan resolusi modul ala Node.js.
     "resolveJsonModule": true,                     // Izinkan impor file JSON.
     "typeRoots": ["./node_modules/@types"],        // Tempat mencari definisi tipe global.
-    "allowSyntheticDefaultImports": true           // Izinkan default import meskipun modul tidak ekspor default.
+    "allowSyntheticDefaultImports": true,           // Izinkan default import meskipun modul tidak ekspor default.
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"]
+    }
   },
   "include": ["src/**/*.ts"],                      // Sertakan semua file .ts di dalam folder src.
   "exclude": ["node_modules", "dist"]              // Kecualikan folder yang tidak perlu.

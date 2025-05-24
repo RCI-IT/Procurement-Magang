@@ -3,15 +3,20 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import html2pdf from "html2pdf.js";
-import "../../../styles/globals.css";
+import "@/styles/globals.css";
+import { fetchWithToken } from "../../../services/fetchWithToken";
 
 export default function DetailPurchaseOrder() {
   const { id } = useParams();
   const router = useRouter();
   const [data, setData] = useState(null);
-  const [username, setUsername] = useState("");
   const [PurchaseDetails, setPoDetail] = useState(null);
+  const [token, setToken] = useState(null);
 
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) setToken(storedToken);
+  }, []);
 
   const parseDate = (dateString) => {
     if (!dateString) return { day: "-", month: "-", year: "-" };
@@ -20,8 +25,18 @@ export default function DetailPurchaseOrder() {
 
     const day = date.getDate().toString().padStart(2, "0");
     const monthNames = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
     ];
     const month = monthNames[date.getMonth()];
     const year = date.getFullYear();
@@ -63,24 +78,19 @@ export default function DetailPurchaseOrder() {
     }, 500);
   };
 
-  
-
-  useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
-  }, []);
-
   useEffect(() => {
     if (!id) return;
     const fetchData = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`);
-        const result = await response.json();
+        const result = await fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`,
+          token,
+          setToken,
+          () => router.push("/login")
+        );
         if (result) {
           setData(result);
-          setPoDetail(result); 
+          setPoDetail(result);
         } else {
           router.push("/purchase-order");
         }
@@ -92,29 +102,67 @@ export default function DetailPurchaseOrder() {
     fetchData();
   }, [id, router]);
 
-  if (!data) return <p className="text-red-500 text-center mt-10">Data tidak ditemukan</p>;
+  if (!data)
+    return (
+      <p className="text-red-500 text-center mt-10">Data tidak ditemukan</p>
+    );
 
   const { day, month, year } = parseDate(data?.tanggalPO);
 
   const terbilang = (angka) => {
-    const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
-    const belasan = ["Sepuluh", "Sebelas", "Dua Belas", "Tiga Belas", "Empat Belas", "Lima Belas", "Enam Belas", "Tujuh Belas", "Delapan Belas", "Sembilan Belas"];
-    const puluhan = ["", "", "Dua Puluh", "Tiga Puluh", "Empat Puluh", "Lima Puluh", "Enam Puluh", "Tujuh Puluh", "Delapan Puluh", "Sembilan Puluh"];
+    const satuan = [
+      "",
+      "Satu",
+      "Dua",
+      "Tiga",
+      "Empat",
+      "Lima",
+      "Enam",
+      "Tujuh",
+      "Delapan",
+      "Sembilan",
+    ];
+    const belasan = [
+      "Sepuluh",
+      "Sebelas",
+      "Dua Belas",
+      "Tiga Belas",
+      "Empat Belas",
+      "Lima Belas",
+      "Enam Belas",
+      "Tujuh Belas",
+      "Delapan Belas",
+      "Sembilan Belas",
+    ];
+    const puluhan = [
+      "",
+      "",
+      "Dua Puluh",
+      "Tiga Puluh",
+      "Empat Puluh",
+      "Lima Puluh",
+      "Enam Puluh",
+      "Tujuh Puluh",
+      "Delapan Puluh",
+      "Sembilan Puluh",
+    ];
     const ribuan = ["", "Ribu", "Juta", "Miliar", "Triliun"];
-  
+
     if (angka === 0) return "Nol Rupiah";
-  
+
     const konversi = (num) => {
       if (num < 10) return satuan[num];
       if (num < 20) return belasan[num - 10];
-      if (num < 100) return puluhan[Math.floor(num / 10)] + " " + satuan[num % 10];
-      if (num < 1000) return satuan[Math.floor(num / 100)] + " Ratus " + konversi(num % 100);
+      if (num < 100)
+        return puluhan[Math.floor(num / 10)] + " " + satuan[num % 10];
+      if (num < 1000)
+        return satuan[Math.floor(num / 100)] + " Ratus " + konversi(num % 100);
       return "";
     };
-  
+
     let hasil = "";
     let i = 0;
-  
+
     while (angka > 0) {
       let bagian = angka % 1000;
       if (bagian > 0) {
@@ -123,55 +171,82 @@ export default function DetailPurchaseOrder() {
       angka = Math.floor(angka / 1000);
       i++;
     }
-  
+
     return hasil.trim() + " Rupiah";
   };
 
   const totalHarga =
-  PurchaseDetails?.purchaseDetails?.reduce((sum, poItem) => {
-    const material = poItem.material; 
-    const harga = material?.price || 0;
-    const qty = poItem.qty || 0;
-    return sum + (harga * qty);
-  }, 0) || 0;
+    PurchaseDetails?.purchaseDetails?.reduce((sum, poItem) => {
+      const material = poItem.material;
+      const harga = material?.price || 0;
+      const qty = poItem.qty || 0;
+      return sum + harga * qty;
+    }, 0) || 0;
   return (
     <div className="flex h-screen">
-     
       <div className="flex-1 p-6">
-        
         <div className="flex justify-end space-x-2 no-print">
-          <button onClick={handlePrint} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32">
+          <button
+            onClick={handlePrint}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32"
+          >
             Cetak
           </button>
-          <button onClick={handleDownloadPDF} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32">
+          <button
+            onClick={handleDownloadPDF}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32"
+          >
             Simpan PDF
           </button>
         </div>
 
-        <div id="purchase-order" className="print-container mx-auto bg-white rounded-lg p-6">
+        <div
+          id="purchase-order"
+          className="print-container mx-auto bg-white rounded-lg p-6"
+        >
           <div className="border-b-4 border-blue-600 mt-4">
             <div className="flex justify-between items-center pb-3">
-              <h1 className="text-lg font-bold text-blue-900 uppercase">Company Name</h1>
-              <h2 className="text-lg font-bold text-blue-900 uppercase">Purchase Order</h2>
+              <h1 className="text-lg font-bold text-blue-900 uppercase">
+                Company Name
+              </h1>
+              <h2 className="text-lg font-bold text-blue-900 uppercase">
+                Purchase Order
+              </h2>
               <div className="border border-gray-300 text-sm">
                 <table className="border-collapse w-full">
                   <tbody>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">Tanggal Purchase Order</td>
-                      <td className="border border-gray-300 px-2 py-1">{day} {month} {year}</td>
+                      <td className="border border-gray-300 px-2 py-1 font-semibold">
+                        Tanggal Purchase Order
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1">
+                        {day} {month} {year}
+                      </td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">Nomor Purchase Order</td>
-                      <td className="border border-gray-300 px-2 py-1">{data.nomorPO}</td>
+                      <td className="border border-gray-300 px-2 py-1 font-semibold">
+                        Nomor Purchase Order
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1">
+                        {data.nomorPO}
+                      </td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">Lokasi Purchase Order</td>
-                      <td className="border border-gray-300 px-2 py-1">{data.lokasiPO}</td>
+                      <td className="border border-gray-300 px-2 py-1 font-semibold">
+                        Lokasi Purchase Order
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1">
+                        {data.lokasiPO}
+                      </td>
                     </tr>
                     {data.keterangan && (
                       <tr>
-                        <td className="border border-gray-300 px-2 py-1 font-semibold">Keterangan</td>
-                        <td className="border border-gray-300 px-2 py-1">{data.keterangan}</td>
+                        <td className="border border-gray-300 px-2 py-1 font-semibold">
+                          Keterangan
+                        </td>
+                        <td className="border border-gray-300 px-2 py-1">
+                          {data.keterangan}
+                        </td>
                       </tr>
                     )}
                   </tbody>
@@ -183,69 +258,118 @@ export default function DetailPurchaseOrder() {
           <table className="w-full border-collapse mt-4 text-sm border border-gray-300">
             <thead className="bg-blue-700 text-white">
               <tr>
-                <th className="border p-2" rowSpan={2}>No.</th>
-                <th className="border p-2" rowSpan={2}>Code</th>
-                <th className="border p-2" rowSpan={2}>Nama Barang</th>
-                <th className="border p-2" rowSpan={2}>Harga</th>
-                <th className="border p-2 w-12" colSpan="2">Permintaan</th>
-                <th className="border p-2 w-35" rowSpan={2}>Total</th>
+                <th className="border p-2" rowSpan={2}>
+                  No.
+                </th>
+                <th className="border p-2" rowSpan={2}>
+                  Code
+                </th>
+                <th className="border p-2" rowSpan={2}>
+                  Nama Barang
+                </th>
+                <th className="border p-2" rowSpan={2}>
+                  Harga
+                </th>
+                <th className="border p-2 w-12" colSpan="2">
+                  Permintaan
+                </th>
+                <th className="border p-2 w-35" rowSpan={2}>
+                  Total
+                </th>
               </tr>
               <tr className="bg-blue-600 text-white">
                 <th className="border p-2 w-12">QTY</th>
                 <th className="border p-2 w-12">Satuan</th>
               </tr>
             </thead>
-            
+
             <tbody>
-  {PurchaseDetails?.purchaseDetails?.length > 0 ? (
-    PurchaseDetails.purchaseDetails.map((item, index) => {
-      const material = item.material;
-      const harga = material?.price || 0;
-      const total = item.qty * harga;
+              {PurchaseDetails?.purchaseDetails?.length > 0 ? (
+                PurchaseDetails.purchaseDetails.map((item, index) => {
+                  const material = item.material;
+                  const harga = material?.price || 0;
+                  const total = item.qty * harga;
 
-      return (
-        <tr key={index}>
-          <td className="border px-4 py-2 text-center">{index + 1}</td>
-          <td className="border px-4 py-2">{item.code}</td>
-          <td className="border px-4 py-2">{material?.name || 'N/A'}</td>
-          <td className="border px-4 py-2 text-center">Rp{harga.toLocaleString()}</td>
-          <td className="border px-4 py-2 text-center">{item.qty}</td>
-          <td className="border px-4 py-2 text-center">{item.satuan || 'N/A'}</td>
-          <td className="border px-4 py-2 text-center">Rp{total.toLocaleString()}</td>
-        </tr>
-      );
-    })
-  ) : (
-    <tr>
-      <td colSpan={8} className="text-center text-gray-500 py-4">
-        Tidak ada data
-      </td>
-    </tr>
-  )}
-  <tr className="font-semibold">
-    <td colSpan="4" className="bg-blue-600 text-white p-2 text-left">Terbilang</td>
-    <td colSpan="2" rowSpan={2} className="p-2 text-center border">TOTAL</td>
-    <td colSpan="1" rowSpan={2} className="p-2 text-center border">Rp{totalHarga.toLocaleString()}</td>
-    <td colSpan="1" rowSpan={2}></td>
-  </tr>
-  <tr>
-    <td colSpan="4" className="border p-2 text-gray-800 bg-white italic text-left">
-      {terbilang(totalHarga) || "-"}
-    </td>
-  </tr>
-</tbody>
-
+                  return (
+                    <tr key={index}>
+                      <td className="border px-4 py-2 text-center">
+                        {index + 1}
+                      </td>
+                      <td className="border px-4 py-2">{item.code}</td>
+                      <td className="border px-4 py-2">
+                        {material?.name || "N/A"}
+                      </td>
+                      <td className="border px-4 py-2 text-center">
+                        Rp{harga.toLocaleString()}
+                      </td>
+                      <td className="border px-4 py-2 text-center">
+                        {item.qty}
+                      </td>
+                      <td className="border px-4 py-2 text-center">
+                        {item.satuan || "N/A"}
+                      </td>
+                      <td className="border px-4 py-2 text-center">
+                        Rp{total.toLocaleString()}
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={8} className="text-center text-gray-500 py-4">
+                    Tidak ada data
+                  </td>
+                </tr>
+              )}
+              <tr className="font-semibold">
+                <td
+                  colSpan="4"
+                  className="bg-blue-600 text-white p-2 text-left"
+                >
+                  Terbilang
+                </td>
+                <td colSpan="2" rowSpan={2} className="p-2 text-center border">
+                  TOTAL
+                </td>
+                <td colSpan="1" rowSpan={2} className="p-2 text-center border">
+                  Rp{totalHarga.toLocaleString()}
+                </td>
+                <td colSpan="1" rowSpan={2}></td>
+              </tr>
+              <tr>
+                <td
+                  colSpan="4"
+                  className="border p-2 text-gray-800 bg-white italic text-left"
+                >
+                  {terbilang(totalHarga) || "-"}
+                </td>
+              </tr>
+            </tbody>
           </table>
 
           <table className="w-full border mt-6">
             <tbody>
               <tr className="text-center">
-                <td colSpan={3} className="bg-gray-300 font-semibold border p-2">PT.REKA CIPTA INOVASI</td>
-                <td rowSpan={2} className="bg-gray-300 font-semibold border p-2">Vendor</td>
+                <td
+                  colSpan={3}
+                  className="bg-gray-300 font-semibold border p-2"
+                >
+                  PT.REKA CIPTA INOVASI
+                </td>
+                <td
+                  rowSpan={2}
+                  className="bg-gray-300 font-semibold border p-2"
+                >
+                  Vendor
+                </td>
               </tr>
               <tr className="text-center">
-                <td className="bg-gray-300 font-semibold border p-2">Diperiksa</td>
-                <td className="bg-gray-300 font-semibold border p-2">Diketahui</td>
+                <td className="bg-gray-300 font-semibold border p-2">
+                  Diperiksa
+                </td>
+                <td className="bg-gray-300 font-semibold border p-2">
+                  Diketahui
+                </td>
                 <td className="bg-gray-300 font-semibold border p-2">Dibuat</td>
               </tr>
               <tr>
@@ -255,10 +379,18 @@ export default function DetailPurchaseOrder() {
                 <td className="border-b-0 border h-24 w-1/4"></td>
               </tr>
               <tr className="text-center">
-                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
-                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
-                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
-                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">Nama</td>
+                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
+                  Nama
+                </td>
+                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
+                  Nama
+                </td>
+                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
+                  Nama
+                </td>
+                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
+                  Nama
+                </td>
               </tr>
               <tr className="text-center bg-gray-300">
                 <td className="border p-2">Project Manager</td>

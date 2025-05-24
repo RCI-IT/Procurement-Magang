@@ -177,6 +177,18 @@ export const deletePermintaanLapangan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
+    const existingCO = await prisma.confirmationOrder.findUnique({
+      where: { permintaanId: Number(id) },
+    });
+
+    if (existingCO) {
+      res.status(400).json({
+        error:
+          "Confirmation Order tidak bisa dihapus karena masih ada Purchase Order terkait.",
+      });
+      return;
+    }
+
     await prisma.permintaanLapangan.delete({
       where: { id: Number(id) },
     });
