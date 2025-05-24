@@ -217,11 +217,11 @@ export default function ConfirmationOrderDetail() {
 
       console.log("Response Data:", response);
 
-      if (result.message) {
+      if (response) {
         await Swal.fire({
           icon: "success",
           title: "Berhasil!",
-          text: result.message,
+          text: response.message,
           confirmButtonText: "OK",
         });
 
@@ -252,12 +252,16 @@ export default function ConfirmationOrderDetail() {
       <div className="w-full max-w-6xl mx-auto px-8">
         <div></div>
         <div className="text-right space-x-2">
-          <button
-            onClick={() => router.push(`/confirmation-order/${id}/edit`)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
-          >
-            Edit
-          </button>
+          {!ConfirmationDetails?.confirmationDetails?.some(
+            (detail) => detail.status === "ACC"
+          ) && (
+            <button
+              onClick={() => router.push(`/confirmation-order/${id}/edit`)}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
+            >
+              Edit
+            </button>
+          )}
 
           <button
             onClick={handlePrint}
@@ -336,8 +340,7 @@ export default function ConfirmationOrderDetail() {
                       PL Number
                     </td>
                     <td className="border px-2 py-1 text-center">
-                      {ConfirmationDetails?.confirmationDetails?.[0]
-                        ?.permintaanDetail?.permintaan?.nomor || "N/A"}
+                      {ConfirmationDetails?.permintaan?.nomor || "N/A"}
                     </td>
                   </tr>
                 </tbody>

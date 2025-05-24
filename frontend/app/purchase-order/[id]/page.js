@@ -12,13 +12,10 @@ export default function DetailPurchaseOrder() {
   const [data, setData] = useState(null);
   const [PurchaseDetails, setPoDetail] = useState(null);
   const [token, setToken] = useState(null);
-  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
     if (storedToken) setToken(storedToken);
-    if (role) setUserRole(role);
   }, []);
 
   const parseDate = (dateString) => {

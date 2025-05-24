@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
+import { fetchWithAuth } from "@/services/apiClient";
 
 const PurchaseOrderTable = () => {
   const [data, setData] = useState([]);
@@ -15,14 +16,11 @@ const PurchaseOrderTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sortBy, setSortBy] = useState("terbaru");
-  const [userRole, setUserRole] = useState(null);
   const [token, setToken] = useState(null);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
     if (storedToken) setToken(storedToken);
-    if (role) setUserRole(role);
   }, []);
   const router = useRouter();
 
@@ -84,7 +82,7 @@ const PurchaseOrderTable = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`,
           {
             method: "DELETE",

@@ -27,9 +27,7 @@ export default function AddConfirmationOrder() {
   // Get token & role on mount
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
     if (storedToken) setToken(storedToken);
-    if (role) setUserRole(role)
   }, []);
 
   // Fetch permintaan and vendors

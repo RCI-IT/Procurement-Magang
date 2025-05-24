@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
+import { fetchWithAuth } from "@/services/apiClient";
 
 const ConfirmationOrderTable = () => {
   const [data, setData] = useState([]);
@@ -86,14 +87,23 @@ const ConfirmationOrderTable = () => {
     if (!result.isConfirmed) return;
 
     try {
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`,
         {
           method: "DELETE",
         }
       );
 
-      if (!response.ok) throw new Error("Gagal menghapus data");
+      if (!response.ok) {
+        const errorData = await response.json();
+        const message = errorData.message || "Gagal menghapus data!";
+    
+        if (response.status === 400) {
+          throw new Error(`Terdapat Data PO terkait! ${message}`);
+        }
+    
+        throw new Error(message);
+      }
 
       await Swal.fire("Data berhasil dihapus!", "", "success");
 
