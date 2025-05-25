@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { fetchWithToken } from "../../services/fetchWithToken"
+import { fetchWithToken } from "../../services/fetchWithToken";
 import { Eye, EyeOff, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import "../../styles/globals.css";
+import Pagination from "@/component/Pagination";
 
 function PasswordCell({ password }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +28,6 @@ export default function User() {
   const [currentPage, setCurrentPage] = useState(1);
   const [token, setToken] = useState(null);
   const router = useRouter();
-  
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -37,7 +37,7 @@ export default function User() {
   useEffect(() => {
     const fetchData = async () => {
       if (!token) return;
-  
+
       const getData = async () => {
         const data = await fetchWithToken(
           `${process.env.NEXT_PUBLIC_API_URL}/users`,
@@ -45,16 +45,15 @@ export default function User() {
           setToken,
           () => router.push("/login")
         );
-  
+
         if (data) setUsers(data);
       };
-  
+
       getData();
     };
-  
+
     fetchData();
   }, [token]);
-  
 
   // useEffect(() => {
   //   const storedUsername = localStorage.getItem("username");
@@ -220,7 +219,7 @@ export default function User() {
               </tbody>
             </table>
 
-            <div className="user-pagination">
+            {/* <div className="user-pagination">
               <nav>
                 <button
                   onClick={() =>
@@ -251,7 +250,13 @@ export default function User() {
                   »
                 </button>
               </nav>
-            </div>
+            </div> */}
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              setCurrentPage={setCurrentPage}
+            />
           </div>
         </main>
       </div>

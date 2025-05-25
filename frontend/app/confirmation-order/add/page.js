@@ -108,6 +108,7 @@ export default function AddConfirmationOrder() {
     );
   };
 
+
   const vendor = vendors.find(
     (v) => v.id === parseInt(formData.idVendor)
   );
@@ -310,6 +311,11 @@ function ItemSelector({ filteredItems, selectedItems, toggleItemSelection, handl
                     <InputField label="Satuan" value={selected.satuan} onChange={(e) => handleItemDetailChange(item.id, "satuan", e.target.value)} />
                     <InputField label="Kode Barang" value={selected.code || ""} onChange={(e) => handleItemDetailChange(item.id, "code", e.target.value)} />
                     <InputField label="Mention" value={selected.mention || ""} onChange={(e) => handleItemDetailChange(item.id, "mention", e.target.value)} />
+                    <img
+                   src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${item.image}`}
+                      alt={item.image}
+                      className="w-16 h-16 object-cover mx-auto"
+                          />
                     <TextareaField label="Keterangan" value={selected.keterangan || ""} onChange={(e) => handleItemDetailChange(item.id, "keterangan", e.target.value)} />
                   </div>
                 )}

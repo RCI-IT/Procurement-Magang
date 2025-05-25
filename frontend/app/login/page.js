@@ -2,17 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "@/services/authServices"; // path menyesuaikan struktur proyek kamu
+import { login } from "../../services/authServices";
 
 export default function LoginPage() {
   const router = useRouter();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  // const [users, setUsers] = useState([]);
-  // const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState(null);
   const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -21,11 +19,10 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      const data = await login(username, password); // login API
+      const data = await login(username, password);
       localStorage.setItem("token", data.token);
       localStorage.setItem("isLoggedIn", "true");
 
-      // Setelah login berhasil, ambil data user untuk simpan role, dsb
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
         headers: {
           "Content-Type": "application/json",
@@ -43,20 +40,14 @@ export default function LoginPage() {
         localStorage.setItem("role", validUser.role);
       }
 
-      setMessage("Login successful!");
+      setIsError(false);
+      setMessage("Login berhasil!");
       router.push("/home");
     } catch (err) {
+      setIsError(true);
       setMessage(err.message || "Login gagal");
     }
   };
-
-  // if (loading) {
-  //   return <div className="text-center">Loading...</div>;
-  // }
-
-  // if (error) {
-  //   return <div className="text-center text-red-500">{error}</div>;
-  // }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white text-blue-500">
@@ -94,7 +85,15 @@ export default function LoginPage() {
           Login
         </button>
 
-        {message && <p className="mt-4 text-center">{message}</p>}
+        {message && (
+          <p
+            className={`mt-4 text-center font-semibold ${
+              isError ? "text-red-200" : "text-green-200"
+            }`}
+          >
+            {message}
+          </p>
+        )}
       </div>
     </div>
   );

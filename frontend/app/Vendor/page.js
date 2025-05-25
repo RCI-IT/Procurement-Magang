@@ -6,13 +6,14 @@ import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
+import Pagination from "@/component/Pagination";
 
 export default function VendorPage() {
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [rowsToShow, setRowsToShow] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);  
+  const [currentPage, setCurrentPage] = useState(1);
   const [token, setToken] = useState(null);
 
   useEffect(() => {
@@ -22,13 +23,13 @@ export default function VendorPage() {
 
   const router = useRouter();
 
-  const getData = async() => {
+  const getData = async () => {
     const data = await fetchWithToken(
       `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
       token,
       setToken,
       () => router.push("/login")
-    )
+    );
     if (data) setVendors(data);
   };
 
@@ -47,7 +48,8 @@ export default function VendorPage() {
 
   const handleDelete = async (vendorId) => {
     const result = await Swal.fire({
-      title: "Yakin ingin hapus vendor ini dan seluruh material terkait vendor?",
+      title:
+        "Yakin ingin hapus vendor ini dan seluruh material terkait vendor?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Ya, Hapus!",
@@ -57,7 +59,7 @@ export default function VendorPage() {
     if (!result.isConfirmed) return;
 
     try {
-      const res = await fetchWithAuth(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/vendors/${vendorId}`,
         {
           method: "DELETE",
@@ -68,7 +70,16 @@ export default function VendorPage() {
         }
       );
 
-      if (!res.ok) throw new Error("Gagal hapus vendor");
+      if (!response.ok) {
+        const errorData = await response.json();
+        const message = errorData.message || "Gagal menghapus data!";
+
+        if (response.status === 400) {
+          throw new Error(`Terdapat Data Material terkait! ${message}`);
+        }
+
+        throw new Error(message);
+      }
 
       Swal.fire({
         title: "Berhasil!",
@@ -217,45 +228,11 @@ export default function VendorPage() {
             </tbody>
           </table>
 
-          <div className="flex justify-center mt-6">
-            <nav
-              className="inline-flex rounded-md shadow-sm"
-              aria-label="Pagination"
-            >
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-              >
-                «
-              </button>
-              {[...Array(totalPages)].map((_, index) => {
-                const page = index + 1;
-                return (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-2 border border-gray-300 ${
-                      currentPage === page
-                        ? "text-white bg-blue-500"
-                        : "text-blue-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
-              <button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-              >
-                »
-              </button>
-            </nav>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            setCurrentPage={setCurrentPage}
+          />
         </main>
       </div>
     </div>

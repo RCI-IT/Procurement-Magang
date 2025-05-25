@@ -7,6 +7,7 @@ import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
+import Pagination from "@/component/Pagination";
 
 const ConfirmationOrderTable = () => {
   const [data, setData] = useState([]);
@@ -97,11 +98,11 @@ const ConfirmationOrderTable = () => {
       if (!response.ok) {
         const errorData = await response.json();
         const message = errorData.message || "Gagal menghapus data!";
-    
+
         if (response.status === 400) {
           throw new Error(`Terdapat Data PO terkait! ${message}`);
         }
-    
+
         throw new Error(message);
       }
 
@@ -134,7 +135,6 @@ const ConfirmationOrderTable = () => {
     <div className="flex h-screen">
       <div className="p-4 flex-1 bg-white shadow-md rounded-md overflow-auto">
         <h1 className="text-3xl font-bold mb-4 mt-4">Confirmation Order</h1>
-
         <div className="mb-4 flex justify-between items-end flex-wrap gap-2">
           <div className="flex space-x-2">
             <label className="mr-2">Urutkan:</label>
@@ -175,7 +175,6 @@ const ConfirmationOrderTable = () => {
             )}
           </div>
         </div>
-
         {loading ? (
           <p className="text-center">Memuat data...</p>
         ) : error ? (
@@ -229,7 +228,11 @@ const ConfirmationOrderTable = () => {
             </tbody>
           </table>
         )}
-
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          setCurrentPage={setCurrentPage}
+        />{" "}
         <div className="flex justify-center mt-6">
           <nav
             className="inline-flex rounded-md shadow-sm"

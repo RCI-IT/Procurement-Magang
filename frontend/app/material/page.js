@@ -5,6 +5,8 @@ import { fetchWithToken } from "@/services/fetchWithToken";
 import { useRouter } from "next/navigation";
 import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
+import { fetchWithAuth } from "@/services/apiClient";
+import Pagination from "@/component/Pagination"
 
 export default function Material() {
   const [token, setToken] = useState(null);
@@ -72,7 +74,7 @@ export default function Material() {
     if (!result.isConfirmed) return;
 
     try {
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`,
         {
           method: "DELETE",
@@ -83,7 +85,16 @@ export default function Material() {
         }
       );
 
-      if (!response.ok) throw new Error("Gagal menghapus material");
+      if (!response.ok) {
+        const errorData = await response.json();
+        const message = errorData.message || "Gagal menghapus data!";
+
+        if (response.status === 400) {
+          throw new Error(`Terdapat Data Permintaan terkait! ${message}`);
+        }
+
+        throw new Error(message);
+      }
 
       setMaterials((prev) => prev.filter((material) => material.id !== id));
       Swal.fire("Berhasil!", "Material berhasil dihapus.", "success");
@@ -128,14 +139,6 @@ export default function Material() {
     return (
       <div className="text-center text-gray-500">Material tidak ditemukan.</div>
     );
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -271,45 +274,11 @@ export default function Material() {
             </table>
           </div>
 
-          <div className="flex justify-center mt-6">
-            <nav
-              className="inline-flex rounded-md shadow-sm"
-              aria-label="Pagination"
-            >
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-              >
-                «
-              </button>
-              {[...Array(totalPages)].map((_, index) => {
-                const page = index + 1;
-                return (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-2 border border-gray-300 ${
-                      currentPage === page
-                        ? "text-white bg-blue-500"
-                        : "text-blue-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
-              <button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-              >
-                »
-              </button>
-            </nav>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            setCurrentPage={setCurrentPage}
+          />
         </main>
       </div>
     </div>
