@@ -6,6 +6,7 @@ import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
+import Pagination from "@/component/Pagination";
 
 const PurchaseOrderTable = () => {
   const [data, setData] = useState([]);
@@ -207,45 +208,11 @@ const PurchaseOrderTable = () => {
           </table>
         )}
 
-        <div className="flex justify-center mt-6">
-          <nav
-            className="inline-flex rounded-md shadow-sm"
-            aria-label="Pagination"
-          >
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-            >
-              «
-            </button>
-            {[...Array(totalPages)].map((_, index) => {
-              const page = index + 1;
-              return (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-2 border border-gray-300 ${
-                    currentPage === page
-                      ? "text-white bg-blue-500"
-                      : "text-blue-600 hover:bg-gray-100"
-                  }`}
-                >
-                  {page}
-                </button>
-              );
-            })}
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-              className="px-3 py-2 border border-gray-300 text-blue-600 hover:bg-gray-100 disabled:text-gray-400"
-            >
-              »
-            </button>
-          </nav>
-        </div>
+        <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            setCurrentPage={setCurrentPage}
+          />
       </div>
     </div>
   );

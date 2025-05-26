@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { Request, Response } from "express";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -14,15 +14,22 @@ const PermintaanStatus = {
 
 export const createPermintaanLapangan = async (req: Request, res: Response) => {
   try {
-    const { nomor, tanggal, lokasi, picLapangan, keterangan, detail } = req.body;
+    const { nomor, tanggal, lokasi, picLapangan, keterangan, detail } =
+      req.body;
 
-    if (!nomor || !tanggal || !lokasi || !picLapangan || !Array.isArray(detail)) {
+    if (
+      !nomor ||
+      !tanggal ||
+      !lokasi ||
+      !picLapangan ||
+      !Array.isArray(detail)
+    ) {
       res.status(400).json({ error: "Harap isi semua field yang diperlukan" });
       return;
     }
 
-    const isDetailValid = detail.every((item: any) =>
-      item.materialId && item.qty && item.satuan
+    const isDetailValid = detail.every(
+      (item: any) => item.materialId && item.qty && item.satuan
     );
 
     if (!isDetailValid) {
@@ -86,7 +93,10 @@ export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Gagal mengambil data permintaan lapangan" });
   }
 };
-export const getPermintaanById = async (req: Request, res: Response): Promise<void> => {
+export const getPermintaanById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
     const parsedId = Number(id);
@@ -102,7 +112,7 @@ export const getPermintaanById = async (req: Request, res: Response): Promise<vo
         user: true,
         detail: {
           include: {
-            material: true,  // No confirmationDetails here
+            material: true, // No confirmationDetails here
           },
         },
       },
@@ -133,20 +143,29 @@ export const updateStatusPermintaan = async (req: Request, res: Response) => {
     res.status(200).json(updatedPermintaan);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Gagal mengupdate status permintaan' });
+    res.status(500).json({ error: "Gagal mengupdate status permintaan" });
   }
 };
-export const updateStatusPermintaanDetail = async (req: Request, res: Response): Promise<void> => {
+export const updateStatusPermintaanDetail = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
     const allowedStatuses = [
-      'PENDING', 'APPROVED', 'REJECTED', 'IN_PROGRESS', 'CLOSED', 'CANCELLED', 'READ'
+      "PENDING",
+      "APPROVED",
+      "REJECTED",
+      "IN_PROGRESS",
+      "CLOSED",
+      "CANCELLED",
+      "READ",
     ];
 
     if (!allowedStatuses.includes(status)) {
-      res.status(400).json({ error: 'Status tidak valid' });
+      res.status(400).json({ error: "Status tidak valid" });
       return;
     }
 
@@ -155,7 +174,7 @@ export const updateStatusPermintaanDetail = async (req: Request, res: Response):
     });
 
     if (!existingDetail) {
-      res.status(404).json({ error: 'Data permintaan detail tidak ditemukan' });
+      res.status(404).json({ error: "Data permintaan detail tidak ditemukan" });
       return;
     }
 
@@ -169,37 +188,46 @@ export const updateStatusPermintaanDetail = async (req: Request, res: Response):
 
     res.status(200).json(updatedDetail);
   } catch (error) {
-    console.error('Gagal mengupdate status permintaan detail:', error);
-    res.status(500).json({ error: 'Gagal mengupdate status permintaan detail' });
+    console.error("Gagal mengupdate status permintaan detail:", error);
+    res
+      .status(500)
+      .json({ error: "Gagal mengupdate status permintaan detail" });
   }
 };
 export const deletePermintaanLapangan = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const existingCO = await prisma.confirmationOrder.findUnique({
+    const existingCO = await prisma.confirmationOrder.findMany({
       where: { permintaanId: Number(id) },
     });
 
-    if (existingCO) {
+    if (existingCO.length > 0) {
       res.status(400).json({
         error:
-          "Confirmation Order tidak bisa dihapus karena masih ada Purchase Order terkait.",
+          "Permintaan Lapangan tidak bisa dihapus karena masih ada Confirmation Order terkait.",
       });
       return;
     }
 
+    await prisma.permintaanDetails.deleteMany({
+      where: {permintaanId: Number(id)}
+    })
     await prisma.permintaanLapangan.delete({
       where: { id: Number(id) },
     });
 
-    res.status(200).json({ message: 'Permintaan lapangan berhasil dihapus' });
+    res.status(200).json({ message: "Permintaan lapangan berhasil dihapus" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Gagal menghapus permintaan lapangan' });
+    res.status(500).json({ error: "Gagal menghapus permintaan lapangan" });
   }
 };
-export const editPermintaanLapangan = async (req: Request, res: Response): Promise<void> => {
+
+export const editPermintaanLapangan = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
     const {

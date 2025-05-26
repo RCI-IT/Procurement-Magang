@@ -26,6 +26,15 @@ export const createConfirmationOrder = async (
       return;
     }
 
+    const existingPermintaan = await prisma.permintaanLapangan.findUnique({
+      where: { id: permintaanId },
+    });
+    
+    if (!existingPermintaan) {
+      res.status(400).json({ message: "Permintaan tidak ditemukan" });
+      return;
+    }
+
     // Validasi untuk setiap item, memastikan semua field yang diperlukan ada
     const validatedItems = items.map((item: any) => {
       if (

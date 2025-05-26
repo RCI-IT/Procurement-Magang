@@ -83,6 +83,13 @@ export const deleteVendor = async (
       where: { vendorId },
     });
 
+    if (vendorMaterials.length > 0) {
+      res.status(400).json({
+        error: "Vendor tidak dapat dihapus. Hapus terlebih dahulu material.",
+      });
+      return;
+    }
+
     // 2. Hapus file gambar (jika ada) dan material dari DB
     for (const material of vendorMaterials) {
       if (material.image) {

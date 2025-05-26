@@ -1,17 +1,23 @@
-import { PrismaClient } from '@prisma/client';
-import { Request, Response } from 'express';
+import { PrismaClient } from "@prisma/client";
+import { Request, Response } from "express";
 
 const prisma = new PrismaClient();
-export const getAllCategories = async (req: Request, res: Response): Promise<void> => {
+export const getAllCategories = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const categories = await prisma.categories.findMany();
     res.status(200).json(categories);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch categories' });
+    res.status(500).json({ error: "Failed to fetch categories" });
   }
 };
-export const createCategory = async (req: Request, res: Response): Promise<void> => {
+export const createCategory = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { name } = req.body;
   try {
     const newCategory = await prisma.categories.create({
@@ -20,10 +26,13 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
     res.status(201).json(newCategory);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create category' });
+    res.status(500).json({ error: "Failed to create category" });
   }
 };
-export const editCategory = async (req: Request, res: Response): Promise<void> => {
+export const editCategory = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { id } = req.params;
   const { name } = req.body;
 
@@ -36,24 +45,44 @@ export const editCategory = async (req: Request, res: Response): Promise<void> =
     res.status(200).json(category);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to update category' });
+    res.status(500).json({ error: "Failed to update category" });
   }
 };
-export const deleteCategory = async (req: Request, res: Response): Promise<void> => {
+export const deleteCategory = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { id } = req.params;
 
   try {
+    const material = await prisma.materials.findMany({
+      where: { categoryId: Number(id) },
+    });
+
+    if (material.length > 0) {
+      res
+        .status(400)
+        .json({
+          message:
+            "Kategori tidak dapat dihapus! Hapus material terlebih dahulu.",
+        });
+      return;
+    }
+
     await prisma.categories.delete({
       where: { id: Number(id) },
     });
 
-    res.status(200).json({ message: 'Category deleted successfully' });
+    res.status(200).json({ message: "Category deleted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to delete category' });
+    res.status(500).json({ error: "Failed to delete category" });
   }
 };
-export const getCategoryById = async (req: Request, res: Response): Promise<void> => {
+export const getCategoryById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
     const parsedId = Number(id);
@@ -78,12 +107,12 @@ export const getCategoryById = async (req: Request, res: Response): Promise<void
             vendor: {
               select: {
                 id: true,
-                name: true
-              }
-            }
-          }
-        }
-      }
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!category) {

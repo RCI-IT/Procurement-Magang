@@ -101,6 +101,21 @@ export const deleteMaterial = async (
       return;
     }
 
+    // Cek apakah material ini sedang digunakan di PermintaanDetails
+    const usedInPermintaan = await prisma.permintaanDetails.findMany({
+      where: {
+        materialId: parsedId,
+      },
+    });
+
+    if (usedInPermintaan.length > 0) {
+      res.status(400).json({
+        error:
+          "Material tidak bisa dihapus karena sedang digunakan dalam permintaan lapangan.",
+      });
+      return;
+    }
+
     // Hapus file jika ada gambar
     const fileName = String(material.image);
     const filePath = path.join(__dirname, "../../uploads", fileName);
