@@ -10,6 +10,7 @@ import Pagination from "@/component/Pagination";
 
 const PurchaseOrderTable = () => {
   const [data, setData] = useState([]);
+  const [confirmation, setConfirmation] = useState([]);
   const [search, setSearch] = useState("");
   const [rowsToShow, setRowsToShow] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,6 +39,14 @@ const PurchaseOrderTable = () => {
           throw new Error(`Gagal mengambil data: ${response.statusText}`);
         }
         setData(response);
+
+        const confirmData = await fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/confirmation`,
+          token,
+          setToken,
+          () => router.push("/login")
+        );
+        if (confirmData) setConfirmation(confirmData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -168,35 +177,56 @@ const PurchaseOrderTable = () => {
                 <th className="border p-2">Nomor PO</th>
                 <th className="border p-2">Tanggal PO</th>
                 <th className="border p-2">Lokasi</th>
+                <th className="border p-2">No CO</th>
                 <th className="border p-2">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {paginatedData.length > 0 ? (
-                paginatedData.map((po, index) => (
-                  <tr key={po.id} className="text-center border">
-                    <td className="border p-2">
-                      {(currentPage - 1) * rowsToShow + index + 1}
-                    </td>
-                    <td className="border p-2">{po.nomorPO}</td>
-                    <td className="border p-2">
-                      {po.tanggalPO
-                        ? new Date(po.tanggalPO).toLocaleDateString("id-ID", {
-                            day: "2-digit",
-                            month: "long",
-                            year: "numeric",
-                          })
-                        : "N/A"}
-                    </td>
-                    <td className="border p-2">{po.lokasiPO}</td>
-                    <td className="border p-2">
-                      <ActionButtons
-                        onView={() => router.push(`/purchase-order/${po.id}`)}
-                        onDelete={() => handleDelete(po.id)}
-                      />
-                    </td>
-                  </tr>
-                ))
+                paginatedData.map((po, index) => {
+                  const confirm = confirmation.find(
+                    (c) => c.id === po.confirmationOrderId
+                  );
+                  return (
+                    <tr key={po.id} className="text-center border">
+                      <td className="border p-2">
+                        {(currentPage - 1) * rowsToShow + index + 1}
+                      </td>
+                      <td className="border p-2">{po.nomorPO}</td>
+                      <td className="border p-2">
+                        {po.tanggalPO
+                          ? new Date(po.tanggalPO).toLocaleDateString("id-ID", {
+                              day: "2-digit",
+                              month: "long",
+                              year: "numeric",
+                            })
+                          : "N/A"}
+                      </td>
+                      <td className="border p-2">{po.lokasiPO}</td>
+                      <td className="border px-4 py-2 text-center">
+                        {confirm ? (
+                          <button
+                            onClick={() => {
+                              if (confirm.id)
+                                router.push(`/confirmation-order/${confirm.id}`);
+                            }}
+                            className="text-blue-500 underline"
+                          >
+                            {confirm.nomorCO}
+                          </button>
+                        ) : (
+                          "Tidak Ada Vendor"
+                        )}
+                      </td>
+                      <td className="border p-2">
+                        <ActionButtons
+                          onView={() => router.push(`/purchase-order/${po.id}`)}
+                          onDelete={() => handleDelete(po.id)}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan="5" className="text-center p-4">
@@ -209,10 +239,10 @@ const PurchaseOrderTable = () => {
         )}
 
         <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            setCurrentPage={setCurrentPage}
-          />
+          currentPage={currentPage}
+          totalPages={totalPages}
+          setCurrentPage={setCurrentPage}
+        />
       </div>
     </div>
   );

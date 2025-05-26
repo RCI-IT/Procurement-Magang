@@ -72,13 +72,11 @@ export default function VendorPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        const message = errorData.message || "Gagal menghapus data!";
+        const message =
+          errorData.error || errorData.message || "Gagal menghapus permintaan.";
 
-        if (response.status === 400) {
-          throw new Error(`Terdapat Data Material terkait! ${message}`);
-        }
-
-        throw new Error(message);
+        Swal.fire("Gagal!", message, "error");
+        return;
       }
 
       Swal.fire({
