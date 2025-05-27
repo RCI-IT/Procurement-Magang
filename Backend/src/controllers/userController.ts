@@ -31,8 +31,21 @@ export const getAllUsers = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+  const { username, email } = req.query;
+  const whereClause: any = {};
+
+  if (username) whereClause.username = Number(username);
+  if (email) {
+    whereClause.email = {
+      contains: String(email), // pencarian partial 
+      mode: "insensitive", // (case-insensitive bisa ditambah)
+    };
+  }
+
   try {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({
+      where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+    });
     res.status(200).json(users);
   } catch (error) {
     console.error(error);

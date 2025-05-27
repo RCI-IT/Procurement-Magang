@@ -59,8 +59,15 @@ export const getAllMaterials = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+  const vendorId = req.query.vendorId;
+
   try {
     const materials = await prisma.materials.findMany({
+      where: vendorId
+        ? {
+            vendorId: Number(vendorId), // pastikan vendorId berupa angka
+          }
+        : undefined, // kalau tidak ada vendorId, ambil semua
       include: {
         vendor: true,
         category: true,
@@ -78,6 +85,7 @@ export const getAllMaterials = async (
     res.status(500).json({ error: "Failed to fetch materials" });
   }
 };
+
 
 export const deleteMaterial = async (
   req: Request,

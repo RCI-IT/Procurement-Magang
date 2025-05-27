@@ -31,6 +31,11 @@ export default function User() {
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
+    const roles = localStorage.getItem("role");
+    if (!storedToken || !roles || roles !== "ADMIN") {
+      router.push("/home");
+      return;
+    }
     if (storedToken) setToken(storedToken);
   }, []);
 

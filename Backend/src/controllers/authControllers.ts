@@ -87,6 +87,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
       })
+      .cookie("role", user.role, {
+        httpOnly: false, // Supaya bisa dibaca di frontend jika perlu
+        sameSite: "lax",
+        // secure: process.env.NODE_ENV === "production",
+      })
       .json({
         message: "Login successful",
         token, // atau token: token

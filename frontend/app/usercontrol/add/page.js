@@ -4,6 +4,7 @@ import { useState } from "react";
 import { fetchWithAuth } from "../../../services/apiClient";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { useRouter } from "next/navigation";
+import { checkDuplicate } from "@/utils/duplicate-check";
 import Swal from "sweetalert2";
 
 export default function AddUserPage() {
@@ -29,6 +30,24 @@ export default function AddUserPage() {
     e.preventDefault();
 
     try {
+      const duplicateCheck = await checkDuplicate('users', {
+        username,
+        email,
+      });
+      
+      if (duplicateCheck.username || duplicateCheck.email) {
+        let msg = "User dengan ";
+        if (duplicateCheck.username) msg += "username ";
+        if (duplicateCheck.email) msg += (duplicateCheck.username ? "dan " : "") + "email ";
+        msg += "sudah terdaftar.";
+      
+        return Swal.fire({
+          icon: "warning",
+          title: "Duplikat Data",
+          text: msg,
+        });
+      }
+
       let res = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/users`,
         {
