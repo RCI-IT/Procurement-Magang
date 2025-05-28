@@ -82,14 +82,17 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // Kirim token ke client
     res
       .cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        httpOnly: true,                 // Agar tidak bisa diakses dari JavaScript
+        secure: true,                   // Hanya dikirim via HTTPS (penting jika domain-mu pakai https atau cross-domain)
+        sameSite: "none",              // Diperlukan jika cookie dikirim lintas domain (cross-site)
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
       })
       .cookie("role", user.role, {
-        httpOnly: false, // Supaya bisa dibaca di frontend jika perlu
-        sameSite: "lax",
+        httpOnly: false,               // Bisa dibaca di frontend (misalnya untuk tampilan UI)
+        secure: true,                  // Harus true kalau pakai "sameSite: 'none'"
+        sameSite: "none",              // Harus sama dengan refreshToken untuk konsistensi cross-site
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        // sameSite: "lax",
         // secure: process.env.NODE_ENV === "production",
       })
       .json({

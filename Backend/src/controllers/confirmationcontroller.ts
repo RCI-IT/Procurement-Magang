@@ -29,7 +29,7 @@ export const createConfirmationOrder = async (
     const existingPermintaan = await prisma.permintaanLapangan.findUnique({
       where: { id: permintaanId },
     });
-    
+
     if (!existingPermintaan) {
       res.status(400).json({ message: "Permintaan tidak ditemukan" });
       return;
@@ -167,11 +167,10 @@ export const updateConfirmationOrder = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+  const { id } = req.params;
+  const { nomorCO, tanggalCO, lokasiCO, status, confirmationDetails } =
+    req.body;
   try {
-    const { id } = req.params;
-    const { nomorCO, tanggalCO, lokasiCO, status, confirmationDetails } =
-      req.body;
-
     if (!id || isNaN(Number(id))) {
       res.status(400).json({ message: "ID tidak valid" });
       return;
@@ -186,31 +185,37 @@ export const updateConfirmationOrder = async (
       return;
     }
 
+    // Update confirmationOrder utama
     await prisma.confirmationOrder.update({
       where: { id: Number(id) },
       data: {
         nomorCO,
         tanggalCO: new Date(tanggalCO),
         lokasiCO,
-        status: status.toUpperCase(),
+        status: status?.toUpperCase() || "PENDING",
       },
     });
 
-    await prisma.confirmationDetails.deleteMany({
-      where: { confirmationOrderId: Number(id) },
-    });
+    // Loop tiap detail dan upsert
+    for (const detail of confirmationDetails) {
+      const detailId = Number(detail.id) || 0;
 
-    if (confirmationDetails.length > 0) {
-      await prisma.confirmationDetails.createMany({
-        data: confirmationDetails.map((detail: any) => ({
-          confirmationOrderId: Number(id),
-          materialId: detail.materialId,
-          qty: detail.qty,
-          code: detail.code,
-          satuan: detail.satuan,
-          keterangan: detail.keterangan || "",
-          status: detail.status || "WAITING",
-        })),
+      // Validasi minimal
+      if (
+        !detail.confirmationDetailId ||
+        isNaN(Number(detail.confirmationDetailId))
+      ) {
+        continue; // Skip jika confirmationDetailId tidak valid
+      }
+
+      await prisma.confirmationDetails.update({
+        where: {
+          id: detailId,
+        },
+        data: {
+          qty: Number(detail.qty) || 0,
+          satuan: detail.satuan || "",
+        },
       });
     }
 
@@ -219,9 +224,11 @@ export const updateConfirmationOrder = async (
     console.error("Error updating confirmation order:", error);
     res.status(500).json({
       message: "Terjadi kesalahan saat mengupdate confirmation order",
+      confirmationDetails,
     });
   }
 };
+
 // DELETE Confirmation Order
 export const deleteConfirmationOrder = async (
   req: Request,

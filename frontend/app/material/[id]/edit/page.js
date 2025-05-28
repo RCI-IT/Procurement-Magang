@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { fetchWithToken } from "../../../../services/fetchWithToken";
-import { fetchWithAuth } from "../../../../services/apiClient";
+import { fetchWithToken } from "@/services/fetchWithToken";
+import { fetchWithAuth } from "@/services/apiClient";
 import Swal from "sweetalert2";
+import { checkDuplicate } from "@/utils/duplicate-check";
+import Select from "react-select";
 
 export default function EditMaterial() {
   const params = useParams();
@@ -12,6 +14,7 @@ export default function EditMaterial() {
   const router = useRouter();
 
   const [name, setName] = useState("");
+  const [code, setCode] = useState("");
   const [vendorId, setVendorId] = useState("");
   const [price, setPrice] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -31,39 +34,46 @@ export default function EditMaterial() {
     if (storedToken) setToken(storedToken);
   }, []);
 
-  const getData = async () => {
-    const materialData = await fetchWithToken(
-      `${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`,
-      token,
-      setToken,
-      () => router.push("/login")
-    );
-    const categoryData = await fetchWithToken(
-      `${process.env.NEXT_PUBLIC_API_URL}/categories`,
-      token,
-      setToken,
-      () => router.push("/login")
-    );
-    const vendorData = await fetchWithToken(
-      `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
-      token,
-      setToken,
-      () => router.push("/login")
-    );
+  const getData = useCallback(async () => {
+    try {
+      const [materialData, categoryData, vendorData] = await Promise.all([
+        fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/materials/${id}`,
+          token,
+          setToken,
+          () => router.push("/login")
+        ),
+        fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/categories`,
+          token,
+          setToken,
+          () => router.push("/login")
+        ),
+        fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
+          token,
+          setToken,
+          () => router.push("/login")
+        ),
+      ]);
 
-    if (materialData) setMaterial(materialData);
-    if (vendorData) setVendors(vendorData);
-    if (categoryData) setCategories(categoryData);
-  };
+      if (materialData) setMaterial(materialData);
+      if (categoryData) setCategories(categoryData);
+      if (vendorData) setVendors(vendorData);
+    } catch (err) {
+      console.error("Gagal mengambil data:", err);
+    } finally {
+      setInitialLoading(false);
+    }
+  }, [id, token, setToken, router]);
 
   useEffect(() => {
-    if (token) {
-      getData().finally(() => setInitialLoading(false));
-    }
-  }, [token]);
+    if (token) getData();
+  }, [token, getData]);
 
   useEffect(() => {
     if (material) {
+      setCode(material.code || "");
       setName(material.name || "");
       setVendorId(material.vendorId ? String(material.vendorId) : "");
       setCategoryId(material.categoryId ? String(material.categoryId) : "");
@@ -76,6 +86,36 @@ export default function EditMaterial() {
     }
   }, [material]);
 
+  useEffect(() => {
+    return () => {
+      if (image) {
+        URL.revokeObjectURL(image);
+      }
+    };
+  }, [image]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      Swal.fire({
+        icon: "error",
+        title: "File tidak valid",
+        text: "Harap unggah file gambar.",
+      });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      Swal.fire({
+        icon: "error",
+        title: "Ukuran terlalu besar",
+        text: "Ukuran gambar tidak boleh lebih dari 2MB.",
+      });
+      return;
+    }
+    setImage(file);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
@@ -84,11 +124,11 @@ export default function EditMaterial() {
     let hasChange = false;
     const formData = new FormData();
 
-    // Daftar field yang akan dicek
     const fields = [
+      { key: "code", value: code, original: material.code },
       { key: "name", value: name, original: material.name },
       { key: "vendorId", value: vendorId, original: String(material.vendorId) },
-      { key: "price", value: price, original: String(material.price) },
+      { key: "price", value: price || "0", original: String(material.price) },
       {
         key: "categoryId",
         value: categoryId,
@@ -108,25 +148,33 @@ export default function EditMaterial() {
       }
     }
 
-    // Cek perubahan gambar
     if (image) {
       formData.append("image", image);
       hasChange = true;
     }
-    
+
     if (!hasChange) {
       Swal.fire({
         icon: "warning",
         title: "Oops",
         text: "Harap ubah minimal satu data sebelum menyimpan!",
-        background: "#fff",
-        color: "#000",
-        confirmButtonColor: "blue",
       });
       setLoading(false);
       return;
     }
 
+    if (code !== material.code) {
+      const duplicate = await checkDuplicate("materials", { code });
+      if (duplicate.code) {
+        Swal.fire({
+          icon: "warning",
+          title: "Duplikat Data",
+          text: "Material dengan kode tersebut sudah terdaftar.",
+        });
+        setLoading(false);
+        return;
+      }
+    }
     console.log(formData);
 
     try {
@@ -146,30 +194,26 @@ export default function EditMaterial() {
         icon: "success",
         title: "Berhasil",
         text: "Material berhasil diperbarui!",
-        background: "#fff",
-        color: "#000",
-        confirmButtonColor: "blue",
         timer: 2000,
-      }).then(() => {
-        router.back();
-      });
+      }).then(() => router.back());
     } catch (error) {
       setError(error.message);
       Swal.fire({
         icon: "error",
         title: "Terjadi kesalahan",
         text: error.message,
-        background: "#fff",
-        color: "#000",
-        confirmButtonColor: "#f44336",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  if (initialLoading || categories.length === 0 || vendors.length === 0) {
-    return <div className="p-6">Memuat data material...</div>;
+  if (initialLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        Memuat data material...
+      </div>
+    );
   }
 
   return (
@@ -177,26 +221,23 @@ export default function EditMaterial() {
       <div className="p-6 flex-1 bg-white text-black">
         <h2 className="text-3xl font-bold text-center mb-8">Edit Material</h2>
         {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
-
         <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">
           <div>
-            <label className="block text-xl text-black">Gambar:</label>
+            <label className="block text-xl">Gambar:</label>
             <div className="flex items-center gap-4 mb-4">
               {oldImageUrl && !image && (
-                <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <img
-                    src={oldImageUrl}
-                    alt="Old Image"
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                </div>
+                <img
+                  src={oldImageUrl}
+                  alt="Old"
+                  className="w-32 h-32 object-cover rounded-lg"
+                />
               )}
               {image && (
-                <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center relative">
+                <div className="relative">
                   <img
                     src={URL.createObjectURL(image)}
-                    alt="New Image"
-                    className="w-full h-full object-cover rounded-lg"
+                    alt="Preview"
+                    className="w-32 h-32 object-cover rounded-lg"
                   />
                   <span className="absolute top-0 left-0 bg-black text-white text-xs px-2 py-1 rounded-br-lg">
                     Gambar Baru
@@ -206,94 +247,134 @@ export default function EditMaterial() {
             </div>
             <input
               type="file"
-              onChange={(e) => setImage(e.target.files[0])}
-              className="file:border file:border-white-600 file:bg-white-800 file:py-2 file:px-4 rounded-lg"
+              onChange={handleImageChange}
+              accept="image/*"
+              className="file:border p-2 rounded-lg"
             />
           </div>
 
-          <div>
-            <label className="block text-xl text-black">Nama Material:</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
-              required
+          <InputField label="Kode" value={code} setValue={setCode} required />
+          <InputField
+            label="Nama Material"
+            value={name}
+            setValue={setName}
+            required
+          />
+          <InputField
+            label="Harga"
+            type="number"
+            value={price}
+            setValue={setPrice}
+            required
+          />
+          <TextAreaField
+            label="Deskripsi"
+            value={description}
+            setValue={setDescription}
+            required
+          />
+          <SelectField
+            label="Kategori"
+            value={categoryId}
+            setValue={setCategoryId}
+            options={categories}
+            required
+          />
+          <div className="mb-4">
+            <label className="block font-medium mb-1">Vendor:</label>
+            <Select
+              options={vendors.map((vendor) => ({
+                value: vendor.id,
+                label: vendor.name,
+              }))}
+              value={
+                vendorId
+                  ? {
+                      value: vendorId,
+                      label: vendors.find((v) => v.id === parseInt(vendorId))
+                        ?.name,
+                    }
+                  : null
+              }
+              onChange={(selected) => setVendorId(selected?.value || "")}
+              placeholder="Pilih Vendor"
+              isClearable
+              className="text-sm"
             />
-          </div>
-
-          <div>
-            <label className="block text-xl text-black">Harga:</label>
-            <input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-xl text-black">Deskripsi:</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
-              required
-            ></textarea>
-          </div>
-
-          <div>
-            <label className="block text-xl text-black">Kategori:</label>
-            <select
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Pilih Kategori</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id.toString()}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xl text-black">Vendor:</label>
-            <select
-              value={vendorId}
-              onChange={(e) => setVendorId(e.target.value)}
-              className="border p-3 w-full rounded-lg text-black focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Pilih Vendor</option>
-              {vendors.map((vendor) => (
-                <option key={vendor.id} value={vendor.id.toString()}>
-                  {vendor.name}
-                </option>
-              ))}
-            </select>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-lg shadow-lg hover:from-indigo-600 hover:to-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-600"
+            className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg"
             disabled={loading}
           >
             {loading ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
-
           <button
             type="button"
             onClick={() => router.back()}
-            className="mt-6 w-full bg-gray-700 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-gray-600"
+            className="w-full mt-4 bg-gray-600 text-white px-6 py-3 rounded-lg"
           >
             Kembali
           </button>
         </form>
       </div>
+    </div>
+  );
+}
+
+function InputField({
+  label,
+  value,
+  setValue,
+  type = "text",
+  required = false,
+}) {
+  return (
+    <div>
+      <label className="block text-xl">{label}:</label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className="border p-3 w-full rounded-lg"
+        required={required}
+      />
+    </div>
+  );
+}
+
+function TextAreaField({ label, value, setValue, required = false }) {
+  return (
+    <div>
+      <label className="block text-xl">{label}:</label>
+      <textarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className="border p-3 w-full rounded-lg"
+        required={required}
+      ></textarea>
+    </div>
+  );
+}
+
+function SelectField({ label, value, setValue, options, required = false }) {
+  return (
+    <div>
+      <label className="block text-xl">{label}:</label>
+      <select
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className="border p-3 w-full rounded-lg"
+        required={required}
+      >
+        <option value="">Pilih {label}</option>
+        {options.map((opt) => (
+          <option key={opt.id} value={opt.id.toString()}>
+            {opt.name}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

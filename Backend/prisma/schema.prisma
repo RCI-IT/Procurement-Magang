@@ -9,21 +9,21 @@ datasource db {
 }
 
 model PermintaanLapangan {
-  id                  Int                  @id @default(autoincrement())
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  nomor               String               @unique
-  tanggal             DateTime
-  lokasi              String
-  picLapangan         String
-  status              PermintaanStatus     @default(PENDING)
-  isConfirmed         Boolean              @default(false)
-  isReceived          Boolean              @default(false)
-  keterangan          String?
-  detail              PermintaanDetails[]
-  confirmationOrders  ConfirmationOrder[]  // <-- berubah jadi array
-  userId              Int?
-  user                User?                @relation(fields: [userId], references: [id])
+  id                 Int                 @id @default(autoincrement())
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  nomor              String              @unique
+  tanggal            DateTime
+  lokasi             String
+  picLapangan        String
+  status             PermintaanStatus    @default(PENDING)
+  isConfirmed        Boolean             @default(false)
+  isReceived         Boolean             @default(false)
+  keterangan         String?
+  detail             PermintaanDetails[]
+  confirmationOrders ConfirmationOrder[] // <-- berubah jadi array
+  userId             Int?
+  user               User?               @relation(fields: [userId], references: [id])
 }
 
 model PurchaseOrder {
@@ -64,7 +64,7 @@ model ConfirmationOrder {
   keterangan          String?
   status              COStatus              @default(PENDING)
   confirmationDetails ConfirmationDetails[]
-  permintaanId        Int?                  // tetap
+  permintaanId        Int? // tetap
   permintaan          PermintaanLapangan?   @relation(fields: [permintaanId], references: [id])
   userId              Int?
   user                User?                 @relation(fields: [userId], references: [id])
@@ -106,6 +106,7 @@ model Materials {
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
   image               String?
+  code                String                @unique
   name                String
   description         String
   price               Int

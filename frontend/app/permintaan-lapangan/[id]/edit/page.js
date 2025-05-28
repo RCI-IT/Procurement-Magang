@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
+import Select from "react-select";
 
 export default function EditPermintaanLapangan() {
   const { id } = useParams();
@@ -197,7 +198,7 @@ export default function EditPermintaanLapangan() {
               {formData.detail.map((item, index) => (
                 <tr key={index} className="text-center">
                   <td className="border border-gray-300 p-2">
-                    <select
+                    {/* <select
                       value={item.materialId}
                       onChange={(e) =>
                         handleDetailChange(index, "materialId", e.target.value)
@@ -210,7 +211,34 @@ export default function EditPermintaanLapangan() {
                           {name}
                         </option>
                       ))}
-                    </select>
+                    </select> */}
+
+                    <Select
+                      options={materials.map((material) => ({
+                        value: material.id,
+                        label: material.name,
+                      }))}
+                      value={
+                        item.materialId
+                          ? {
+                              value: item.materialId,
+                              label: materials.find(
+                                (m) => m.id === parseInt(item.materialId)
+                              )?.name,
+                            }
+                          : null
+                      }
+                      onChange={(selected) =>
+                        handleDetailChange(
+                          index,
+                          "materialId",
+                          selected?.value || ""
+                        )
+                      }
+                      placeholder="Pilih Material"
+                      isClearable
+                      className="text-sm"
+                    />
                   </td>
                   <td className="border border-gray-300 p-2">
                     <input

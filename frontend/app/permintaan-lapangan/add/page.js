@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
+import Select from "react-select";
 
 export default function AddPermintaanLapanganForm({}) {
   const router = useRouter();
@@ -16,24 +17,31 @@ export default function AddPermintaanLapanganForm({}) {
     if (storedToken) setToken(storedToken);
   }, []);
 
-  const getData = async() => {
+  // Fungsi fetch data materials
+  const getData = async () => {
     const materialData = await fetchWithToken(
       `${process.env.NEXT_PUBLIC_API_URL}/materials`,
       token,
       setToken,
       () => router.push("/login")
-    )
+    );
 
-    if (Array.isArray(materialData)) setMaterials (materialData)
-  }
+    if (Array.isArray(materialData)) setMaterials(materialData);
+  };
 
-  useEffect (() => {
+  useEffect(() => {
     fetchData();
-  }, [])
+  }, [token]); // pastikan token sudah ada dulu
 
-  const fetchData=()=>{
-    getData()
-  }
+  const fetchData = () => {
+    if (token) getData();
+  };
+
+  // Fungsi helper untuk cari code berdasarkan materialId
+  const getCodeByMaterialId = (id) => {
+    const m = materials.find((mat) => mat.id.toString() === id.toString());
+    return m ? m.code : "";
+  };
 
   const [formData, setFormData] = useState({
     nomor: "",
@@ -54,7 +62,6 @@ export default function AddPermintaanLapanganForm({}) {
     ],
   });
 
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name.startsWith("tanggal")) {
@@ -68,13 +75,25 @@ export default function AddPermintaanLapanganForm({}) {
     }
   };
 
+  // Modifikasi handleDetailChange untuk otomatis isi code material jika materialId berubah
   const handleDetailChange = (index, field, value) => {
     setFormData((prev) => {
       const updatedDetails = [...prev.detail];
-      updatedDetails[index] = {
-        ...updatedDetails[index],
-        [field]: value,
-      };
+      let newDetail = { ...updatedDetails[index], [field]: value };
+
+      if (field === "materialId") {
+        const newCode = getCodeByMaterialId(value);
+        // Jika code kosong atau sama dengan kode sebelumnya, update otomatis
+        if (
+          !newDetail.code ||
+          newDetail.code === updatedDetails[index].code ||
+          newDetail.code === ""
+        ) {
+          newDetail.code = newCode;
+        }
+      }
+
+      updatedDetails[index] = newDetail;
       return { ...prev, detail: updatedDetails };
     });
   };
@@ -280,20 +299,30 @@ export default function AddPermintaanLapanganForm({}) {
             <div key={item.id} className="grid grid-cols-2 gap-4">
               <div className="flex flex-col">
                 <label className="block font-medium">Nama Barang / Jasa:</label>
-                <select
-                  value={item.materialId}
-                  onChange={(e) =>
-                    handleDetailChange(index, "materialId", e.target.value)
+
+                <Select
+                  options={materials.map((material) => ({
+                    value: material.id,
+                    label: material.name,
+                  }))}
+                  value={
+                    item.materialId
+                      ? {
+                          value: item.materialId,
+                          label: materials.find(
+                            (m) => m.id === parseInt(item.materialId)
+                          )?.name,
+                        }
+                      : null
                   }
-                  className="border border-gray-300 rounded px-2 py-1 w-full"
-                >
-                  <option value="">Pilih Material</option>
-                  {materials.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(selected) =>
+                    handleDetailChange(index, "materialId", selected?.value || "")
+                  }
+                  placeholder="Pilih Material"
+                  isClearable
+                  className="text-sm"
+                />
+
                 <br />
 
                 <div className="flex flex-col">
@@ -359,42 +388,35 @@ export default function AddPermintaanLapanganForm({}) {
                   />
                 </div>
               </div>
-              <div>
+
+              <div className="col-span-2 mt-2">
                 <button
                   type="button"
-                  onClick={addDetail}
-                  className="mt-6 bg-gray-500 text-white rounded px-4 py-2 rounded"
+                  onClick={() => removeDetail(index)}
+                  className="bg-red-500 text-white rounded px-4 py-1 hover:bg-red-700"
                 >
-                  Tambah Detail
+                  Hapus Detail
                 </button>
               </div>
-              {formData.detail.length > 1 && (
-                <div className="flex justify-end mt-2">
-                  <button
-                    type="button"
-                    onClick={() => removeDetail(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    Hapus Detail
-                  </button>
-                </div>
-              )}
             </div>
           ))}
-          <div className="flex justify-between mt-4">
+
+          <div>
             <button
               type="button"
-              onClick={() => router.back()}
-              className="mt-6 bg-red-500 text-white px-4 py-2 rounded"
+              onClick={addDetail}
+              className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-800"
             >
-              Batal
+              Tambah Detail
             </button>
+          </div>
 
+          <div>
             <button
               type="submit"
-              className="mt-6 bg-green-500 text-white rounded px-4 py-2 rounded"
+              className="bg-green-600 text-white rounded px-6 py-2 hover:bg-green-800"
             >
-              Selesai
+              Simpan Permintaan Lapangan
             </button>
           </div>
         </form>

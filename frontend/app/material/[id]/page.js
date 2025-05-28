@@ -124,7 +124,12 @@ export default function MaterialPage() {
             <p className="text-xl text-blue-600 font-semibold mb-4">
               {formattedPrice}
             </p>
-
+            <p className="text-sm text-gray-500">
+              Code:{" "}
+              <span className="text-gray-700">
+                {material.code || "Tidak ada kategori"}
+              </span>
+            </p>
             <p className="text-sm text-gray-500 mb-4">
               Kategori:{" "}
               <span className="text-gray-700">

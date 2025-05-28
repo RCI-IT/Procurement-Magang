@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
+import { checkDuplicate } from "@/utils/duplicate-check";
+import Select from "react-select";
 
 export default function AddMaterialPage() {
   const router = useRouter();
   const [name, setName] = useState("");
+  const [code, setCode] = useState("");
   const [vendorId, setVendorId] = useState("");
   const [price, setPrice] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -25,6 +28,12 @@ export default function AddMaterialPage() {
     if (storedToken) setToken(storedToken);
   }, []);
 
+  useEffect(() => {
+    if (token) {
+      getData();
+    }
+  }, [token]);
+
   const getData = async () => {
     const categoriesData = await fetchWithToken(
       `${process.env.NEXT_PUBLIC_API_URL}/categories`,
@@ -32,6 +41,7 @@ export default function AddMaterialPage() {
       setToken,
       () => router.push("/login")
     );
+
     const vendorsData = await fetchWithToken(
       `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
       token,
@@ -43,45 +53,23 @@ export default function AddMaterialPage() {
     if (vendorsData) setVendors(vendorsData);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [token]);
-
-  const fetchData = () => {
-    getData();
-  };
-
-  
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const [vendorRes, categoryRes] = await Promise.all([
-  //         fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendors`),
-  //         fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`),
-  //       ]);
-
-  //       if (!vendorRes.ok || !categoryRes.ok) {
-  //         throw new Error("Gagal mengambil data dari server");
-  //       }
-
-  //       setVendors(await vendorRes.json());
-  //       setCategories(await categoryRes.json());
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //       setError(`Gagal memuat vendor atau kategori: ${error.message}`);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setError("");
 
-    if (!name || !vendorId || !price || !categoryId) {
+    if (!token) {
+      Swal.fire({
+        icon: "error",
+        title: "Token Tidak Ditemukan",
+        text: "Silakan login ulang.",
+      });
+      setLoading(false);
+      router.push("/login");
+      return;
+    }
+
+    if (!name || !code || !vendorId || !price || !categoryId) {
       Swal.fire({
         icon: "error",
         title: "Data Belum Lengkap",
@@ -91,11 +79,41 @@ export default function AddMaterialPage() {
       return;
     }
 
+    const parsedPrice = Number(price);
+    const parsedVendorId = parseInt(vendorId, 10);
+    const parsedCategoryId = parseInt(categoryId, 10);
+
+    if (
+      isNaN(parsedPrice) ||
+      isNaN(parsedVendorId) ||
+      isNaN(parsedCategoryId)
+    ) {
+      Swal.fire({
+        icon: "error",
+        title: "Input Tidak Valid",
+        text: "Harga, kategori, dan vendor harus berupa angka yang valid.",
+      });
+      setLoading(false);
+      return;
+    }
+
+    const duplicate = await checkDuplicate("materials", { code });
+    if (duplicate.code) {
+      Swal.fire({
+        icon: "warning",
+        title: "Duplikat Data",
+        text: "Material dengan kode tersebut sudah terdaftar.",
+      });
+      setLoading(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append("name", name);
-    formData.append("vendorId", parseInt(vendorId, 10));
-    formData.append("price", parseFloat(price));
-    formData.append("categoryId", parseInt(categoryId, 10));
+    formData.append("code", code);
+    formData.append("vendorId", parsedVendorId);
+    formData.append("price", parsedPrice);
+    formData.append("categoryId", parsedCategoryId);
     formData.append("description", description);
     if (image) {
       formData.append("image", image);
@@ -110,16 +128,9 @@ export default function AddMaterialPage() {
         }
       );
 
-      if (!response) {
+      if (!response || !response.ok) {
         throw new Error("Gagal menambahkan material");
       }
-
-      setName("");
-      setVendorId("");
-      setPrice("");
-      setCategoryId("");
-      setDescription("");
-      setImage(null);
 
       await Swal.fire({
         icon: "success",
@@ -128,10 +139,18 @@ export default function AddMaterialPage() {
         confirmButtonText: "OK",
       });
 
+      // Reset form
+      setName("");
+      setCode("");
+      setVendorId("");
+      setPrice("");
+      setCategoryId("");
+      setDescription("");
+      setImage(null);
+
       router.back();
     } catch (error) {
       console.error("Error adding material:", error);
-
       Swal.fire({
         icon: "error",
         title: "Terjadi Kesalahan",
@@ -145,7 +164,6 @@ export default function AddMaterialPage() {
   return (
     <div className="flex h-screen">
       <div className="flex-1 p-6">
-        <div className="w-full"></div>
         <h1 className="text-2xl font-bold mb-6">Tambah Material</h1>
         <form
           onSubmit={handleSubmit}
@@ -161,7 +179,15 @@ export default function AddMaterialPage() {
               className="border border-gray-400 rounded px-2 py-1 w-full"
             />
           </div>
-
+          <div className="mb-4">
+            <label className="block font-medium">Kode:</label>
+            <input
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="border border-gray-400 rounded px-2 py-1 w-full"
+            />
+          </div>
           <div className="mb-4">
             <label className="block font-medium">Nama Material:</label>
             <input
@@ -171,7 +197,6 @@ export default function AddMaterialPage() {
               className="border border-gray-400 rounded px-2 py-1 w-full"
             />
           </div>
-
           <div className="mb-4">
             <label className="block font-medium">Deskripsi:</label>
             <textarea
@@ -181,7 +206,6 @@ export default function AddMaterialPage() {
               rows="3"
             />
           </div>
-
           <div className="mb-4">
             <label className="block font-medium">Harga:</label>
             <input
@@ -191,7 +215,6 @@ export default function AddMaterialPage() {
               className="border border-gray-400 rounded px-2 py-1 w-full"
             />
           </div>
-
           <div className="mb-4">
             <label className="block font-medium">Kategori:</label>
             <select
@@ -207,32 +230,37 @@ export default function AddMaterialPage() {
               ))}
             </select>
           </div>
-
           <div className="mb-4">
-            <label className="block font-medium">Vendor:</label>
-            <select
-              value={vendorId}
-              onChange={(e) => setVendorId(e.target.value)}
-              className="border border-gray-400 rounded px-2 py-1 w-full"
-            >
-              <option value="">Pilih Vendor</option>
-              {vendors.map((vendor) => (
-                <option key={vendor.id} value={vendor.id}>
-                  {vendor.name}
-                </option>
-              ))}
-            </select>
+            <label className="block font-medium mb-1">Vendor:</label>
+            <Select
+              options={vendors.map((vendor) => ({
+                value: vendor.id,
+                label: vendor.name,
+              }))}
+              value={
+                vendorId
+                  ? {
+                      value: vendorId,
+                      label: vendors.find((v) => v.id === parseInt(vendorId))
+                        ?.name,
+                    }
+                  : null
+              }
+              onChange={(selected) => setVendorId(selected?.value || "")}
+              placeholder="Pilih Vendor"
+              isClearable
+              className="text-sm"
+            />
           </div>
 
           <div className="flex justify-end space-x-4 mt-6">
             <button
               type="button"
-              onClick={() => window.history.back()}
+              onClick={() => router.back()}
               className="bg-red-500 text-white rounded px-4 py-2 w-40"
             >
               Batal
             </button>
-
             <button
               type="submit"
               className="bg-green-500 text-white rounded px-4 py-2 w-40"

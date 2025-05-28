@@ -196,10 +196,12 @@ export default function Material() {
               <thead className="bg-blue-500 text-white">
                 <tr>
                   <th className="border px-4 py-2">No</th>
+                  <th className="border px-4 py-2">Code</th>
                   <th className="border px-4 py-2">Nama</th>
                   <th className="border px-4 py-2">Gambar</th>
                   <th className="border px-4 py-2">Vendor</th>
                   <th className="border px-4 py-2">Harga</th>
+                  <th className="border px-4 py-2">Kategori</th>
                   <th className="border px-4 py-2">Aksi</th>
                 </tr>
               </thead>
@@ -213,6 +215,9 @@ export default function Material() {
                       <tr key={material.id}>
                         <td className="border px-4 py-2 text-center">
                           {(currentPage - 1) * rowsToShow + index + 1}
+                        </td>
+                        <td className="border px-4 py-2 text-center">
+                          {material.code}
                         </td>
                         <td className="border px-4 py-2 text-center">
                           {material.name}
@@ -243,6 +248,10 @@ export default function Material() {
                           {new Intl.NumberFormat("id-ID").format(
                             material.price
                           )}
+                        </td>
+                        
+                        <td className="border px-4 py-2 text-center">
+                          {material.category?.name}
                         </td>
                         <td className="border px-4 py-2 text-center">
                           <button

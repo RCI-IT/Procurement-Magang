@@ -63,17 +63,9 @@ export default function EditPurchaseOrder() {
 
   const handleItemChange = (index, field, value) => {
     setCoData((prev) => {
-      const updatedDetails = [...prev.confirmationDetails];
-      const item = { ...updatedDetails[index] };
-
-      if (!item.permintaanDetail) return prev;
-
-      item.permintaanDetail = {
-        ...item.permintaanDetail,
-        [field]: value,
-      };
-
-      updatedDetails[index] = item;
+      const updatedDetails = prev.confirmationDetails.map((item, i) =>
+        i === index ? { ...item, [field]: value } : item
+      );
       return { ...prev, confirmationDetails: updatedDetails };
     });
   };
@@ -88,15 +80,16 @@ export default function EditPurchaseOrder() {
       status: "Pending",
       confirmationDetails: coData.confirmationDetails.map((detail) => ({
         id: detail.id,
-        permintaanDetailId: detail.permintaanDetail?.id,
-        qty: detail.permintaanDetail?.qty || 0,
-        satuan: detail.permintaanDetail?.satuan || "",
-        code: detail.permintaanDetail?.code || "",
-        keterangan: detail.permintaanDetail?.keterangan || "",
+        confirmationDetailId: detail?.id,
+        qty: detail?.qty || 0,
+        satuan: detail.satuan || "",
+        code: detail?.code || "",
+        keterangan: detail?.keterangan || "",
       })),
     };
 
     try {
+      console.log(bodyData);
       const res = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`,
         {
@@ -107,8 +100,8 @@ export default function EditPurchaseOrder() {
       );
 
       if (res) {
-        Swal.fire("Berhasil!", "Data berhasil diperbarui.", "success").then(() =>
-          router.back()
+        Swal.fire("Berhasil!", "Data berhasil diperbarui.", "success").then(
+          () => router.back()
         );
       } else {
         Swal.fire("Gagal!", "Gagal memperbarui data.", "error");
@@ -119,8 +112,10 @@ export default function EditPurchaseOrder() {
     }
   };
 
-  if (loading) return <p className="text-center text-gray-600">Memuat data...</p>;
-  if (!coData.nomorCO) return <p className="text-center text-red-600">Data tidak ditemukan</p>;
+  if (loading)
+    return <p className="text-center text-gray-600">Memuat data...</p>;
+  if (!coData.nomorCO)
+    return <p className="text-center text-red-600">Data tidak ditemukan</p>;
 
   return (
     <div className="flex h-screen">
@@ -157,7 +152,9 @@ export default function EditPurchaseOrder() {
             />
           </div>
 
-          <h3 className="text-lg font-bold text-blue-900 mt-6 mb-2">Daftar Barang</h3>
+          <h3 className="text-lg font-bold text-blue-900 mt-6 mb-2">
+            Daftar Barang
+          </h3>
           <table className="w-full border-collapse border border-gray-300 text-sm">
             <thead>
               <tr className="bg-blue-600 text-white">
@@ -173,16 +170,20 @@ export default function EditPurchaseOrder() {
             <tbody>
               {coData.confirmationDetails.length > 0 ? (
                 coData.confirmationDetails.map((detail, index) => {
-                  const item = detail.permintaanDetail || {};
-                  const price = item.material?.price || 0;
-                  const qty = item.qty || 0;
+                  const item = detail.material || {};
+                  const price = item?.price || 0;
+                  const qty = detail.qty || 0;
                   const total = price * qty;
 
                   return (
                     <tr key={index}>
                       <td className="border p-2 text-center">{index + 1}</td>
-                      <td className="border p-2 text-center">{item.code || "N/A"}</td>
-                      <td className="border p-2">{item.material?.name || "N/A"}</td>
+                      <td className="border p-2 text-center">
+                        {detail.code || "N/A"}
+                      </td>
+                      <td className="border p-2">
+                        {detail.material?.name || "N/A"}
+                      </td>
                       <td className="border p-2 text-right">
                         Rp {price.toLocaleString("id-ID")}
                       </td>
@@ -204,7 +205,7 @@ export default function EditPurchaseOrder() {
                         <input
                           type="text"
                           className="w-full border rounded p-1"
-                          value={item.satuan || ""}
+                          value={detail.satuan || ""}
                           onChange={(e) =>
                             handleItemChange(index, "satuan", e.target.value)
                           }
@@ -230,10 +231,10 @@ export default function EditPurchaseOrder() {
                 <td className="text-right font-bold p-2">
                   Rp{" "}
                   {coData.confirmationDetails
-                    .reduce((sum, detail) => {
-                      const price = detail.permintaanDetail?.material?.price || 0;
-                      const qty = detail.permintaanDetail?.qty || 0;
-                      return sum + price * qty;
+                    .reduce((acc, detail) => {
+                      const price = detail?.material?.price || 0;
+                      const qty = detail?.qty || 0;
+                      return acc + price * qty;
                     }, 0)
                     .toLocaleString("id-ID")}
                 </td>

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 const publicRoutes = ["/login", "/register"];
 
 const roleAccess = {
-  ADMIN: ["*"], // akses semua route
+  ADMIN: ["*", "/home"], // akses semua route
   USER_LAPANGAN: [
     "/home",
     "confirmation-order",
@@ -46,7 +46,7 @@ export function middleware(request) {
   }
 
   // Role tidak valid → redirect ke /home
-  if (!role || !roleAccess[role]) {
+  if ((!role || !roleAccess[role]) && token) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

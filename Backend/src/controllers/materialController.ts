@@ -22,7 +22,7 @@ export const createMaterial = async (
   try {
     console.log("Received Data:", req.body);
 
-    const { name, description, price, categoryId, vendorId } = req.body;
+    const { name, code, description, price, categoryId, vendorId } = req.body;
     const parsedCategoryId = parseInt(categoryId, 10);
     const parsedPrice = parseFloat(price);
     const parsedVendorId = parseInt(vendorId, 10);
@@ -41,6 +41,7 @@ export const createMaterial = async (
     const newMaterial = await prisma.materials.create({
       data: {
         image,
+        code,
         name,
         description,
         price: parsedPrice,
@@ -85,7 +86,6 @@ export const getAllMaterials = async (
     res.status(500).json({ error: "Failed to fetch materials" });
   }
 };
-
 
 export const deleteMaterial = async (
   req: Request,
@@ -148,7 +148,7 @@ export const editMaterial = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { error, value } = req.body;
+    const data = req.body;
 
     // const { name, description, price, categoryId, vendorId } = req.body;
     const parsedId = parseInt(id, 10);
@@ -175,22 +175,32 @@ export const editMaterial = async (
       res.status(404).json({ error: "Material not found" });
       return;
     }
-    let newImage = material.image;
+
+    const updateData: any = {};
+
+    // Ambil data dari req.body jika ada
+    if (req.body.code) updateData.code = req.body.code;
+    if (req.body.name) updateData.name = req.body.name;
+    if (req.body.description) updateData.description = req.body.description;
+    if (req.body.price) updateData.price = parseFloat(req.body.price);
+    if (req.body.categoryId)
+      updateData.categoryId = parseInt(req.body.categoryId);
+    if (req.body.vendorId) updateData.vendorId = parseInt(req.body.vendorId);
+
+    // Tangani gambar jika ada file baru diunggah
     if (req.file) {
       if (material.image && material.image !== "default-image.jpg") {
-        const oldImagePath = path.resolve("uploads", material.image); // relatif dari root project
+        const oldImagePath = path.resolve("uploads", material.image);
         if (fs.existsSync(oldImagePath)) {
           fs.unlinkSync(oldImagePath);
         }
       }
-      newImage = req.file.filename;
+      updateData.image = req.file.filename;
     }
+    
     const updatedMaterial = await prisma.materials.update({
       where: { id: parsedId },
-      data: {
-        ...value,
-        image: newImage,
-      },
+      data: updateData,
     });
 
     res.status(200).json(updatedMaterial);
@@ -225,6 +235,7 @@ export const getMaterialById = async (
     const formattedResponse = {
       id: material.id,
       name: material.name,
+      code: material.code,
       description: material.description,
       // price: `Rp ${material.price.toLocaleString("id-ID")}`,
       price: material.price,
