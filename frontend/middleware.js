@@ -6,13 +6,13 @@ const roleAccess = {
   ADMIN: ["*", "/home"], // akses semua route
   USER_LAPANGAN: [
     "/home",
-    "confirmation-order",
+    "/confirmation-order",
     "/material",
     "/permintaan-lapangan",
   ],
   USER_PURCHASE: [
     "/home",
-    "confirmation-order",
+    "/confirmation-order",
     "/material",
     "/permintaan-lapangan",
     "/kategori",
