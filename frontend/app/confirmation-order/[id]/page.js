@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
+import Image from "next/image";
 
 export default function ConfirmationOrderDetail() {
   const { id } = useParams();
@@ -284,10 +285,12 @@ export default function ConfirmationOrderDetail() {
         >
           <div className="flex justify-between items-start mt-4">
             <div className="flex flex-col items-start space-y-2">
-              <img
+              <Image
                 src="/logo1.png"
                 alt="Logo"
-                className="w-20 h-20 object-contain"
+                width={80}
+                height={80}
+                className="object-contain"
               />
 
               <div>
@@ -373,7 +376,7 @@ export default function ConfirmationOrderDetail() {
                   <th className="border p-2 w-35" rowSpan={2}>
                     Total
                   </th>
-                  {(userRole === "USER_PURCHASE" || userRole === "ADMIN") && (
+                  {(userRole === "USER_LAPANGAN" || userRole === "ADMIN") && (
                     <th className="border p-2 w-35 status-header" rowSpan={2}>
                       Aksi
                     </th>
@@ -458,7 +461,7 @@ export default function ConfirmationOrderDetail() {
                   >
                     Rp{totalHarga.toLocaleString()}
                   </td>
-                  {(userRole === "USER_PURCHASE" || userRole === "ADMIN") && (
+                  {(userRole === "USER_LAPANGAN" || userRole === "ADMIN") && (
                     <td
                       colSpan="1"
                       rowSpan={2}

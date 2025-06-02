@@ -17,7 +17,7 @@ const roleAccess = {
     "/permintaan-lapangan",
     "/kategori",
     "/vendor",
-    "purchase-order",
+    "/purchase-order",
   ],
 };
 

@@ -61,14 +61,14 @@ export const getAllMaterials = async (
   res: Response
 ): Promise<void> => {
   const vendorId = req.query.vendorId;
+  const categoryId = req.query.categoryId
 
   try {
     const materials = await prisma.materials.findMany({
-      where: vendorId
-        ? {
-            vendorId: Number(vendorId), // pastikan vendorId berupa angka
-          }
-        : undefined, // kalau tidak ada vendorId, ambil semua
+      where: {
+        ...(vendorId && { vendorId: Number(vendorId) }),
+        ...(categoryId && { categoryId: Number(categoryId) }),
+      },
       include: {
         vendor: true,
         category: true,
