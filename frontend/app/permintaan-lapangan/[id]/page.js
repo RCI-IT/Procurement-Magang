@@ -13,7 +13,6 @@ export default function DetailPermintaanLapangan() {
   const { id } = useParams();
   const router = useRouter();
   const [data, setData] = useState(null);
-  
   const [token, setToken] = useState(null);
 
   useEffect(() => {
@@ -325,7 +324,7 @@ export default function DetailPermintaanLapangan() {
                   <tr key={index} className="text-center">
                     <td className="border border-gray-300 p-2">{index + 1}</td>
                     <td className="border border-gray-300 p-2">
-                      {item.material?.name || "Nama Material Tidak Tersedia"}
+                      {item.materialName || "Nama Material Tidak Tersedia"}
                     </td>
                     <td className="border border-gray-300 p-2">
                       {item.mention}

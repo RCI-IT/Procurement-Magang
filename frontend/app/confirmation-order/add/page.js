@@ -1,5 +1,6 @@
 "use client";
 
+import Select from "react-select";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
@@ -57,36 +58,27 @@ export default function AddConfirmationOrder() {
     if (token) getData();
   }, [token, getData]);
 
-  // Handle perubahan PL
   useEffect(() => {
-    if (formData.idPL) {
-      const selectedPL = permintaanLapangan.find(
-        (pl) => pl.id === parseInt(formData.idPL)
-      );
-      if (selectedPL) {
-        // setTanggalPL(selectedPL.tanggal?.split("T")[0] || "");
-        setAllItems(selectedPL.detail || []);
-      } else {
-        setAllItems([]);
-      }
-      setSelectedItems([]);
-      setFormData((prev) => ({ ...prev, idVendor: "" }));
-    }
-  }, [formData.idPL, permintaanLapangan]);
+    // Jika PL berubah
+    const selectedPL = permintaanLapangan.find(
+      (pl) => pl.id === parseInt(formData.idPL)
+    );
+    setAllItems(selectedPL?.detail || []);
+    setSelectedItems([]);
+    if (!selectedPL) return;
 
-  // Handle perubahan vendor
-  useEffect(() => {
-    if (formData.idVendor) {
-      const vendor = vendors.find((v) => v.id === parseInt(formData.idVendor));
-      setFilteredItems(vendor ? vendor.materials : []);
-    } else {
-      setFilteredItems([]);
-    }
-  }, [formData.idVendor, vendors]);
+    // Jika vendor berubah
+    const vendor = vendors.find((v) => v.id === parseInt(formData.idVendor));
+    setFilteredItems(vendor?.materials || []);
+  }, [formData.idPL, formData.idVendor, permintaanLapangan, vendors]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      idPL: selected?.value || "",
+    }));
   };
 
   const handleItemDetailChange = (itemId, key, value) => {
@@ -108,14 +100,10 @@ export default function AddConfirmationOrder() {
     );
   };
 
-
-  const vendor = vendors.find(
-    (v) => v.id === parseInt(formData.idVendor)
-  );
+  const vendor = vendors.find((v) => v.id === parseInt(formData.idVendor));
 
   const totalHarga = selectedItems.reduce((total, item) => {
-    const harga =
-      vendor?.materials.find((m) => m.id === item.id)?.price || 0;
+    const harga = vendor?.materials.find((m) => m.id === item.id)?.price || 0;
     return total + harga * item.qty;
   }, 0);
 
@@ -125,12 +113,20 @@ export default function AddConfirmationOrder() {
     const { nomorCO, lokasiCO, tanggalCO, idPL, idVendor } = formData;
 
     if (!nomorCO || !lokasiCO || !tanggalCO || !idPL || !idVendor) {
-      Swal.fire({ icon: "error", title: "Oops...", text: "Semua kolom harus diisi!" });
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Semua kolom harus diisi!",
+      });
       return;
     }
 
     if (selectedItems.length === 0) {
-      Swal.fire({ icon: "error", title: "Oops...", text: "Pilih minimal 1 barang!" });
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Pilih minimal 1 barang!",
+      });
       return;
     }
 
@@ -151,7 +147,9 @@ export default function AddConfirmationOrder() {
       lokasiCO,
       permintaanId: parseInt(idPL),
       items: selectedItems.map((item) => {
-        const originalMaterial = filteredItems.find((mat) => mat.id === item.id);
+        const originalMaterial = filteredItems.find(
+          (mat) => mat.id === item.id
+        );
         return {
           materialId: item.id,
           qty: Number(item.qty),
@@ -174,16 +172,28 @@ export default function AddConfirmationOrder() {
       );
 
       if (response.ok) {
-        Swal.fire({ icon: "success", title: "Berhasil", text: "Confirmation Order berhasil ditambahkan!" });
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: "Confirmation Order berhasil ditambahkan!",
+        });
         router.back();
       } else {
         const err = await response.json();
         console.error("Gagal menambah Confirmation Order:", err);
-        Swal.fire({ icon: "error", title: "Gagal", text: "Terjadi kesalahan saat menambah Confirmation Order!" });
+        Swal.fire({
+          icon: "error",
+          title: "Gagal",
+          text: "Terjadi kesalahan saat menambah Confirmation Order!",
+        });
       }
     } catch (error) {
       console.error("Server error:", error);
-      Swal.fire({ icon: "error", title: "Error", text: "Terjadi kesalahan pada server." });
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Terjadi kesalahan pada server.",
+      });
     }
   };
 
@@ -191,22 +201,85 @@ export default function AddConfirmationOrder() {
     <div className="flex h-screen">
       <div className="flex-1 p-6">
         <h1 className="text-2xl font-bold mb-6">Tambah Confirmation Order</h1>
-        <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 shadow-md rounded-lg">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 bg-white p-6 shadow-md rounded-lg"
+        >
           <div className="grid grid-cols-2 gap-4 border-b pb-4">
-            <InputField label="Nomor CO" name="nomorCO" value={formData.nomorCO} onChange={handleChange} required />
-            <TextareaField label="Lokasi CO" name="lokasiCO" value={formData.lokasiCO} onChange={handleChange} required />
-            <InputField type="date" label="Tanggal CO" name="tanggalCO" value={formData.tanggalCO} onChange={handleChange} required />
-            <SelectField label="Pilih No PL" name="idPL" value={formData.idPL} onChange={handleChange} options={permintaanLapangan.map(pl => ({ value: pl.id, label: pl.nomor }))} />
-          </div>
+            <InputField
+              label="Nomor CO"
+              name="nomorCO"
+              value={formData.nomorCO}
+              onChange={handleChange}
+              required
+            />
+            <TextareaField
+              label="Lokasi CO"
+              name="lokasiCO"
+              value={formData.lokasiCO}
+              onChange={handleChange}
+              required
+            />
+            <InputField
+              type="date"
+              label="Tanggal CO"
+              name="tanggalCO"
+              value={formData.tanggalCO}
+              onChange={handleChange}
+              required
+            />
 
+              <ClientOnlySelect
+                options={permintaanLapangan.map((pl) => ({
+                  value: pl.id,
+                  label: pl.nomor,
+                }))}
+                value={
+                  permintaanLapangan
+                    .map((pl) => ({
+                      value: pl.id,
+                      label: pl.nomor,
+                    }))
+                    .find((option) => option.value === formData.idPL) || null
+                }
+                onChange={(selected) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    idPL: selected?.value || "",
+                  }))
+                }
+                placeholder="Permintaan Lapangan"
+                label={"Pilih No PL"}
+              />
+          </div>
           {/* Tabel Detail PL */}
-          {formData.idPL && (
-            <DetailTable allItems={allItems} />
-          )}
+          {formData.idPL && <DetailTable allItems={allItems} />}
 
           {/* Pilih Vendor */}
           {formData.idPL && (
-            <SelectField label="Pilih Vendor" name="idVendor" value={formData.idVendor} onChange={handleChange} options={vendors.map(v => ({ value: v.id, label: v.name }))} />
+              <ClientOnlySelect
+                options={vendors.map((vd) => ({
+                  value: vd.id,
+                  label: vd.name,
+                }))}
+                value={
+                  vendors
+                    .map((vd) => ({
+                      value: vd.id,
+                      label: vd.nama,
+                    }))
+                    .find((option) => option.value === formData.idVendor) ||
+                  null
+                }
+                onChange={(selected) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    idVendor: selected?.value || "",
+                  }))
+                }
+                placeholder="Pilih salah satu Vendor"
+                label={"Plih Vendor"}
+              />
           )}
 
           {/* Pilih Barang */}
@@ -221,10 +294,15 @@ export default function AddConfirmationOrder() {
 
           {/* Tombol Simpan */}
           <div className="flex justify-between items-center pt-4">
-            <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            <button
+              type="submit"
+              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
               Simpan
             </button>
-            <div className="font-bold">Total: Rp {totalHarga.toLocaleString()}</div>
+            <div className="font-bold">
+              Total: Rp {totalHarga.toLocaleString()}
+            </div>
           </div>
         </form>
       </div>
@@ -233,11 +311,26 @@ export default function AddConfirmationOrder() {
 }
 
 // Reusable Components
-function InputField({ label, name, value, onChange, type = "text", required = false }) {
+
+function InputField({
+  label,
+  name,
+  value,
+  onChange,
+  type = "text",
+  required = false,
+}) {
   return (
     <div>
       <label className="block font-medium">{label}</label>
-      <input type={type} name={name} value={value} onChange={onChange} className="border px-4 py-2 w-full" required={required} />
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="border px-4 h-10 w-full rounded-md"
+        required={required}
+      />
     </div>
   );
 }
@@ -246,21 +339,65 @@ function TextareaField({ label, name, value, onChange, required = false }) {
   return (
     <div>
       <label className="block font-medium">{label}</label>
-      <textarea name={name} value={value} onChange={onChange} className="border px-4 py-2 w-full" rows="4" required={required} />
+      <textarea
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="border px-4 py-2 w-full"
+        rows="4"
+        required={required}
+      />
     </div>
   );
 }
 
-function SelectField({ label, name, value, onChange, options }) {
+// function SelectField({ label, name, value, onChange, options }) {
+//   return (
+//     <div>
+//       <label className="block font-medium">{label}</label>
+//       <select
+//         name={name}
+//         value={value}
+//         onChange={onChange}
+//         className="border px-4 py-2 w-full"
+//         required
+//       >
+//         <option value="">Pilih {label}</option>
+//         {options.map((opt) => (
+//           <option key={opt.value} value={opt.value}>
+//             {opt.label}
+//           </option>
+//         ))}
+//       </select>
+//     </div>
+//   );
+// }
+function ClientOnlySelect({ options, value, onChange, placeholder, label }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   return (
     <div>
       <label className="block font-medium">{label}</label>
-      <select name={name} value={value} onChange={onChange} className="border px-4 py-2 w-full" required>
-        <option value="">Pilih {label}</option>
-        {options.map(opt => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
+      <Select
+        options={options}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        // className="border px-4 py-2 w-full"
+        classNames={{
+          control: () => 'border h-10',
+          menu: () => 'bg-white shadow-md',
+          option: ({ isSelected, isFocused }) =>
+            ` ${isSelected ? 'bg-blue-500 text-white' : isFocused ? 'bg-blue-100' : ''}`,
+        }}
+        required
+      />
     </div>
   );
 }
@@ -291,7 +428,12 @@ function DetailTable({ allItems }) {
   );
 }
 
-function ItemSelector({ filteredItems, selectedItems, toggleItemSelection, handleItemDetailChange }) {
+function ItemSelector({
+  filteredItems,
+  selectedItems,
+  toggleItemSelection,
+  handleItemDetailChange,
+}) {
   return (
     <div className="border-b pb-4">
       <label className="block font-medium">Pilih Barang:</label>
@@ -302,21 +444,72 @@ function ItemSelector({ filteredItems, selectedItems, toggleItemSelection, handl
             return (
               <li key={item.id} className="border p-4 rounded-md">
                 <label className="flex items-center space-x-2">
-                  <input type="checkbox" checked={!!selected} onChange={() => toggleItemSelection(item)} />
+                  <input
+                    type="checkbox"
+                    checked={!!selected}
+                    onChange={() => toggleItemSelection(item)}
+                  />
                   <span className="font-medium">{item.name}</span>
                 </label>
                 {selected && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                    <InputField label="Qty" type="number" value={selected.qty} onChange={(e) => handleItemDetailChange(item.id, "qty", parseInt(e.target.value))} />
-                    <InputField label="Satuan" value={selected.satuan} onChange={(e) => handleItemDetailChange(item.id, "satuan", e.target.value)} />
-                    <InputField label="Kode Barang" value={selected.code || ""} onChange={(e) => handleItemDetailChange(item.id, "code", e.target.value)} />
-                    <InputField label="Mention" value={selected.mention || ""} onChange={(e) => handleItemDetailChange(item.id, "mention", e.target.value)} />
+                    <InputField
+                      label="Qty"
+                      type="number"
+                      value={selected.qty}
+                      onChange={(e) =>
+                        handleItemDetailChange(
+                          item.id,
+                          "qty",
+                          parseInt(e.target.value)
+                        )
+                      }
+                    />
+                    <InputField
+                      label="Satuan"
+                      value={selected.satuan}
+                      onChange={(e) =>
+                        handleItemDetailChange(
+                          item.id,
+                          "satuan",
+                          e.target.value
+                        )
+                      }
+                    />
+                    <InputField
+                      label="Kode Barang"
+                      value={selected.code || ""}
+                      onChange={(e) =>
+                        handleItemDetailChange(item.id, "code", e.target.value)
+                      }
+                    />
+                    <InputField
+                      label="Mention"
+                      value={selected.mention || ""}
+                      onChange={(e) =>
+                        handleItemDetailChange(
+                          item.id,
+                          "mention",
+                          e.target.value
+                        )
+                      }
+                    />
                     <img
-                   src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${item.image}`}
+                      src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${item.image}`}
                       alt={item.image}
                       className="w-16 h-16 object-cover mx-auto"
-                          />
-                    <TextareaField label="Keterangan" value={selected.keterangan || ""} onChange={(e) => handleItemDetailChange(item.id, "keterangan", e.target.value)} />
+                    />
+                    <TextareaField
+                      label="Keterangan"
+                      value={selected.keterangan || ""}
+                      onChange={(e) =>
+                        handleItemDetailChange(
+                          item.id,
+                          "keterangan",
+                          e.target.value
+                        )
+                      }
+                    />
                   </div>
                 )}
               </li>
@@ -324,7 +517,9 @@ function ItemSelector({ filteredItems, selectedItems, toggleItemSelection, handl
           })}
         </ul>
       ) : (
-        <p className="text-red-500">Tidak ada barang tersedia untuk vendor ini.</p>
+        <p className="text-red-500">
+          Tidak ada barang tersedia untuk vendor ini.
+        </p>
       )}
     </div>
   );

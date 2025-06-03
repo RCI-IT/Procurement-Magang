@@ -29,7 +29,7 @@ export const createPermintaanLapangan = async (req: Request, res: Response) => {
     }
 
     const isDetailValid = detail.every(
-      (item: any) => item.materialId && item.qty && item.satuan
+      (item: any) => item.materialName && item.qty && item.satuan
     );
 
     if (!isDetailValid) {
@@ -45,7 +45,7 @@ export const createPermintaanLapangan = async (req: Request, res: Response) => {
         keterangan,
         detail: {
           create: detail.map((item: any) => ({
-            materialId: item.materialId,
+            materialName: item.materialName,
             qty: item.qty,
             satuan: item.satuan,
             mention: item.mention || null,
@@ -77,13 +77,13 @@ export const getAllPermintaanLapangan = async (req: Request, res: Response) => {
       include: {
         user: true,
         detail: {
-          include: {
-            material: {
-              include: {
-                vendor: true,
-              },
-            },
-          },
+          // include: {
+          //   material: {
+          //     include: {
+          //       vendor: true,
+          //     },
+          //   },
+          // },
         },
       },
     });
@@ -110,11 +110,12 @@ export const getPermintaanById = async (
       where: { id: parsedId },
       include: {
         user: true,
-        detail: {
-          include: {
-            material: true, // No confirmationDetails here
-          },
-        },
+        detail: true,
+        // {
+        //   include: {
+        //     material: true, // No confirmationDetails here
+        //   },
+        // },
       },
     });
 
@@ -211,8 +212,8 @@ export const deletePermintaanLapangan = async (req: Request, res: Response) => {
     }
 
     await prisma.permintaanDetails.deleteMany({
-      where: {permintaanId: Number(id)}
-    })
+      where: { permintaanId: Number(id) },
+    });
     await prisma.permintaanLapangan.delete({
       where: { id: Number(id) },
     });
@@ -272,7 +273,7 @@ export const editPermintaanLapangan = async (
             await prisma.permintaanDetails.update({
               where: { id: item.id },
               data: {
-                materialId: item.materialId,
+                materialName: item.materialName,
                 qty: item.qty,
                 satuan: item.satuan,
                 mention: item.mention,
@@ -285,7 +286,7 @@ export const editPermintaanLapangan = async (
             await prisma.permintaanDetails.create({
               data: {
                 permintaanId: Number(id),
-                materialId: item.materialId,
+                materialName: item.materialName,
                 qty: item.qty,
                 satuan: item.satuan,
                 mention: item.mention,

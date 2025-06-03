@@ -1,47 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
-import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
-import Select from "react-select";
+// import Select from "react-select";
 
 export default function AddPermintaanLapanganForm({}) {
   const router = useRouter();
-  const [materials, setMaterials] = useState([]);
-  const [token, setToken] = useState(null);
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) setToken(storedToken);
-  }, []);
-
-  // Fungsi fetch data materials
-  const getData = async () => {
-    const materialData = await fetchWithToken(
-      `${process.env.NEXT_PUBLIC_API_URL}/materials`,
-      token,
-      setToken,
-      () => router.push("/login")
-    );
-
-    if (Array.isArray(materialData)) setMaterials(materialData);
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [token]); // pastikan token sudah ada dulu
-
-  const fetchData = () => {
-    if (token) getData();
-  };
-
-  // Fungsi helper untuk cari code berdasarkan materialId
-  const getCodeByMaterialId = (id) => {
-    const m = materials.find((mat) => mat.id.toString() === id.toString());
-    return m ? m.code : "";
-  };
 
   const [formData, setFormData] = useState({
     nomor: "",
@@ -52,7 +18,7 @@ export default function AddPermintaanLapanganForm({}) {
     detail: [
       {
         id: Date.now(),
-        materialId: "",
+        materialName: "",
         qty: "",
         satuan: "",
         mention: "",
@@ -75,23 +41,28 @@ export default function AddPermintaanLapanganForm({}) {
     }
   };
 
+  // Fungsi helper untuk cari code berdasarkan materialId
+  // const getCodeByMaterialId = (id) => {
+  //   const m = materials.find((mat) => mat.id.toString() === id.toString());
+  //   return m ? m.code : "";
+  // };
+
   // Modifikasi handleDetailChange untuk otomatis isi code material jika materialId berubah
   const handleDetailChange = (index, field, value) => {
     setFormData((prev) => {
       const updatedDetails = [...prev.detail];
       let newDetail = { ...updatedDetails[index], [field]: value };
 
-      if (field === "materialId") {
-        const newCode = getCodeByMaterialId(value);
-        // Jika code kosong atau sama dengan kode sebelumnya, update otomatis
-        if (
-          !newDetail.code ||
-          newDetail.code === updatedDetails[index].code ||
-          newDetail.code === ""
-        ) {
-          newDetail.code = newCode;
-        }
-      }
+      // if (field === "materialName") {
+      //   const newCode = getCodeByMaterialId(value);
+      //   // Jika code kosong atau sama dengan kode sebelumnya, update otomatis
+      //   if ( !newDetail.code ||
+      //     newDetail.code === updatedDetails[index].code ||
+      //     newDetail.code === ""
+      //   ) {
+      //     newDetail.code = newCode;
+      //   }
+      // }
 
       updatedDetails[index] = newDetail;
       return { ...prev, detail: updatedDetails };
@@ -105,7 +76,7 @@ export default function AddPermintaanLapanganForm({}) {
         ...prev.detail,
         {
           id: Date.now(),
-          materialId: "",
+          materialName: "",
           qty: "",
           satuan: "",
           mention: "",
@@ -146,7 +117,7 @@ export default function AddPermintaanLapanganForm({}) {
       ...formData,
       tanggal: `${formData.tanggal.year}-${formData.tanggal.month}-${formData.tanggal.day}`,
       detail: formData.detail.map((d) => ({
-        materialId: Number(d.materialId),
+        materialName: d.materialName,
         qty: Number(d.qty),
         satuan: d.satuan,
         mention: d.mention,
@@ -155,6 +126,7 @@ export default function AddPermintaanLapanganForm({}) {
       })),
     };
 
+    console.log(finalData);
     try {
       const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/permintaan`,
@@ -184,7 +156,7 @@ export default function AddPermintaanLapanganForm({}) {
         detail: [
           {
             id: Date.now(),
-            materialId: "",
+            materialName: "",
             qty: "",
             satuan: "",
             mention: "",
@@ -300,7 +272,15 @@ export default function AddPermintaanLapanganForm({}) {
               <div className="flex flex-col">
                 <label className="block font-medium">Nama Barang / Jasa:</label>
 
-                <Select
+                <input
+                  type="text"
+                  value={item.materialName}
+                  onChange={(e) =>
+                    handleDetailChange(index, "materialName", e.target.value)
+                  }
+                  className="border border-gray-300 rounded px-2 py-1 w-full"
+                />
+                {/* <Select
                   options={materials.map((material) => ({
                     value: material.id,
                     label: material.name,
@@ -316,12 +296,16 @@ export default function AddPermintaanLapanganForm({}) {
                       : null
                   }
                   onChange={(selected) =>
-                    handleDetailChange(index, "materialId", selected?.value || "")
+                    handleDetailChange(
+                      index,
+                      "materialId",
+                      selected?.value || ""
+                    )
                   }
                   placeholder="Pilih Material"
                   isClearable
                   className="text-sm"
-                />
+                /> */}
 
                 <br />
 

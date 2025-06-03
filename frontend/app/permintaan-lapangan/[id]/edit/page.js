@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
-import Select from "react-select";
 
 export default function EditPermintaanLapangan() {
   const { id } = useParams();
@@ -21,7 +20,6 @@ export default function EditPermintaanLapangan() {
     keterangan: "",
     detail: [],
   });
-  const [materials, setMaterials] = useState({});
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(null);
 
@@ -44,7 +42,6 @@ export default function EditPermintaanLapangan() {
 
         if (result) {
           setFormData(result);
-          await fetchMaterialNames();
         } else {
           router.push("/?page=permintaan-lapangan");
         }
@@ -58,29 +55,29 @@ export default function EditPermintaanLapangan() {
     fetchData();
   }, [id, router]);
 
-  const fetchMaterialNames = async () => {
-    try {
-      const data = await fetchWithToken(
-        `${process.env.NEXT_PUBLIC_API_URL}/materials`,
-        token,
-        setToken,
-        () => router.push("/login")
-      );
-      const materialMap = data.reduce((acc, material) => {
-        acc[material.id] = material.name;
-        return acc;
-      }, {});
-      setMaterials(materialMap);
-      setLoading(false);
-    } catch (error) {
-      console.error("Gagal mengambil nama material:", error);
-    }
-  };
+  // const fetchMaterialNames = async () => {
+  //   try {
+  //     const data = await fetchWithToken(
+  //       `${process.env.NEXT_PUBLIC_API_URL}/materials`,
+  //       token,
+  //       setToken,
+  //       () => router.push("/login")
+  //     );
+  //     const materialMap = data.reduce((acc, material) => {
+  //       acc[material.id] = material.name;
+  //       return acc;
+  //     }, {});
+  //     setMaterials(materialMap);
+  //     setLoading(false);
+  //   } catch (error) {
+  //     console.error("Gagal mengambil nama material:", error);
+  //   }
+  // };
 
   const handleDetailChange = (index, field, value) => {
     const newDetail = [...formData.detail];
     newDetail[index][field] =
-      field === "qty" || field === "materialId" ? parseInt(value) || 0 : value;
+      field === "qty" || field === "materialName" ? parseInt(value) || 0 : value;
     setFormData({ ...formData, detail: newDetail });
   };
 
@@ -98,7 +95,7 @@ export default function EditPermintaanLapangan() {
       keterangan: formData.keterangan,
       detail: formData.detail.map((item) => ({
         id: item.id,
-        materialId: item.materialId,
+        materialName: item.materialName,
         qty: item.qty,
         satuan: item.satuan,
         mention: item.mention,
@@ -213,7 +210,7 @@ export default function EditPermintaanLapangan() {
                       ))}
                     </select> */}
 
-                    <Select
+                    {/* <Select
                       options={materials.map((material) => ({
                         value: material.id,
                         label: material.name,
@@ -238,6 +235,14 @@ export default function EditPermintaanLapangan() {
                       placeholder="Pilih Material"
                       isClearable
                       className="text-sm"
+                    /> */}
+                    <input
+                      type="text"
+                      value={item.materialName || ""}
+                      onChange={(e) =>
+                        handleDetailChange(index, "materialName", e.target.value)
+                      }
+                      className="w-full border p-1 rounded"
                     />
                   </td>
                   <td className="border border-gray-300 p-2">

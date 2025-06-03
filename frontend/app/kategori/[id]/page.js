@@ -136,7 +136,7 @@ export default function KategoriDetailPage() {
               </tr>
             </thead>
             <tbody>
-              {paginatedMaterials.length > 0 ? (
+              {material.length > 0 ? (
                 paginatedMaterials.map((material, index) => (
                   <tr key={material.id}>
                     <td className="border px-4 py-2 text-center">
