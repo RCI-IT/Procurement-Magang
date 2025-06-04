@@ -37,7 +37,7 @@ export default function LoginPage() {
 
       if (validUser) {
         localStorage.setItem("username", validUser.username);
-        localStorage.setItem("role", validUser.role);
+        localStorage.setItem("userRole", validUser.role);
       }
 
       setIsError(false);

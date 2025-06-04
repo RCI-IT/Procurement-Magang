@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { fetchWithAuth } from "@/services/apiClient";
-import Pagination from "@/component/Pagination"
+import Pagination from "@/component/Pagination";
+import {getCookie} from "@/context/getcookie"
 
 export default function Material() {
-  const [token, setToken] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [vendors, setVendors] = useState([]);
@@ -19,38 +19,40 @@ export default function Material() {
   const [sortBy, setSortBy] = useState("terbaru");
   const router = useRouter();
 
+  const [token, setToken] = useState(null);
+
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    const storedRole = localStorage.getItem("role");
+    const role = getCookie("role");
     if (storedToken) setToken(storedToken);
-    if (storedRole) setUserRole(storedRole);
+    if (role) setUserRole(role);
   }, []);
 
+  const getData = async () => {
+    const materialData = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/materials`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
+    const vendorData = await fetchWithToken(
+      `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
+      token,
+      setToken,
+      () => router.push("/login")
+    );
+
+    if (Array.isArray(materialData)) setMaterials(materialData);
+    if (Array.isArray(vendorData)) setVendors(vendorData);
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      if (!token) return;
-
-      const getData = async () => {
-        const materialData = await fetchWithToken(
-          `${process.env.NEXT_PUBLIC_API_URL}/materials`,
-          token,
-          setToken,
-          () => router.push("/login")
-        );
-        const vendorData = await fetchWithToken(
-          `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
-          token,
-          setToken,
-          () => router.push("/login")
-        );
-
-        if (Array.isArray(materialData)) setMaterials(materialData);
-        if (Array.isArray(vendorData)) setVendors(vendorData);
-      };
-      getData();
-    };
     fetchData();
   }, [token]);
+
+  const fetchData = () => {
+    getData();
+  };
 
   const handleVendorClick = (vendorId) => {
     if (vendorId) router.push(`/vendor/${vendorId}`);
@@ -249,7 +251,7 @@ export default function Material() {
                             material.price
                           )}
                         </td>
-                        
+
                         <td className="border px-4 py-2 text-center">
                           {material.category?.name}
                         </td>

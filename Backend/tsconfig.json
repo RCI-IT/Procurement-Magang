@@ -10,7 +10,7 @@
     "forceConsistentCasingInFileNames": true,      // Hindari masalah nama file case-sensitive.
     "moduleResolution": "node",                    // Gunakan resolusi modul ala Node.js.
     "resolveJsonModule": true,                     // Izinkan impor file JSON.
-    "typeRoots": ["./node_modules/@types"],        // Tempat mencari definisi tipe global.
+    "typeRoots": ["./node_modules/types"],        // Tempat mencari definisi tipe global.
     "allowSyntheticDefaultImports": true,           // Izinkan default import meskipun modul tidak ekspor default.
     "baseUrl": "./src",
     "paths": {

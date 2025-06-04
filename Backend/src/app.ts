@@ -1,5 +1,12 @@
+// 🔧 Core Modules
+import path from "path";
+
+// 📦 Third-party Modules
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+// 📁 Routes
+import auth from "./routes/auth";
 import permintaanRoutes from "./routes/permintaan";
 import vendorsRoutes from "./routes/vendors";
 import materialsRoutes from "./routes/materials";
@@ -7,17 +14,17 @@ import categoriesRoutes from "./routes/categories";
 import usersRoutes from "./routes/users";
 import confirmationRoutes from "./routes/confirmation";
 import purchaseRoutes from "./routes/purchase";
+import sign from "./routes/sign";
+
+// 🔒 Middleware
 import authMiddleware from "./middleware/authMiddleware";
-import auth from "./routes/auth"
-import path from "path";
-import cookieParser from "cookie-parser";
 
 const app = express();
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://192.168.110.254:3000'],
+  origin: ["http://localhost:3000", "http://192.168.110.254:3000"],
   methods: "GET,POST,PUT,DELETE,OPTIONS",
   allowedHeaders: "Content-Type,Authorization",
-  credentials: true, 
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
@@ -39,10 +46,20 @@ app.use("/categories", categoriesRoutes);
 app.use("/users", usersRoutes);
 app.use("/confirmation", confirmationRoutes);
 app.use("/purchase", purchaseRoutes);
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Internal Server Error", message: err.message });
-  next();
-});
+app.use("/signing", sign);
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(err.stack);
+    res
+      .status(500)
+      .json({ error: "Internal Server Error", message: err.message });
+    next();
+  }
+);
 
 export default app;
