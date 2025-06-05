@@ -47,48 +47,50 @@ export default function TandaTanganQR() {
     }
   };
   return (
-    <div>
-      <h2>Generate QR Code with Digital Signature</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Nama:</label>
-          <input
-            type="text"
-            name="nama"
-            value={data.nama}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div>
-          <label>Tanggal:</label>
-          <input
-            type="date"
-            name="tanggal"
-            value={data.tanggal}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div>
-          <label>Tujuan:</label>
-          <input
-            type="text"
-            name="tujuan"
-            value={data.tujuan}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <button type="submit">Generate QR Code</button>
-      </form>
+    <div className="flex h-screen">
+      <div className="p-6 bg-white flex-1 h-screen shadow-md rounded-lg overflow-y-auto">
+        <h2>Generate QR Code with Digital Signature</h2>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label>Nama:</label>
+            <input
+              type="text"
+              name="nama"
+              value={data.nama}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div>
+            <label>Tanggal:</label>
+            <input
+              type="date"
+              name="tanggal"
+              value={data.tanggal}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div>
+            <label>Tujuan:</label>
+            <input
+              type="text"
+              name="tujuan"
+              value={data.tujuan}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <button type="submit">Generate QR Code</button>
+        </form>
 
-      {qrCode && (
-        <div>
-          <h3>QR Code:</h3>
-          <img src={qrCode} alt="QR Code" />
-        </div>
-      )}
+        {qrCode && (
+          <div>
+            <h3>QR Code:</h3>
+            <img src={qrCode} alt="QR Code" />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
