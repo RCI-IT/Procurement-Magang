@@ -16,7 +16,6 @@ export const createPermintaanLapangan = async (req: Request, res: Response) => {
   try {
     const { nomor, tanggal, lokasi, picLapangan, keterangan, detail } =
       req.body;
-
     if (
       !nomor ||
       !tanggal ||
