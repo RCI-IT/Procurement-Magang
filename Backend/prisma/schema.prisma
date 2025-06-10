@@ -9,7 +9,6 @@ datasource db {
 }
 
 model PermintaanLapangan {
-  id                 Int                 @id @default(autoincrement())
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   nomor              String              @unique
@@ -20,42 +19,42 @@ model PermintaanLapangan {
   isConfirmed        Boolean             @default(false)
   isReceived         Boolean             @default(false)
   keterangan         String?
-  detail             PermintaanDetails[]
-  confirmationOrders ConfirmationOrder[] // <-- berubah jadi array
+  id                 Int                 @id @default(autoincrement())
   userId             Int?
+  confirmationOrders ConfirmationOrder[]
+  detail             PermintaanDetails[]
   user               User?               @relation(fields: [userId], references: [id])
 }
 
 model PurchaseOrder {
-  id                  Int               @id @default(autoincrement())
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
   nomorPO             String            @unique
   tanggalPO           DateTime
   lokasiPO            String
   keterangan          String?
+  id                  Int               @id @default(autoincrement())
   confirmationOrderId Int               @unique
-  confirmationOrder   ConfirmationOrder @relation("COToPO", fields: [confirmationOrderId], references: [id], onDelete: Cascade)
-  purchaseDetails     PurchaseDetails[]
   userId              Int?
+  purchaseDetails     PurchaseDetails[]
+  confirmationOrder   ConfirmationOrder @relation("COToPO", fields: [confirmationOrderId], references: [id], onDelete: Cascade)
   user                User?             @relation(fields: [userId], references: [id])
 }
 
 model PurchaseDetails {
-  id              Int           @id @default(autoincrement())
-  purchaseOrderId Int
-  materialId      Int
   qty             Int
   code            String
   satuan          String
   keterangan      String?
   status          POStatus      @default(IN_PROGRESS)
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  id              Int           @id @default(autoincrement())
+  purchaseOrderId Int
+  materialId      Int
   material        Materials     @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
 }
 
 model ConfirmationOrder {
-  id                  Int                   @id @default(autoincrement())
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
   nomorCO             String                @unique
@@ -63,82 +62,81 @@ model ConfirmationOrder {
   lokasiCO            String
   keterangan          String?
   status              COStatus              @default(PENDING)
-  confirmationDetails ConfirmationDetails[]
-  permintaanId        Int? // tetap
-  permintaan          PermintaanLapangan?   @relation(fields: [permintaanId], references: [id])
+  id                  Int                   @id @default(autoincrement())
   userId              Int?
+  permintaanId        Int?
+  confirmationDetails ConfirmationDetails[]
+  permintaan          PermintaanLapangan?   @relation(fields: [permintaanId], references: [id])
   user                User?                 @relation(fields: [userId], references: [id])
   purchaseOrder       PurchaseOrder?        @relation("COToPO")
 }
 
 model ConfirmationDetails {
+  qty                 Int
+  code                String
+  keterangan          String?
+  satuan              String
+  status              DetailStatus      @default(PENDING)
+  mention             String?
   id                  Int               @id @default(autoincrement())
   confirmationOrderId Int
   materialId          Int
-  qty                 Int
-  satuan              String
-  mention             String?
-  code                String
-  keterangan          String?
-  status              DetailStatus      @default(PENDING)
   confirmationOrder   ConfirmationOrder @relation(fields: [confirmationOrderId], references: [id], onDelete: Cascade)
   material            Materials         @relation(fields: [materialId], references: [id], onDelete: Cascade)
 }
 
 model PermintaanDetails {
-  id           Int                @id @default(autoincrement())
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
-  permintaanId Int
-  materialName String
   qty          Int
   satuan       String
   mention      String?
   code         String
   keterangan   String?
   status       PLDStatus          @default(PENDING)
-  // material     Materials          @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  id           Int                @id @default(autoincrement())
+  permintaanId Int
+  materialName String
   permintaan   PermintaanLapangan @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
 }
 
 model Materials {
-  id                  Int                   @id @default(autoincrement())
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
   image               String?
-  code                String                @unique
   name                String
   description         String
+  id                  Int                   @id @default(autoincrement())
   price               Int
   categoryId          Int
   vendorId            Int
+  code                String                @unique
+  confirmationDetails ConfirmationDetails[]
   category            Categories            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   vendor              Vendors               @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   PurchaseDetails     PurchaseDetails[]
-  confirmationDetails ConfirmationDetails[]
 }
 
 model Categories {
-  id        Int         @id @default(autoincrement())
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   name      String      @unique
+  id        Int         @id @default(autoincrement())
   materials Materials[]
 }
 
 model Vendors {
-  id        Int         @id @default(autoincrement())
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   name      String
   address   String?
   city      String?
   phone     String?
+  id        Int         @id @default(autoincrement())
   materials Materials[]
 }
 
 model User {
-  id                 Int                  @id @default(autoincrement())
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   username           String               @unique
@@ -146,9 +144,43 @@ model User {
   email              String               @unique
   fullName           String
   role               UserRole             @default(USER_LAPANGAN)
-  permintaans        PermintaanLapangan[]
+  id                 Int                  @id @default(autoincrement())
   confirmationOrders ConfirmationOrder[]
+  permintaans        PermintaanLapangan[]
   PurchaseOrder      PurchaseOrder[]
+  SignedBy           SignedBy[]
+  SigningAuthority   SigningAuthority[]
+}
+
+model SignedBy {
+  id           String     @id
+  signedFileId String
+  userId       Int
+  role         String
+  signature    String
+  createdAt    DateTime   @default(now())
+  SignedFile   SignedFile @relation(fields: [signedFileId], references: [id])
+  User         User       @relation(fields: [userId], references: [id])
+}
+
+model SignedFile {
+  id        String     @id
+  type      FileType
+  relatedId Int
+  createdAt DateTime   @default(now())
+  SignedBy  SignedBy[]
+
+  @@unique([type, relatedId])
+}
+
+model SigningAuthority {
+  id       String      @id
+  userId   Int
+  fileType FileType
+  role     SigningRole
+  User     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fileType, role])
 }
 
 enum PermintaanStatus {
@@ -212,7 +244,22 @@ enum PLDStatus {
   READ
 }
 
-enum sign {
-  YES
-  NO
+enum FileType {
+  PERMINTAAN_LAPANGAN
+  CONFIRMATION_ORDER
+  PURCHASE_ORDER
+  PL
+  CO
+  PO
+}
+
+enum SigningRole {
+  ENGINEER_REQUESTER
+  ENGINEER_CHECKER
+  PIC_LAPANGAN
+  PURCHASING
+  SITE_MANAGER
+  VENDOR
+  FINANCE
+  DIREKSI
 }
