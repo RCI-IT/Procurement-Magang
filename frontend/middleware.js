@@ -9,6 +9,7 @@ const roleAccess = {
     "/confirmation-order",
     "/material",
     "/permintaan-lapangan",
+    "/vendor"
   ],
   USER_PURCHASE: [
     "/home",
@@ -58,10 +59,23 @@ export function middleware(request) {
   }
 
   // Jika role tidak diizinkan akses ke route saat ini
-  const isAllowed = allowedRoutes.some(
-    (route) => pathname === route || pathname.startsWith(route + "/")
-  );
+  const isAllowed = allowedRoutes.some((route) => {
+    if (route === "*") return true;
 
+    if (pathname === route || pathname.startsWith(route + "/")) {
+      // Khusus USER_LAPANGAN: tidak boleh akses edit material
+      if (
+        role === "USER_LAPANGAN" &&
+        pathname.startsWith("/material" || "/vendor") &&
+        pathname.includes("/edit")
+      ) {
+        return false;
+      }
+      return true;
+    }
+
+    return false;
+  });
   if (!isAllowed) {
     return NextResponse.redirect(new URL("/home", request.url)); // ganti "/" → "/home"
   }

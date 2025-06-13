@@ -12,24 +12,33 @@ import Pagination from "@/component/Pagination";
 const ConfirmationOrderTable = () => {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [rowsToShow, setRowsToShow] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userRole, setUserRole] = useState(null);
+  const [user, setUser] = useState(null);
   const [sortBy, setSortBy] = useState("terbaru");
   const [token, setToken] = useState(null);
 
   const router = useRouter();
 
   useEffect(() => {
-    const storedRole = localStorage.getItem("role");
-    if (storedRole) setUserRole(storedRole);
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) setToken(storedToken);
-  }, []);
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      setTimeout(() => router.push("/login"), 800);
+      return;
+    }
 
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setTimeout(() => setIsLoading(false), 500);
+    } catch (error) {
+      console.error("User JSON parse error:", error);
+      router.push("/login");
+    }
+  }, [router]);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -46,7 +55,7 @@ const ConfirmationOrderTable = () => {
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -165,7 +174,7 @@ const ConfirmationOrderTable = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            {userRole !== "USER_LAPANGAN" && (
+            {user?.role !== "USER_LAPANGAN" && (
               <button
                 className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600"
                 onClick={() => router.push("/confirmation-order/add")}
@@ -175,7 +184,7 @@ const ConfirmationOrderTable = () => {
             )}
           </div>
         </div>
-        {loading ? (
+        {isLoading ? (
           <p className="text-center">Memuat data...</p>
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>

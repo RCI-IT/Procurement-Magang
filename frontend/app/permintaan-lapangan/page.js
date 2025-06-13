@@ -32,15 +32,26 @@ export default function PermintaanLapangan({}) {
   const [updatedData, setUpdatedData] = useState([]);
   const [sortOrder, setSortOrder] = useState("desc");
   const router = useRouter();
-  const [userRole, setUserRole] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-    if (storedToken) setToken(storedToken);
-    if (role) setUserRole(role);
-  }, []);
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      setTimeout(() => router.push("/login"), 800);
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setTimeout(() => setIsLoading(false), 500);
+    } catch (error) {
+      console.error("User JSON parse error:", error);
+      router.push("/login");
+    }
+  }, [router]);
 
   const getMonthName = (monthNumber) => months[monthNumber - 1];
 
@@ -74,7 +85,7 @@ export default function PermintaanLapangan({}) {
   }, []);
 
   const handleDetail = async (id) => {
-    if (userRole === "USER_PURCHASE" || userRole === "ADMIN") {
+    if (user.role === "USER_PURCHASE" || user.role === "ADMIN") {
       try {
         const response = await fetchWithAuth(
           `${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`,
@@ -165,9 +176,13 @@ export default function PermintaanLapangan({}) {
     currentPage * rowsToShow
   );
 
-  const handlePrevPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Memuat data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen">
@@ -216,7 +231,7 @@ export default function PermintaanLapangan({}) {
               }}
               className="border border-gray-300 rounded px-4 py-2 text-sm"
             />
-            {userRole !== "USER_PURCHASE" && (
+            {user?.role !== "USER_PURCHASE" && (
               <button
                 onClick={() => router.push("/permintaan-lapangan/add")}
                 className="bg-blue-500 text-white rounded px-4 py-2 text-sm hover:bg-blue-600"
@@ -288,10 +303,10 @@ export default function PermintaanLapangan({}) {
         </div>
 
         <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            setCurrentPage={setCurrentPage}
-          />
+          currentPage={currentPage}
+          totalPages={totalPages}
+          setCurrentPage={setCurrentPage}
+        />
       </div>
     </div>
   );

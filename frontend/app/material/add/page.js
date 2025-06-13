@@ -217,18 +217,38 @@ export default function AddMaterialPage() {
           </div>
           <div className="mb-4">
             <label className="block font-medium">Kategori:</label>
-            <select
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="border border-gray-400 rounded px-2 py-1 w-full"
-            >
-              <option value="">Pilih Kategori</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+            <Select
+              options={categories.map((c) => ({
+                value: c.id,
+                label: c.name,
+              }))}
+              value={
+                categoryId
+                  ? {
+                      value: categoryId,
+                      label: categories.find(
+                        (v) => v.id === parseInt(categoryId)
+                      )?.name,
+                    }
+                  : null
+              }
+              onChange={(selected) => setCategoryId(selected?.value || "")}
+              placeholder="Pilih Kategori"
+              isClearable
+              className="w-full text-sm"
+              classNames={{
+                control: () => "border border-gray-400 rounded min-h-[38px]",
+                menu: () => "bg-white shadow-md text-sm",
+                option: ({ isSelected, isFocused }) =>
+                  `px-2 py-1 ${
+                    isSelected
+                      ? "bg-blue-500 text-white"
+                      : isFocused
+                      ? "bg-blue-100"
+                      : ""
+                  }`,
+              }}
+            />
           </div>
           <div className="mb-4">
             <label className="block font-medium mb-1">Vendor:</label>
@@ -249,7 +269,19 @@ export default function AddMaterialPage() {
               onChange={(selected) => setVendorId(selected?.value || "")}
               placeholder="Pilih Vendor"
               isClearable
-              className="text-sm"
+              className="w-full text-sm"
+              classNames={{
+                control: () => "border border-gray-400 rounded min-h-[38px]",
+                menu: () => "bg-white shadow-md text-sm",
+                option: ({ isSelected, isFocused }) =>
+                  `px-2 py-1 ${
+                    isSelected
+                      ? "bg-blue-500 text-white"
+                      : isFocused
+                      ? "bg-blue-100"
+                      : ""
+                  }`,
+              }}
             />
           </div>
 

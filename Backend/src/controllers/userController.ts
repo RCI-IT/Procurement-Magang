@@ -34,24 +34,48 @@ export const getAllUsers = async (
   const { username, email } = req.query;
   const whereClause: any = {};
 
-  if (username) whereClause.username = Number(username);
+  // Pencarian username (pakai contains juga biar konsisten)
+  if (username) {
+    whereClause.username = {
+      contains: String(username),
+      mode: "insensitive",
+    };
+  }
+
+  // Pencarian email (partial + case-insensitive)
   if (email) {
     whereClause.email = {
-      contains: String(email), // pencarian partial 
-      mode: "insensitive", // (case-insensitive bisa ditambah)
+      contains: String(email),
+      mode: "insensitive",
     };
   }
 
   try {
     const users = await prisma.user.findMany({
       where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+      include: { SigningAuthority: true }, // <-- tambahkan signingAuthorities
     });
-    res.status(200).json(users);
+
+    // supaya frontend gampang pakai (biar sama kayak getById)
+    const formattedUsers = users.map((user) => ({
+      id: user.id,
+      username: user.username,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      authorities: user.SigningAuthority.map((auth) => ({
+        fileType: auth.fileType,
+        role: auth.role,
+      })),
+    }));
+
+    res.status(200).json(formattedUsers);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch users" });
   }
 };
+
 export const getUserById = async (
   req: Request,
   res: Response
@@ -59,14 +83,27 @@ export const getUserById = async (
   const id = parseInt(req.params.id);
 
   try {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: { SigningAuthority: true },
+    });
 
     if (!user) {
       res.status(404).json({ error: "User not found" });
       return;
     }
 
-    res.status(200).json(user);
+    res.status(200).json({
+      id: user.id,
+      username: user.username,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      authorities: user.SigningAuthority.map((auth) => ({
+        fileType: auth.fileType,
+        role: auth.role,
+      })),
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch user" });
@@ -77,13 +114,37 @@ export const updateUser = async (
   res: Response
 ): Promise<void> => {
   const id = parseInt(req.params.id);
-  const { fullName, email, role } = req.body;
+  const { fullName, email, role, authorities } = req.body;
 
   try {
+    // Update basic user data
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: { fullName, email, role },
+      data: {
+        fullName,
+        email,
+        role,
+      },
     });
+
+    // Handle signingAuthorities (replace all)
+    if (Array.isArray(authorities)) {
+      // Delete existing authorities
+      await prisma.signingAuthority.deleteMany({
+        where: { userId: id },
+      });
+
+      // Create new authorities
+      if (authorities.length > 0) {
+        await prisma.signingAuthority.createMany({
+          data: authorities.map((auth: any) => ({
+            userId: id,
+            fileType: auth.fileType,
+            role: auth.role,
+          })),
+        });
+      }
+    }
 
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -91,6 +152,7 @@ export const updateUser = async (
     res.status(500).json({ error: "Failed to update user" });
   }
 };
+
 export const deleteUser = async (
   req: Request,
   res: Response

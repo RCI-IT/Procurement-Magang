@@ -11,15 +11,29 @@ export default function MaterialPage() {
   const [material, setMaterial] = useState([]);
   const [vendor, setVendor] = useState(null);
   const [relatedMaterials, setRelatedMaterials] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
 
   useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      setTimeout(() => router.push("/login"), 800);
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setTimeout(() => setIsLoading(false), 500);
+    } catch (error) {
+      console.error("User JSON parse error:", error);
+      router.push("/login");
+    }
     const storedToken = localStorage.getItem("token");
     if (storedToken) setToken(storedToken);
-  }, []);
+  }, [router]);
 
   const getData = async () => {
     const materialData = await fetchWithToken(
@@ -53,7 +67,7 @@ export default function MaterialPage() {
 
   useEffect(() => {
     fetchData();
-    setLoading(false);
+    setIsLoading(false);
   }, [token]);
 
   const fetchData = () => {
@@ -184,12 +198,14 @@ export default function MaterialPage() {
           </div>
         </div>
         <div className="mt-6 flex gap-4">
-          <button
-            onClick={() => router.push(`/material/${id}/edit`)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Edit Material
-          </button>
+          {user?.role !== "USER_LAPANGAN" && (
+            <button
+              onClick={() => router.push(`/material/${id}/edit`)}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Edit Material
+            </button>
+          )}
           <button
             onClick={() => router.back()}
             className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"

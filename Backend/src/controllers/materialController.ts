@@ -109,20 +109,20 @@ export const deleteMaterial = async (
       return;
     }
 
-    // Cek apakah material ini sedang digunakan di PermintaanDetails
-    // const usedInPermintaan = await prisma.permintaanDetails.findMany({
-    //   where: {
-    //     materialId: parsedId,
-    //   },
-    // });
+    // Cek apakah material ini sedang digunakan di Confirmation Order
+    const usedInConfirmation = await prisma.confirmationDetails.findMany({
+      where: {
+        materialId: parsedId,
+      },
+    });
 
-    // if (usedInPermintaan.length > 0) {
-    //   res.status(400).json({
-    //     error:
-    //       "Material tidak bisa dihapus karena sedang digunakan dalam permintaan lapangan.",
-    //   });
-    //   return;
-    // }
+    if (usedInConfirmation.length > 0) {
+      res.status(400).json({
+        error:
+          "Material tidak bisa dihapus karena sedang digunakan dalam Confirmation Order.",
+      });
+      return;
+    }
 
     // Hapus file jika ada gambar
     const fileName = String(material.image);

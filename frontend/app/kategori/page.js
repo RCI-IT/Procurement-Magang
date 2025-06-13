@@ -1,12 +1,18 @@
 "use client";
 
+// React & Next
 import React, { useState, useEffect } from "react";
-import { fetchWithToken } from "@/services/fetchWithToken";
-import { fetchWithAuth } from "@/services/apiClient";
 import { useRouter } from "next/navigation";
+
+// External Libraries
 import Swal from "sweetalert2";
 import { Eye, Trash2 } from "lucide-react";
+
+// Internal Utilities & Components
+import { fetchWithToken } from "@/services/fetchWithToken";
+import { fetchWithAuth } from "@/services/apiClient";
 import Pagination from "@/component/Pagination";
+import { capitalizeIndonesia } from "@/utils/capitalizeIndonesia";
 
 export default function KategoriPage() {
   const [categories, setCategories] = useState([]);
@@ -105,17 +111,19 @@ export default function KategoriPage() {
 
     if (confirm.isConfirmed) {
       try {
-        const res = await fetch(
+        const res = await fetchWithAuth(
           `${process.env.NEXT_PUBLIC_API_URL}/categories/${id}`,
           {
             method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
           }
         );
 
-        if (!res) throw new Error("Gagal menghapus kategori");
+        if (!res.ok) {
+          const errorData = await res.json();
+          const message = errorData.message || "Gagal menghapus data!";
+          Swal.fire("Gagal!", message, "error");
+          return;
+        }
 
         fetchData();
         Swal.fire("Dihapus!", "Kategori telah dihapus.", "success");
@@ -267,7 +275,9 @@ export default function KategoriPage() {
                   placeholder="Nama kategori"
                   value={newCategoryName}
                   onChange={(e) => {
-                    const name = e.target.value;
+                    const rawName = e.target.value;
+                    const name = capitalizeIndonesia(rawName);
+
                     setNewCategoryName(name);
 
                     const exists = categories.some(
@@ -280,7 +290,6 @@ export default function KategoriPage() {
                   className={`border w-full rounded px-3 py-2 mb-1 ${
                     isDuplicate ? "border-red-500" : "border-gray-300"
                   }`}
-                  // className="border border-gray-300 w-full rounded px-3 py-2 mb-4"
                 />
                 {isDuplicate ? (
                   <p className="text-red-500 text-sm mb-2">

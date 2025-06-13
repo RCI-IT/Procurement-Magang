@@ -59,31 +59,28 @@ const menuItems = [
 ];
 
 export default function Home() {
+  const [user, setUser] = useState(null);
   const router = useRouter();
-  const [role, setRole] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = () => {
-      const loggedIn = localStorage.getItem("isLoggedIn");
-      const token = localStorage.getItem("token");
-      const storedRole = localStorage.getItem("role");
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      setTimeout(() => router.push("/login"), 800);
+      return;
+    }
 
-      if (!loggedIn || !token) {
-        router.push("/login");
-      } else {
-        setRole(storedRole);
-      }
-
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 950);
-    };
-
-    fetchData();
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setTimeout(() => setIsLoading(false), 500);
+    } catch (error) {
+      console.error("User JSON parse error:", error);
+      router.push("/login");
+    }
   }, [router]);
 
-  const filteredMenus = menuItems.filter((item) => item.roles.includes(role));
+  const filteredMenus = menuItems.filter((item) => item.roles.includes(user?.role));
 
   return (
     <div className="p-6 min-h-screen bg-white text-blue-500 flex flex-col items-center">

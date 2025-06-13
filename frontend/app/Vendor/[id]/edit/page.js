@@ -67,9 +67,9 @@ export default function EditVendorPage() {
       return Swal.fire("Oops!", "Semua field wajib diisi", "warning");
     }
 
-    if (vendor.phone.length < 10 || vendor.phone.length > 13) {
-      return Swal.fire("Nomor tidak valid", "Gunakan 10-13 digit angka", "warning");
-    }
+    // if (vendor.phone.length < 10 || vendor.phone.length > 13) {
+    //   return Swal.fire("Nomor tidak valid", "Gunakan 10-13 digit angka", "warning");
+    // }
 
     try {
       const result = await Swal.fire({

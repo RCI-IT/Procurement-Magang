@@ -15,19 +15,73 @@ export default function ConfirmationOrderDetail() {
   const { id } = useParams();
   const [ConfirmationDetails, setCoDetail] = useState(null);
   const [ConfirmationDetail, setCoSDetail] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
   const [selectedItems, setSelectedItems] = useState([]);
   const [token, setToken] = useState(null);
-  const [userRole, setUserRole] = useState(null);
+  const [user, setUser] = useState(null);
+  const [dataSign, setSign] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingButton, setLoadingButton] = useState(false);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) setToken(storedToken);
-    const storedRole = localStorage.getItem("role");
-    if (storedRole) setUserRole(storedRole);
-  }, []);
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      setTimeout(() => router.push("/login"), 800);
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setTimeout(() => setIsLoading(false), 500);
+    } catch (error) {
+      console.error("User JSON parse error:", error);
+      router.push("/login");
+    }
+  }, [router]);
+
+  const handleSign = async (signingRole) => {
+    setLoadingButton(true);
+
+    try {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/signing`;
+
+      const payload = {
+        userId: user?.id,
+        fileType: "CONFIRMATION_ORDER",
+        relatedId: id,
+        role: signingRole,
+      };
+
+      const result = await fetchWithAuth(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      console.log(payload);
+      console.log(result);
+      if (result) {
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil Tanda Tangan",
+          text: result.message || "Tanda tangan berhasil disimpan.",
+          confirmButtonText: "OK",
+        });
+      }
+    } catch (error) {
+      console.error("Error saat tanda tangan:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error?.message || "Terjadi kesalahan saat menyimpan tanda tangan.",
+      });
+    } finally {
+      setLoadingButton(false);
+    }
+  };
 
   const handlePrint = () => {
     window.print();
@@ -155,17 +209,28 @@ export default function ConfirmationOrderDetail() {
         if (!response) throw new Error("Gagal mengambil data dari server");
         setCoDetail(response);
         setCoSDetail(response);
+        const res = await fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/signing/CONFIRMATION_ORDER/${id}`,
+          token,
+          setToken,
+          () => router.push("/login")
+        );
+
+        if (res && res.signatures) {
+          setSign(res.signatures);
+          console.log("ISI dataSign:", res.signatures);
+        }
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
     fetchData();
   }, [id]);
 
-  if (loading) return <p className="text-center text-gray-500">Loading...</p>;
+  if (isLoading) return <p className="text-center text-gray-500">Loading...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
   const totalHarga =
     ConfirmationDetail?.confirmationDetails?.reduce((sum, item) => {
@@ -248,6 +313,10 @@ export default function ConfirmationOrderDetail() {
     </div>
   );
 
+  const getSignatureByRole = (role) => {
+    return dataSign.find((sig) => sig.role === role);
+  };
+
   return (
     <div className="flex h-screen">
       <div className="w-full max-w-6xl mx-auto px-8">
@@ -286,13 +355,14 @@ export default function ConfirmationOrderDetail() {
           <div className="flex justify-between items-start mt-4">
             <div className="flex flex-col items-start space-y-2">
               <Image
-                src="/logo1.png"
+                src={`/procurement/logo1.png`}
                 alt="Logo"
-                width={80}
-                height={80}
-                className="object-contain"
+                width={200}
+                height={200}
+                className="w-10 h-10 object-contain"
+                unoptimized
+                priority
               />
-
               <div>
                 <h4 className="text-blue-900 font-bold text-lg uppercase">
                   PT. REKA CIPTA INOVASI
@@ -376,7 +446,8 @@ export default function ConfirmationOrderDetail() {
                   <th className="border p-2 w-35" rowSpan={2}>
                     Total
                   </th>
-                  {(userRole === "USER_LAPANGAN" || userRole === "ADMIN") && (
+                  {(user?.role === "USER_LAPANGAN" ||
+                    user?.role === "ADMIN") && (
                     <th className="border p-2 w-35 status-header" rowSpan={2}>
                       Aksi
                     </th>
@@ -415,20 +486,23 @@ export default function ConfirmationOrderDetail() {
                         <td className="border px-4 py-2 text-center">
                           Rp{total.toLocaleString()}
                         </td>
-                        <td className="border px-4 py-2 text-center status-column">
-                          {item.status === "ACC" ? (
-                            <span className="text-green-600 font-semibold">
-                              ACC
-                            </span>
-                          ) : (
-                            <input
-                              type="checkbox"
-                              checked={selectedItems.includes(item.id)}
-                              onChange={() => handleCheckboxChange(item.id)}
-                              className="w-6 h-6"
-                            />
-                          )}
-                        </td>
+                        {(user?.role === "USER_LAPANGAN" ||
+                          user?.role === "ADMIN") && (
+                          <td className="border px-4 py-2 text-center status-column">
+                            {item.status === "ACC" ? (
+                              <span className="text-green-600 font-semibold">
+                                ACC
+                              </span>
+                            ) : (
+                              <input
+                                type="checkbox"
+                                checked={selectedItems.includes(item.id)}
+                                onChange={() => handleCheckboxChange(item.id)}
+                                className="w-6 h-6"
+                              />
+                            )}
+                          </td>
+                        )}
                       </tr>
                     );
                   })
@@ -461,7 +535,8 @@ export default function ConfirmationOrderDetail() {
                   >
                     Rp{totalHarga.toLocaleString()}
                   </td>
-                  {(userRole === "USER_LAPANGAN" || userRole === "ADMIN") && (
+                  {(user?.role === "USER_LAPANGAN" ||
+                    user?.role === "ADMIN") && (
                     <td
                       colSpan="1"
                       rowSpan={2}
@@ -502,34 +577,100 @@ export default function ConfirmationOrderDetail() {
               </tr>
 
               <tr className="text-center ">
+                <td className="bg-gray-300 font-semibold border p-2">Dibuat</td>
                 <td className="bg-gray-300 font-semibold border p-2">
-                  Diperiksa
+                  Disetujui
                 </td>
                 <td className="bg-gray-300 font-semibold border p-2 ">
                   Diketahui
                 </td>
-                <td className="bg-gray-300 font-semibold border p-2">Dibuat</td>
               </tr>
               <tr>
-                <td className="border-b-0 border h-24 w-1/4"></td>
-                <td className="border-b-0 border h-24 w-1/4"></td>
-                <td className="border-b-0 border h-24 w-1/4"></td>
+                <td className="border-b-0 border h-24 w-1/4">
+                  {getSignatureByRole("PURCHASING")?.qrCode && (
+                    <img
+                      src={getSignatureByRole("PURCHASING").qrCode}
+                      alt="QR PM"
+                      className="mx-auto w-24"
+                    />
+                  )}
+                </td>
+                <td className="border-b-0 border h-24 w-1/4">
+                  {getSignatureByRole("PIC_LAPANGAN")?.qrCode && (
+                    <img
+                      src={getSignatureByRole("PIC_LAPANGAN").qrCode}
+                      alt="QR PM"
+                      className="mx-auto w-24"
+                    />
+                  )}
+                </td>
+                <td className="border-b-0 border h-24 w-1/4">
+                  {getSignatureByRole("SITE_MANAGER")?.qrCode && (
+                    <img
+                      src={getSignatureByRole("SITE_MANAGER").qrCode}
+                      alt="QR PM"
+                      className="mx-auto w-24"
+                    />
+                  )}
+                </td>
               </tr>
               <tr className="text-center">
                 <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  Nama
+                  {!getSignatureByRole("PURCHASING")
+                    ? user?.authorities?.some(
+                        (auth) =>
+                          auth.fileType === "CONFIRMATION_ORDER" &&
+                          auth.role.toUpperCase() === "PURCHASING"
+                      ) && (
+                        <button
+                          onClick={() => handleSign("PURCHASING")}
+                          disabled={loadingButton}
+                          className="user-button-add"
+                        >
+                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
+                        </button>
+                      )
+                    : user?.fullName}
                 </td>
                 <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  Nama
+                  {!getSignatureByRole("PIC_LAPANGAN")
+                    ? user?.authorities?.some(
+                        (auth) =>
+                          auth.fileType === "CONFIRMATION_ORDER" &&
+                          auth.role.toUpperCase() === "PIC_LAPANGAN"
+                      ) && (
+                        <button
+                          onClick={() => handleSign("PIC_LAPANGAN")}
+                          disabled={loadingButton}
+                          className="user-button-add"
+                        >
+                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
+                        </button>
+                      )
+                    : user?.fullName}
                 </td>
                 <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  Nama
+                  {!getSignatureByRole("SITE_MANAGER")
+                    ? user?.authorities?.some(
+                        (auth) =>
+                          auth.fileType === "CONFIRMATION_ORDER" &&
+                          auth.role.toUpperCase() === "SITE_MANAGER"
+                      ) && (
+                        <button
+                          onClick={() => handleSign("SITE_MANAGER")}
+                          disabled={loadingButton}
+                          className="user-button-add"
+                        >
+                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
+                        </button>
+                      )
+                    : user?.fullName}
                 </td>
               </tr>
               <tr className="text-center bg-gray-300">
-                <td className="border p-2">Project Manager</td>
+                <td className="border p-2">Purchasing</td>
+                <td className="border p-2">PIC Lapangan</td>
                 <td className="border p-2">Site Manager</td>
-                <td className="border p-2">Logistik</td>
               </tr>
             </tbody>
           </table>

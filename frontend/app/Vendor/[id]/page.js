@@ -14,7 +14,6 @@ export default function VendorPage() {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [error, setError] = useState(null);
 
-
   const [token, setToken] = useState(null);
 
   useEffect(() => {
@@ -37,7 +36,11 @@ export default function VendorPage() {
       () => router.push("/login")
     );
 
-    const filteredMaterials = materialsData.filter((item) => String(item.vendorId) === String(vendorId));
+    const filteredMaterials = Array.isArray(materialsData)
+      ? materialsData.filter(
+          (item) => String(item.vendorId) === String(vendorId)
+        )
+      : [];
 
     if (vendorData) setVendor(vendorData);
     if (Array.isArray(filteredMaterials)) setMaterials(filteredMaterials);
@@ -46,7 +49,7 @@ export default function VendorPage() {
 
   useEffect(() => {
     fetchData();
-    setLoading(false)
+    setLoading(false);
   }, [token]);
 
   const fetchData = () => {
@@ -60,7 +63,10 @@ export default function VendorPage() {
 
   if (loading) return <p className="text-center text-blue-500">Loading...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
-  if (!vendor) return <div className="text-center text-gray-500">Vendor tidak ditemukan.</div>
+  if (!vendor)
+    return (
+      <div className="text-center text-gray-500">Vendor tidak ditemukan.</div>
+    );
 
   return (
     <div className="flex min-h-screen bg-gray-100">

@@ -12,11 +12,26 @@ export default function DetailPurchaseOrder() {
   const [data, setData] = useState(null);
   const [PurchaseDetails, setPoDetail] = useState(null);
   const [token, setToken] = useState(null);
+  const [dataSign, setSign] = useState([]);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) setToken(storedToken);
-  }, []);
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      setTimeout(() => router.push("/login"), 800);
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setTimeout(() => setIsLoading(false), 500);
+    } catch (error) {
+      console.error("User JSON parse error:", error);
+      router.push("/login");
+    }
+  }, [router]);
 
   const parseDate = (dateString) => {
     if (!dateString) return { day: "-", month: "-", year: "-" };
@@ -93,6 +108,18 @@ export default function DetailPurchaseOrder() {
           setPoDetail(result);
         } else {
           router.push("/purchase-order");
+        }
+
+        const res = await fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/signing/PL/${id}`,
+          token,
+          setToken,
+          () => router.push("/login")
+        );
+
+        if (res && res.signatures) {
+          setSign(res.signatures);
+          console.log("ISI dataSign:", res.signatures);
         }
       } catch (error) {
         console.error("Gagal mengambil data purchase order:", error);
@@ -182,6 +209,55 @@ export default function DetailPurchaseOrder() {
       const qty = poItem.qty || 0;
       return sum + harga * qty;
     }, 0) || 0;
+
+  const getSignatureByRole = (role) => {
+    return dataSign.find((sig) => sig.role === role);
+  };
+
+  const handleSign = async (signingRole) => {
+    setLoadingButton(true);
+
+    try {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/signing`;
+
+      const payload = {
+        userId: user?.id,
+        fileType: "PURCHASE_ORDER",
+        relatedId: id,
+        role: signingRole,
+      };
+
+      const result = await fetchWithAuth(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      console.log(payload);
+      console.log(result);
+      if (result) {
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil Tanda Tangan",
+          text: result.message || "Tanda tangan berhasil disimpan.",
+          confirmButtonText: "OK",
+        });
+      }
+    } catch (error) {
+      console.error("Error saat tanda tangan:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error?.message || "Terjadi kesalahan saat menyimpan tanda tangan.",
+      });
+    } finally {
+      setLoadingButton(false);
+    }
+  };
+
+  if (isLoading) return <p className="text-center text-gray-500">Loading...</p>;
+
   return (
     <div className="flex h-screen">
       <div className="flex-1 p-6">
@@ -207,7 +283,7 @@ export default function DetailPurchaseOrder() {
           <div className="border-b-4 border-blue-600 mt-4">
             <div className="flex justify-between items-center pb-3">
               <h1 className="text-lg font-bold text-blue-900 uppercase">
-                Company Name
+                Reka Cipta Inovasi
               </h1>
               <h2 className="text-lg font-bold text-blue-900 uppercase">
                 Purchase Order
@@ -334,7 +410,6 @@ export default function DetailPurchaseOrder() {
                 <td colSpan="1" rowSpan={2} className="p-2 text-center border">
                   Rp{totalHarga.toLocaleString()}
                 </td>
-                <td colSpan="1" rowSpan={2}></td>
               </tr>
               <tr>
                 <td
@@ -364,38 +439,104 @@ export default function DetailPurchaseOrder() {
                 </td>
               </tr>
               <tr className="text-center">
+                <td className="bg-gray-300 font-semibold border p-2">Dibuat</td>
                 <td className="bg-gray-300 font-semibold border p-2">
                   Diperiksa
                 </td>
                 <td className="bg-gray-300 font-semibold border p-2">
-                  Diketahui
+                  Disetujui
                 </td>
-                <td className="bg-gray-300 font-semibold border p-2">Dibuat</td>
               </tr>
               <tr>
-                <td className="border-b-0 border h-24 w-1/4"></td>
-                <td className="border-b-0 border h-24 w-1/4"></td>
-                <td className="border-b-0 border h-24 w-1/4"></td>
+                <td className="border-b-0 border h-24 w-1/4">
+                  {getSignatureByRole("PURCHASING")?.qrCode && (
+                    <img
+                      src={getSignatureByRole("PURCHASING").qrCode}
+                      alt="QR PM"
+                      className="mx-auto w-24"
+                    />
+                  )}
+                </td>
+                <td className="border-b-0 border h-24 w-1/4">
+                  {getSignatureByRole("PURCHASING")?.qrCode && (
+                    <img
+                      src={getSignatureByRole("PURCHASING").qrCode}
+                      alt="QR PM"
+                      className="mx-auto w-24"
+                    />
+                  )}
+                </td>
+                <td className="border-b-0 border h-24 w-1/4">
+                  {getSignatureByRole("PURCHASING")?.qrCode && (
+                    <img
+                      src={getSignatureByRole("PURCHASING").qrCode}
+                      alt="QR PM"
+                      className="mx-auto w-24"
+                    />
+                  )}
+                </td>
                 <td className="border-b-0 border h-24 w-1/4"></td>
               </tr>
               <tr className="text-center">
                 <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  Nama
+                  {!getSignatureByRole("PURCHASING")
+                    ? user?.authorities?.some(
+                        (auth) =>
+                          auth.fileType === "PURCHASE_ORDER" &&
+                          auth.role.toUpperCase() === "PURCHASING"
+                      ) && (
+                        <button
+                          onClick={() => handleSign("PURCHASING")}
+                          disabled={loadingButton}
+                          className="user-button-add"
+                        >
+                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
+                        </button>
+                      )
+                    : user?.fullName}
                 </td>
                 <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  Nama
+                  {!getSignatureByRole("FINANCE")
+                    ? user?.authorities?.some(
+                        (auth) =>
+                          auth.fileType === "PURCHASE_ORDER" &&
+                          auth.role.toUpperCase() === "FINANCE"
+                      ) && (
+                        <button
+                          onClick={() => handleSign("FINANCE")}
+                          disabled={loadingButton}
+                          className="user-button-add"
+                        >
+                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
+                        </button>
+                      )
+                    : user?.fullName}
                 </td>
                 <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  Nama
+                  {!getSignatureByRole("DIREKSI")
+                    ? user?.authorities?.some(
+                        (auth) =>
+                          auth.fileType === "PURCHASE_ORDER" &&
+                          auth.role.toUpperCase() === "DIREKSI"
+                      ) && (
+                        <button
+                          onClick={() => handleSign("DIREKSI")}
+                          disabled={loadingButton}
+                          className="user-button-add"
+                        >
+                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
+                        </button>
+                      )
+                    : user?.fullName}
                 </td>
                 <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
                   Nama
                 </td>
               </tr>
               <tr className="text-center bg-gray-300">
-                <td className="border p-2">Project Manager</td>
-                <td className="border p-2">Site Manager</td>
-                <td className="border p-2">Logistik</td>
+                <td className="border p-2">Purchasing</td>
+                <td className="border p-2">Finance</td>
+                <td className="border p-2">Direksi</td>
                 <td className="border p-2">Vendor</td>
               </tr>
             </tbody>

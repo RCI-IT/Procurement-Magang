@@ -35,9 +35,9 @@ export default function AddVendorPage() {
       return Swal.fire("Oops!", "Semua field wajib diisi", "warning");
     }
 
-    if (form.phone.length < 10 || form.phone.length > 13) {
-      return Swal.fire("Nomor tidak valid", "Gunakan 10-13 digit angka", "warning");
-    }
+    // if (form.phone.length < 10 || form.phone.length > 13) {
+    //   return Swal.fire("Nomor tidak valid", "Gunakan 10-13 digit angka", "warning");
+    // }
 
     try {
       const res = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/vendors`, {

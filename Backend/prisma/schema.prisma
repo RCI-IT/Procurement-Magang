@@ -153,7 +153,7 @@ model User {
 }
 
 model SignedBy {
-  id           String     @id
+  id           String     @id @default(uuid())
   signedFileId String
   userId       Int
   role         String
@@ -164,7 +164,7 @@ model SignedBy {
 }
 
 model SignedFile {
-  id        String     @id
+  id        String     @id @default(uuid())
   type      FileType
   relatedId Int
   createdAt DateTime   @default(now())
@@ -174,7 +174,7 @@ model SignedFile {
 }
 
 model SigningAuthority {
-  id       String      @id
+  id       String      @id @default(uuid())
   userId   Int
   fileType FileType
   role     SigningRole

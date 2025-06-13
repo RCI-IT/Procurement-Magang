@@ -1,11 +1,13 @@
 "use client";
 
-import Select from "react-select";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Select from "react-select";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
+
+// ======================== Main Component ========================
 
 export default function AddConfirmationOrder() {
   const [formData, setFormData] = useState({
@@ -16,38 +18,36 @@ export default function AddConfirmationOrder() {
     idVendor: "",
   });
 
+  const [permintaanLapangan, setPermintaanLapangan] = useState([]);
+  const [vendors, setVendors] = useState([]);
   const [allItems, setAllItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
-  const [permintaanLapangan, setPermintaanLapangan] = useState([]);
-  const [vendors, setVendors] = useState([]);
   const [token, setToken] = useState(null);
-
   const router = useRouter();
 
-  // Get token & role on mount
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) setToken(storedToken);
   }, []);
 
-  // Fetch permintaan and vendors
   const getData = useCallback(async () => {
     try {
-      const permintaanData = await fetchWithToken(
-        `${process.env.NEXT_PUBLIC_API_URL}/permintaan`,
-        token,
-        setToken,
-        () => router.push("/login")
-      );
+      const [permintaanData, vendorsData] = await Promise.all([
+        fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/permintaan`,
+          token,
+          setToken,
+          () => router.push("/login")
+        ),
+        fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
+          token,
+          setToken,
+          () => router.push("/login")
+        ),
+      ]);
       setPermintaanLapangan(permintaanData);
-
-      const vendorsData = await fetchWithToken(
-        `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
-        token,
-        setToken,
-        () => router.push("/login")
-      );
       setVendors(vendorsData);
     } catch (error) {
       console.error("Gagal mengambil data:", error);
@@ -59,34 +59,25 @@ export default function AddConfirmationOrder() {
   }, [token, getData]);
 
   useEffect(() => {
-    // Jika PL berubah
     const selectedPL = permintaanLapangan.find(
       (pl) => pl.id === parseInt(formData.idPL)
     );
     setAllItems(selectedPL?.detail || []);
     setSelectedItems([]);
-    if (!selectedPL) return;
 
-    // Jika vendor berubah
-    const vendor = vendors.find((v) => v.id === parseInt(formData.idVendor));
-    setFilteredItems(vendor?.materials || []);
+    const selectedVendor = vendors.find(
+      (v) => v.id === parseInt(formData.idVendor)
+    );
+    setFilteredItems(selectedVendor?.materials || []);
   }, [formData.idPL, formData.idVendor, permintaanLapangan, vendors]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-      idPL: selected?.value || "",
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleItemDetailChange = (itemId, key, value) => {
-    setSelectedItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, [key]: value } : item
-      )
-    );
+  const handleSelectChange = (field, selected) => {
+    setFormData((prev) => ({ ...prev, [field]: selected?.value || "" }));
   };
 
   const toggleItemSelection = (item) => {
@@ -100,8 +91,15 @@ export default function AddConfirmationOrder() {
     );
   };
 
-  const vendor = vendors.find((v) => v.id === parseInt(formData.idVendor));
+  const handleItemDetailChange = (itemId, key, value) => {
+    setSelectedItems((prev) =>
+      prev.map((item) =>
+        item.id === itemId ? { ...item, [key]: value } : item
+      )
+    );
+  };
 
+  const vendor = vendors.find((v) => v.id === parseInt(formData.idVendor));
   const totalHarga = selectedItems.reduce((total, item) => {
     const harga = vendor?.materials.find((m) => m.id === item.id)?.price || 0;
     return total + harga * item.qty;
@@ -112,20 +110,18 @@ export default function AddConfirmationOrder() {
 
     const { nomorCO, lokasiCO, tanggalCO, idPL, idVendor } = formData;
 
-    if (!nomorCO || !lokasiCO || !tanggalCO || !idPL || !idVendor) {
+    if (
+      !nomorCO ||
+      !lokasiCO ||
+      !tanggalCO ||
+      !idPL ||
+      !idVendor ||
+      selectedItems.length === 0
+    ) {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: "Semua kolom harus diisi!",
-      });
-      return;
-    }
-
-    if (selectedItems.length === 0) {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Pilih minimal 1 barang!",
+        text: "Semua kolom dan barang harus diisi!",
       });
       return;
     }
@@ -135,7 +131,7 @@ export default function AddConfirmationOrder() {
         Swal.fire({
           icon: "error",
           title: "Oops...",
-          text: "Pastikan setiap barang memiliki qty > 0 dan satuan!",
+          text: "Pastikan qty & satuan valid!",
         });
         return;
       }
@@ -179,8 +175,6 @@ export default function AddConfirmationOrder() {
         });
         router.back();
       } else {
-        const err = await response.json();
-        console.error("Gagal menambah Confirmation Order:", err);
         Swal.fire({
           icon: "error",
           title: "Gagal",
@@ -188,7 +182,7 @@ export default function AddConfirmationOrder() {
         });
       }
     } catch (error) {
-      console.error("Server error:", error);
+      console.log(error);
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -201,6 +195,7 @@ export default function AddConfirmationOrder() {
     <div className="flex h-screen">
       <div className="flex-1 p-6">
         <h1 className="text-2xl font-bold mb-6">Tambah Confirmation Order</h1>
+
         <form
           onSubmit={handleSubmit}
           className="space-y-4 bg-white p-6 shadow-md rounded-lg"
@@ -229,60 +224,34 @@ export default function AddConfirmationOrder() {
               required
             />
 
-              <ClientOnlySelect
-                options={permintaanLapangan.map((pl) => ({
-                  value: pl.id,
-                  label: pl.nomor,
-                }))}
-                value={
-                  permintaanLapangan
-                    .map((pl) => ({
-                      value: pl.id,
-                      label: pl.nomor,
-                    }))
-                    .find((option) => option.value === formData.idPL) || null
-                }
-                onChange={(selected) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    idPL: selected?.value || "",
-                  }))
-                }
-                placeholder="Permintaan Lapangan"
-                label={"Pilih No PL"}
-              />
+            <ClientOnlySelect
+              label="Pilih No PL"
+              options={permintaanLapangan.map((pl) => ({
+                value: pl.id,
+                label: pl.nomor,
+              }))}
+              value={permintaanLapangan.find(
+                (pl) => pl.id === parseInt(formData.idPL)
+              )}
+              onChange={(selected) => handleSelectChange("idPL", selected)}
+              placeholder="Pilih Permintaan Lapangan"
+            />
           </div>
-          {/* Tabel Detail PL */}
+
           {formData.idPL && <DetailTable allItems={allItems} />}
 
-          {/* Pilih Vendor */}
           {formData.idPL && (
-              <ClientOnlySelect
-                options={vendors.map((vd) => ({
-                  value: vd.id,
-                  label: vd.name,
-                }))}
-                value={
-                  vendors
-                    .map((vd) => ({
-                      value: vd.id,
-                      label: vd.nama,
-                    }))
-                    .find((option) => option.value === formData.idVendor) ||
-                  null
-                }
-                onChange={(selected) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    idVendor: selected?.value || "",
-                  }))
-                }
-                placeholder="Pilih salah satu Vendor"
-                label={"Plih Vendor"}
-              />
+            <ClientOnlySelect
+              label="Pilih Vendor"
+              options={vendors.map((vd) => ({ value: vd.id, label: vd.name }))}
+              value={vendors.find(
+                (vd) => vd.id === parseInt(formData.idVendor)
+              )}
+              onChange={(selected) => handleSelectChange("idVendor", selected)}
+              placeholder="Pilih Vendor"
+            />
           )}
 
-          {/* Pilih Barang */}
           {formData.idVendor && (
             <ItemSelector
               filteredItems={filteredItems}
@@ -292,7 +261,6 @@ export default function AddConfirmationOrder() {
             />
           )}
 
-          {/* Tombol Simpan */}
           <div className="flex justify-between items-center pt-4">
             <button
               type="submit"
@@ -310,7 +278,7 @@ export default function AddConfirmationOrder() {
   );
 }
 
-// Reusable Components
+// ======================== Reusable Components ========================
 
 function InputField({
   label,
@@ -351,34 +319,9 @@ function TextareaField({ label, name, value, onChange, required = false }) {
   );
 }
 
-// function SelectField({ label, name, value, onChange, options }) {
-//   return (
-//     <div>
-//       <label className="block font-medium">{label}</label>
-//       <select
-//         name={name}
-//         value={value}
-//         onChange={onChange}
-//         className="border px-4 py-2 w-full"
-//         required
-//       >
-//         <option value="">Pilih {label}</option>
-//         {options.map((opt) => (
-//           <option key={opt.value} value={opt.value}>
-//             {opt.label}
-//           </option>
-//         ))}
-//       </select>
-//     </div>
-//   );
-// }
-function ClientOnlySelect({ options, value, onChange, placeholder, label }) {
+function ClientOnlySelect({ label, options, value, onChange, placeholder }) {
   const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+  useEffect(() => setMounted(true), []);
   if (!mounted) return null;
 
   return (
@@ -386,17 +329,23 @@ function ClientOnlySelect({ options, value, onChange, placeholder, label }) {
       <label className="block font-medium">{label}</label>
       <Select
         options={options}
-        value={value}
+        value={
+          value ? { value: value.id, label: value.nomor || value.name } : null
+        }
         onChange={onChange}
         placeholder={placeholder}
-        // className="border px-4 py-2 w-full"
         classNames={{
-          control: () => 'border h-10',
-          menu: () => 'bg-white shadow-md',
+          control: () => "border h-10",
+          menu: () => "bg-white shadow-md",
           option: ({ isSelected, isFocused }) =>
-            ` ${isSelected ? 'bg-blue-500 text-white' : isFocused ? 'bg-blue-100' : ''}`,
+            `${
+              isSelected
+                ? "bg-blue-500 text-white"
+                : isFocused
+                ? "bg-blue-100"
+                : ""
+            }`,
         }}
-        required
       />
     </div>
   );
@@ -497,7 +446,7 @@ function ItemSelector({
                     <img
                       src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${item.image}`}
                       alt={item.image}
-                      className="w-16 h-16 object-cover mx-auto"
+                      className="w-32 h-32 object-cover mx-auto"
                     />
                     <TextareaField
                       label="Keterangan"

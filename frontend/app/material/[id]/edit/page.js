@@ -273,12 +273,36 @@ export default function EditMaterial() {
             setValue={setDescription}
             required
           />
-          <SelectField
-            label="Kategori"
-            value={categoryId}
-            setValue={setCategoryId}
-            options={categories}
-            required
+          <Select
+            options={categories.map((c) => ({
+              value: c.id,
+              label: c.name,
+            }))}
+            value={
+              categoryId
+                ? {
+                    value: categoryId,
+                    label: categories.find((v) => v.id === parseInt(categoryId))
+                      ?.name,
+                  }
+                : null
+            }
+            onChange={(selected) => setCategoryId(selected?.value || "")}
+            placeholder="Pilih Kategori"
+            isClearable
+            className="w-full text-sm"
+            classNames={{
+              control: () => "border border-gray-400 rounded min-h-[38px]",
+              menu: () => "bg-white shadow-md text-sm",
+              option: ({ isSelected, isFocused }) =>
+                `px-2 py-1 ${
+                  isSelected
+                    ? "bg-blue-500 text-white"
+                    : isFocused
+                    ? "bg-blue-100"
+                    : ""
+                }`,
+            }}
           />
           <div className="mb-4">
             <label className="block font-medium mb-1">Vendor:</label>
@@ -299,7 +323,19 @@ export default function EditMaterial() {
               onChange={(selected) => setVendorId(selected?.value || "")}
               placeholder="Pilih Vendor"
               isClearable
-              className="text-sm"
+              className="w-full text-sm"
+              classNames={{
+                control: () => "border border-gray-400 rounded min-h-[38px]",
+                menu: () => "bg-white shadow-md text-sm",
+                option: ({ isSelected, isFocused }) =>
+                  `px-2 py-1 ${
+                    isSelected
+                      ? "bg-blue-500 text-white"
+                      : isFocused
+                      ? "bg-blue-100"
+                      : ""
+                  }`,
+              }}
             />
           </div>
 
@@ -358,23 +394,23 @@ function TextAreaField({ label, value, setValue, required = false }) {
   );
 }
 
-function SelectField({ label, value, setValue, options, required = false }) {
-  return (
-    <div>
-      <label className="block text-xl">{label}:</label>
-      <select
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        className="border p-3 w-full rounded-lg"
-        required={required}
-      >
-        <option value="">Pilih {label}</option>
-        {options.map((opt) => (
-          <option key={opt.id} value={opt.id.toString()}>
-            {opt.name}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
+// function SelectField({ label, value, setValue, options, required = false }) {
+//   return (
+//     <div>
+//       <label className="block text-xl">{label}:</label>
+//       <select
+//         value={value}
+//         onChange={(e) => setValue(e.target.value)}
+//         className="border p-3 w-full rounded-lg"
+//         required={required}
+//       >
+//         <option value="">Pilih {label}</option>
+//         {options.map((opt) => (
+//           <option key={opt.id} value={opt.id.toString()}>
+//             {opt.name}
+//           </option>
+//         ))}
+//       </select>
+//     </div>
+//   );
+// }

@@ -7,6 +7,7 @@ import { Eye, EyeOff, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import "../../styles/globals.css";
 import Pagination from "@/component/Pagination";
+import { FaRegEdit } from "react-icons/fa";
 
 function PasswordCell({ password }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,43 +28,43 @@ export default function User() {
   const [sortBy, setSortBy] = useState("username");
   const [currentPage, setCurrentPage] = useState(1);
   const [token, setToken] = useState(null);
+  const [isClient, setIsClient] = useState(false); // Tambahan
   const router = useRouter();
 
+  // Deteksi client side
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const roles = localStorage.getItem("role");
-    if (!storedToken || !roles || roles !== "ADMIN") {
-      router.push("/home");
-      return;
-    }
-    if (storedToken) setToken(storedToken);
+    setIsClient(true);
   }, []);
 
+  // Ambil token setelah yakin client-side
   useEffect(() => {
-    const fetchData = async () => {
-      if (!token) return;
+    if (!isClient) return;
 
-      const getData = async () => {
-        const data = await fetchWithToken(
-          `${process.env.NEXT_PUBLIC_API_URL}/users`,
-          token,
-          setToken,
-          () => router.push("/login")
-        );
+    const storedToken = localStorage.getItem("token");
+    if (!storedToken) {
+      router.push("/login");
+    } else {
+      setToken(storedToken);
+    }
+  }, [isClient, router]);
 
-        if (data) setUsers(data);
-      };
+  // Fetch data setelah token tersedia
+  useEffect(() => {
+    if (!token) return;
 
-      getData();
+    const getData = async () => {
+      const data = await fetchWithToken(
+        `${process.env.NEXT_PUBLIC_API_URL}/users`,
+        token,
+        setToken,
+        () => router.push("/login")
+      );
+
+      if (data) setUsers(data);
     };
 
-    fetchData();
-  }, [token]);
-
-  // useEffect(() => {
-  //   const storedUsername = localStorage.getItem("username");
-  //   if (storedUsername) setUsername(storedUsername);
-  // }, []);
+    getData();
+  }, [token, router]);
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
@@ -73,6 +74,7 @@ export default function User() {
       cancelButtonText: "Batal",
       confirmButtonText: "Ya, Hapus!",
     });
+
     if (!result.isConfirmed) return;
 
     try {
@@ -88,16 +90,14 @@ export default function User() {
       );
 
       if (!response.ok) throw new Error("Gagal menghapus user");
-      else {
-        setUsers((prev) => prev.filter((user) => user.id !== id));
+      setUsers((prev) => prev.filter((user) => user.id !== id));
 
-        Swal.fire({
-          title: "User berhasil dihapus!",
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      }
+      Swal.fire({
+        title: "User berhasil dihapus!",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
     } catch (error) {
       console.error("Error deleting user:", error);
       Swal.fire({
@@ -109,8 +109,9 @@ export default function User() {
     }
   };
 
+  // Proses filter, search, sort
   const filteredUsers =
-    Array.isArray(users) && users.length > 0
+    users.length > 0
       ? users
           .filter((u) =>
             u.username.toLowerCase().includes(searchQuery.toLowerCase())
@@ -120,9 +121,15 @@ export default function User() {
               return a.username.localeCompare(b.username);
             if (sortBy === "role") return a.role.localeCompare(b.role);
             if (sortBy === "newest")
-              return new Date(b.createdAt) - new Date(a.createdAt);
+              return (
+                new Date(b.createdAt).valueOf() -
+                new Date(a.createdAt).valueOf()
+              );
             if (sortBy === "oldest")
-              return new Date(a.createdAt) - new Date(b.createdAt);
+              return (
+                new Date(a.createdAt).valueOf() -
+                new Date(b.createdAt).valueOf()
+              );
             return 0;
           })
       : [];
@@ -132,6 +139,8 @@ export default function User() {
     (currentPage - 1) * rowsToShow,
     currentPage * rowsToShow
   );
+
+  if (!isClient) return null; // Hindari render saat SSR
 
   return (
     <div className="user-container">
@@ -211,7 +220,15 @@ export default function User() {
                       <PasswordCell password={user.password} />
                     </td>
                     <td>{user.role}</td>
-                    <td>
+                    <td className="space-x-2">
+                      <button
+                        onClick={() =>
+                          router.push(`/usercontrol/${user.id}/edit`)
+                        }
+                        className="user-edit-button"
+                      >
+                        <FaRegEdit size={16} />
+                      </button>
                       <button
                         onClick={() => handleDelete(user.id)}
                         className="user-delete-button"
@@ -223,39 +240,6 @@ export default function User() {
                 ))}
               </tbody>
             </table>
-
-            {/* <div className="user-pagination">
-              <nav>
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  disabled={currentPage === 1}
-                >
-                  «
-                </button>
-                {[...Array(totalPages)].map((_, index) => {
-                  const page = index + 1;
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={currentPage === page ? "active" : ""}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages}
-                >
-                  »
-                </button>
-              </nav>
-            </div> */}
 
             <Pagination
               currentPage={currentPage}

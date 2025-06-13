@@ -9,7 +9,7 @@ export const checkDuplicate = async (table, values) => {
       }
     );
 
-    if (!res.ok) throw new Error("Gagal mengambil data user");
+    if (!res.ok) throw new Error("Gagal mengambil data");
     const data = await res.json();
     
     const result = {};

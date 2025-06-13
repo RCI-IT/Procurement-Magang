@@ -8,19 +8,34 @@ import "@/styles/globals.css";
 import Swal from "sweetalert2";
 import { fetchWithAuth } from "../../../services/apiClient";
 import { fetchWithToken } from "../../../services/fetchWithToken";
+import Image from "next/image";
 
 export default function DetailPermintaanLapangan() {
   const { id } = useParams();
   const router = useRouter();
   const [data, setData] = useState(null);
   const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dataSign, setSign] = useState([]);
+  const [loadingButton, setLoadingButton] = useState(false);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) setToken(storedToken);
-  }, []);
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      setTimeout(() => router.push("/login"), 800);
+      return;
+    }
 
-  const [userRole, setUserRole] = useState("");
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setTimeout(() => setIsLoading(false), 500);
+    } catch (error) {
+      console.error("User JSON parse error:", error);
+      router.push("/login");
+    }
+  }, [router]);
 
   const parseDate = (dateString) => {
     if (!dateString) return { day: "-", month: "-", year: "-" };
@@ -148,12 +163,48 @@ export default function DetailPermintaanLapangan() {
         });
     }, 500);
   };
-  useEffect(() => {
-    const storedUserRole = localStorage.getItem("role");
-    if (storedUserRole) {
-      setUserRole(storedUserRole);
+
+  const handleSign = async (signingRole) => {
+    setLoadingButton(true);
+
+    try {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/signing`;
+
+      const payload = {
+        userId: user?.id,
+        fileType: "PERMINTAAN_LAPANGAN",
+        relatedId: id,
+        role: signingRole,
+      };
+
+      const result = await fetchWithAuth(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      console.log(payload);
+      console.log(result);
+      if (result) {
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil Tanda Tangan",
+          text: result.message || "Tanda tangan berhasil disimpan.",
+          confirmButtonText: "OK",
+        });
+      }
+    } catch (error) {
+      console.error("Error saat tanda tangan:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error?.message || "Terjadi kesalahan saat menyimpan tanda tangan.",
+      });
+    } finally {
+      setLoadingButton(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -170,6 +221,18 @@ export default function DetailPermintaanLapangan() {
         } else {
           router.push("/?page=permintaan-lapangan");
         }
+
+        const res = await fetchWithToken(
+          `${process.env.NEXT_PUBLIC_API_URL}/signing/PERMINTAAN_LAPANGAN/${id}`,
+          token,
+          setToken,
+          () => router.push("/login")
+        );
+
+        if (res && res.signatures) {
+          setSign(res.signatures);
+          console.log("ISI dataSign:", res.signatures);
+        }
       } catch (error) {
         console.error("Gagal mengambil data permintaan lapangan:", error);
         router.push("/?page=permintaan-lapangan");
@@ -185,17 +248,31 @@ export default function DetailPermintaanLapangan() {
 
   const { day, month, year } = parseDate(data?.tanggal);
 
+  const getSignatureByRole = (role) => {
+    return dataSign.find((sig) => sig.role === role);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Memuat data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen">
       <div className="flex-1 p-6">
         <div></div>
         <div className="flex justify-end space-x-2 no-print">
-          <button
-            onClick={handleEdit}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
-          >
-            Edit
-          </button>
+          {dataSign.length === 0 && (
+            <button
+              onClick={handleEdit}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
+            >
+              Edit
+            </button>
+          )}
           <button
             onClick={handlePrint}
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32 text-center"
@@ -217,12 +294,15 @@ export default function DetailPermintaanLapangan() {
           <div className="border-b-4 border-blue-600 mt-4">
             <div className="flex justify-between items-center pb-3">
               <div className="flex flex-col items-start space-y-2">
-                <img
-                  src="/logo1.png"
+                <Image
+                  src={`/procurement/logo1.png`}
                   alt="Logo"
+                  width={200}
+                  height={200}
                   className="w-20 h-20 object-contain"
+                  unoptimized
+                  priority
                 />
-
                 <div>
                   <h4 className="text-blue-900 font-bold text-lg uppercase">
                     PT. REKA CIPTA INOVASI
@@ -338,7 +418,8 @@ export default function DetailPermintaanLapangan() {
                       {item.keterangan}
                     </td>
                     <td className="border border-gray-300 p-2 text-center status-column">
-                      {userRole === "ADMIN" || userRole === "USER_PURCHASE" ? (
+                      {user?.role === "ADMIN" ||
+                      user?.role === "USER_PURCHASE" ? (
                         <select
                           value={item.status}
                           onChange={(e) =>
@@ -372,18 +453,20 @@ export default function DetailPermintaanLapangan() {
               )}
 
               <tr className="border-t border-gray-300">
-                <td colSpan="2" rowSpan="4" className="p-2 align-top">
+                <td colSpan="6" rowSpan="4" className="p-2 align-top">
                   <table className="w-full text-sm">
                     <tbody>
                       <tr>
-                        <td className="p-2 font-semibold ">Tanggal Delivery</td>
-                        <td className="p-1 ">:</td>
+                        <td className="p-2 font-semibold w-[30%]">
+                          Tanggal Delivery
+                        </td>
+                        <td className="p-1 w-3">:</td>
                         <td className="p-1">{data.tanggalDelivery || ""}</td>
                       </tr>
                       <tr>
                         <td className="p-2 font-semibold">Lokasi Delivery</td>
                         <td className="p-1">:</td>
-                        <td className="p-1">{data.lokasiDelivery || ""}</td>
+                        <td className="p-1">{data.lokasi || ""}</td>
                       </tr>
                       <tr>
                         <td className="p-2 font-semibold">Catatan</td>
@@ -413,45 +496,89 @@ export default function DetailPermintaanLapangan() {
                   colSpan="3"
                   className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
                 >
-                  Diketahui
+                  Request By
                 </td>
-                <td
+                {/* <td
                   colSpan="2"
                   className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
                 >
                   Dibuat
-                </td>
+                </td> */}
               </tr>
               <tr>
                 <td
                   colSpan="1"
                   className="border border-gray-300 border-b-0 h-16"
-                ></td>
+                >
+                  {getSignatureByRole("ENGINEER_CHECKER")?.qrCode && (
+                    <img
+                      src={getSignatureByRole("ENGINEER_CHECKER").qrCode}
+                      alt="QR PM"
+                      className="mx-auto w-24"
+                    />
+                  )}
+                </td>
                 <td
                   colSpan="3"
                   className="border border-gray-300 border-b-0 h-16"
-                ></td>
-                <td
+                >
+                  {getSignatureByRole("ENGINEER_REQUESTER")?.qrCode && (
+                    <img
+                      src={getSignatureByRole("ENGINEER_REQUESTER").qrCode}
+                      alt="QR PM"
+                      className="mx-auto w-24"
+                    />
+                  )}
+                </td>
+                {/* <td
                   colSpan="2"
                   className="border border-gray-300 border-b-0 h-16"
-                ></td>
+                ></td> */}
               </tr>
               <tr>
                 <td className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  Nama
+                  {!getSignatureByRole("ENGINEER_CHECKER")
+                    ? user?.authorities?.some(
+                        (auth) =>
+                          auth.fileType === "PERMINTAAN_LAPANGAN" &&
+                          auth.role.toUpperCase() === "ENGINEER_CHECKER"
+                      ) && (
+                        <button
+                          onClick={() => handleSign("ENGINEER_CHECKER")}
+                          disabled={loadingButton}
+                          className="user-button-add"
+                        >
+                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
+                        </button>
+                      )
+                    : user?.fullName}
                 </td>
                 <td
                   className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom"
                   colSpan="3"
                 >
-                  Nama
+                  {!getSignatureByRole("ENGINEER_REQUESTER")
+                    ? user?.authorities?.some(
+                        (auth) =>
+                          auth.fileType === "PERMINTAAN_LAPANGAN" &&
+                          auth.role.toUpperCase() === "ENGINEER_REQUESTER"
+                      ) && (
+                        <button
+                          onClick={() => handleSign("ENGINEER_REQUESTER")}
+                          disabled={loadingButton}
+                          className="user-button-add"
+                        >
+                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
+                        </button>
+                      )
+                    : user?.fullName}
                 </td>
-                <td
+                {/* <td
                   className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom"
                   colSpan="2"
                 >
                   Nama
-                </td>
+                </td> */}
               </tr>
 
               <tr>
@@ -467,12 +594,12 @@ export default function DetailPermintaanLapangan() {
                 >
                   Site Manager
                 </td>
-                <td
+                {/* <td
                   colSpan="2"
                   className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
                 >
                   Logistik
-                </td>
+                </td> */}
               </tr>
             </tbody>
           </table>

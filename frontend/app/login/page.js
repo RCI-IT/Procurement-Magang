@@ -35,10 +35,17 @@ export default function LoginPage() {
       const userList = await res.json();
       const validUser = userList.find((user) => user.username === username);
 
-      if (validUser) {
-        localStorage.setItem("username", validUser.username);
-        localStorage.setItem("userRole", validUser.role);
-      }
+      const userData = {
+        id: validUser.id,
+        username: validUser.username,
+        fullName: validUser.fullName,
+        role: validUser.role,
+        authorities: validUser.authorities, 
+        token: data.token,
+      };
+
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("isLoggedIn", "true");
 
       setIsError(false);
       setMessage("Login berhasil!");

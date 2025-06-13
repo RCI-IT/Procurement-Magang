@@ -7,10 +7,10 @@ import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { fetchWithAuth } from "@/services/apiClient";
 import Pagination from "@/component/Pagination";
-import {getCookie} from "@/context/getcookie"
 
 export default function Material() {
-  const [userRole, setUserRole] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [materials, setMaterials] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,11 +22,21 @@ export default function Material() {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const role = getCookie("role");
-    if (storedToken) setToken(storedToken);
-    if (role) setUserRole(role);
-  }, []);
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      setTimeout(() => router.push("/login"), 800);
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setTimeout(() => setIsLoading(false), 500);
+    } catch (error) {
+      console.error("User JSON parse error:", error);
+      router.push("/login");
+    }
+  }, [router]);
 
   const getData = async () => {
     const materialData = await fetchWithToken(
@@ -140,6 +150,14 @@ export default function Material() {
       <div className="text-center text-gray-500">Material tidak ditemukan.</div>
     );
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Memuat data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex flex-1">
@@ -182,7 +200,7 @@ export default function Material() {
                 onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
                 className="border border-gray-300 rounded px-2 py-1 text-sm"
               />
-              {userRole !== "USER_LAPANGAN" && (
+              {user.role !== "USER_LAPANGAN" && (
                 <button
                   onClick={() => router.push("/material/add")}
                   className="bg-blue-500 text-white rounded px-4 py-2"
@@ -262,12 +280,12 @@ export default function Material() {
                           >
                             <Eye className="text-white" />
                           </button>
-                          <button
+                          {user?.role !== "USER_LAPANGAN" &&   <button
                             onClick={() => handleDelete(material.id)}
                             className="bg-red-500 text-white rounded px-2 py-1 ml-2"
                           >
                             <Trash2 className="text-white" />
-                          </button>
+                          </button>}
                         </td>
                       </tr>
                     );

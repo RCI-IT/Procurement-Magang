@@ -7,28 +7,36 @@ import { FaUserCircle } from "react-icons/fa";
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
-  const [username, setUsername] = useState("");
+  const [user, setUser] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Ambil username dari localStorage saat pertama kali render
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {
-      setUsername(storedUsername);
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      setTimeout(() => router.push("/login"), 800);
+      return;
     }
-  }, []);
+
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+    } catch (error) {
+      console.error("User JSON parse error:", error);
+      router.push("/login");
+    }
+  }, [router]);
 
   const handleLogout = async () => {
     try {
-      // panggil backend untuk hapus cookie
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
         method: "POST",
-        credentials: "include", // penting agar cookie ikut terkirim
+        credentials: "include",
       });
     } catch (err) {
       console.error("Gagal logout dari server:", err);
     } finally {
       localStorage.clear();
+      sessionStorage.clear();
       router.push("/login");
     }
   };
@@ -46,17 +54,13 @@ export default function Header() {
   };
 
   const pathSegments = pathname.split("/").filter(Boolean);
-  let breadcrumbs = [];
+  let breadcrumbs = [{ label: "Home", path: "/home" }];
   let currentPath = "";
 
-  // Menambahkan breadcrumb untuk Home secara default
-  breadcrumbs.push({ label: "Home", path: "/home" });
-
-  // Membuat breadcrumbs berdasarkan path
   pathSegments.forEach((segment) => {
     currentPath += `/${segment}`;
-
     let label = "";
+
     if (breadcrumbMap[segment]) {
       label = breadcrumbMap[segment];
     } else if (segment === "add") {
@@ -74,17 +78,12 @@ export default function Header() {
     breadcrumbs.push({ label, path: currentPath });
   });
 
-  // Menangani klik di breadcrumb
   const handleBreadcrumbClick = (path) => {
-    if (
-      path !== pathname &&
-      path !== breadcrumbs[breadcrumbs.length - 1]?.path
-    ) {
+    if (path !== pathname && path !== breadcrumbs[breadcrumbs.length - 1]?.path) {
       router.push(path);
     }
   };
 
-  // Menangani klik di luar dropdown untuk menutupnya
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest(".user-dropdown")) {
@@ -107,12 +106,8 @@ export default function Header() {
             <div key={idx} className="flex items-center gap-2">
               {idx !== 0 && <span>/</span>}
               {idx === breadcrumbs.length - 1 ? (
-                // Breadcrumb yang aktif, tidak bisa diklik
-                <span className="font-semibold text-blue-700">
-                  {crumb.label}
-                </span>
+                <span className="font-semibold text-blue-700">{crumb.label}</span>
               ) : (
-                // Breadcrumb yang bukan aktif bisa diklik
                 <button
                   onClick={() => handleBreadcrumbClick(crumb.path)}
                   className="hover:underline hover:text-blue-600 transition"
@@ -131,7 +126,7 @@ export default function Header() {
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
             <FaUserCircle size={20} className="mr-2" />
-            <span className="mr-2 font-semibold">{username || "User"}</span>
+            <span className="mr-2 font-semibold">{user?.fullName || "User"}</span>
             <span>▼</span>
           </button>
 
@@ -148,7 +143,6 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* CSS untuk animasi dropdown */}
       <style jsx>{`
         @keyframes fadeIn {
           from {
