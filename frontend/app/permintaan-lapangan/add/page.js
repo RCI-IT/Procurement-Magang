@@ -183,9 +183,9 @@ export default function AddPermintaanLapanganForm({}) {
       <div className="flex-1 p-6">
         <h1 className="text-3xl font-bold mb-6">Tambah Permintaan Lapangan</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block font-medium mb-2">Tanggal:</label>
+              <label className="block font-medium mb-1">Tanggal</label>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
@@ -231,23 +231,8 @@ export default function AddPermintaanLapanganForm({}) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block font-medium">PIC Lapangan:</label>
-                <input
-                  type="text"
-                  name="picLapangan"
-                  value={formData.picLapangan}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded px-4 py-2 w-full"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
             <div>
-              <label className="block font-medium">Nomor:</label>
+              <label className="block font-medium mb-1">Nomor</label>
               <input
                 type="text"
                 name="nomor"
@@ -256,8 +241,20 @@ export default function AddPermintaanLapanganForm({}) {
                 className="border border-gray-300 rounded px-4 py-2 w-full"
               />
             </div>
+
             <div>
-              <label className="block font-medium">Lokasi:</label>
+              <label className="block font-medium mb-1">PIC Lapangan</label>
+              <input
+                type="text"
+                name="picLapangan"
+                value={formData.picLapangan}
+                onChange={handleChange}
+                className="border border-gray-300 rounded px-4 py-2 w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block font-medium mb-1">Lokasi</label>
               <textarea
                 name="lokasi"
                 value={formData.lokasi}
@@ -265,22 +262,28 @@ export default function AddPermintaanLapanganForm({}) {
                 className="border border-gray-300 rounded px-4 py-2 w-full"
               />
             </div>
+
           </div>
+          <div className="border rounded p-4">
+            <h2 className="text-xl font-semibold">
+              Detail Permintaan Lapangan
+            </h2>
+            {formData.detail.map((item, index) => (
+              <div key={item.id} className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col">
+                  <label className="block font-medium">
+                    Nama Barang / Jasa:
+                  </label>
 
-          {formData.detail.map((item, index) => (
-            <div key={item.id} className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col">
-                <label className="block font-medium">Nama Barang / Jasa:</label>
-
-                <input
-                  type="text"
-                  value={item.materialName}
-                  onChange={(e) =>
-                    handleDetailChange(index, "materialName", e.target.value)
-                  }
-                  className="border border-gray-300 rounded px-2 py-1 w-full"
-                />
-                {/* <Select
+                  <input
+                    type="text"
+                    value={item.materialName}
+                    onChange={(e) =>
+                      handleDetailChange(index, "materialName", e.target.value)
+                    }
+                    className="border border-gray-300 rounded px-2 py-1 w-full"
+                  />
+                  {/* <Select
                   options={materials.map((material) => ({
                     value: material.id,
                     label: material.name,
@@ -307,92 +310,95 @@ export default function AddPermintaanLapanganForm({}) {
                   className="text-sm"
                 /> */}
 
-                <br />
-
-                <div className="flex flex-col">
-                  <label className="block font-medium">Spesifikasi:</label>
-                  <input
-                    type="text"
-                    value={item.mention}
-                    onChange={(e) =>
-                      handleDetailChange(index, "mention", e.target.value)
-                    }
-                    className="border border-gray-300 rounded px-2 py-1 w-full"
-                  />
                   <br />
+
                   <div className="flex flex-col">
-                    <label className="block font-medium">Code:</label>
+                    <label className="block font-medium">Spesifikasi:</label>
                     <input
                       type="text"
-                      value={item.code}
+                      value={item.mention}
                       onChange={(e) =>
-                        handleDetailChange(index, "code", e.target.value)
+                        handleDetailChange(index, "mention", e.target.value)
+                      }
+                      className="border border-gray-300 rounded px-2 py-1 w-full"
+                    />
+                    <br />
+                    <div className="flex flex-col">
+                      <label className="block font-medium">Code:</label>
+                      <input
+                        type="text"
+                        value={item.code}
+                        onChange={(e) =>
+                          handleDetailChange(index, "code", e.target.value)
+                        }
+                        className="border border-gray-300 rounded px-2 py-1 w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="block font-medium">
+                    Keterangan Detail:
+                  </label>
+                  <textarea
+                    value={item.keterangan}
+                    onChange={(e) =>
+                      handleDetailChange(index, "keterangan", e.target.value)
+                    }
+                    className="border border-gray-300 rounded px-4 py-2 w-full h-24"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <label className="block font-medium">Qty:</label>
+                    <input
+                      type="number"
+                      placeholder="Qty"
+                      value={item.qty}
+                      onChange={(e) =>
+                        handleDetailChange(index, "qty", e.target.value)
+                      }
+                      className="border border-gray-300 rounded px-2 py-1 w-full"
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="block font-medium">Satuan:</label>
+                    <input
+                      type="text"
+                      placeholder="Satuan"
+                      value={item.satuan}
+                      onChange={(e) =>
+                        handleDetailChange(index, "satuan", e.target.value)
                       }
                       className="border border-gray-300 rounded px-2 py-1 w-full"
                     />
                   </div>
                 </div>
-              </div>
 
-              <div className="flex flex-col">
-                <label className="block font-medium">Keterangan Detail:</label>
-                <textarea
-                  value={item.keterangan}
-                  onChange={(e) =>
-                    handleDetailChange(index, "keterangan", e.target.value)
-                  }
-                  className="border border-gray-300 rounded px-4 py-2 w-full h-24"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col">
-                  <label className="block font-medium">Qty:</label>
-                  <input
-                    type="number"
-                    placeholder="Qty"
-                    value={item.qty}
-                    onChange={(e) =>
-                      handleDetailChange(index, "qty", e.target.value)
-                    }
-                    className="border border-gray-300 rounded px-2 py-1 w-full"
-                  />
-                </div>
-
-                <div className="flex flex-col">
-                  <label className="block font-medium">Satuan:</label>
-                  <input
-                    type="text"
-                    placeholder="Satuan"
-                    value={item.satuan}
-                    onChange={(e) =>
-                      handleDetailChange(index, "satuan", e.target.value)
-                    }
-                    className="border border-gray-300 rounded px-2 py-1 w-full"
-                  />
+                <div className="col-span-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => removeDetail(index)}
+                    className="w-32 h-10 bg-red-500 text-white rounded px-4 py-1 hover:bg-red-700"
+                  >
+                    Hapus Detail
+                  </button>
                 </div>
               </div>
+            ))}
 
-              <div className="col-span-2 mt-2">
-                <button
-                  type="button"
-                  onClick={() => removeDetail(index)}
-                  className="bg-red-500 text-white rounded px-4 py-1 hover:bg-red-700"
-                >
-                  Hapus Detail
-                </button>
-              </div>
+            <div className="py-4">
+              <button
+                type="button"
+                onClick={addDetail}
+                className="w-32 h-10 bg-blue-600 text-white rounded py-2 hover:bg-blue-800"
+              >
+                Tambah Detail
+              </button>
             </div>
-          ))}
-
-          <div>
-            <button
-              type="button"
-              onClick={addDetail}
-              className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-800"
-            >
-              Tambah Detail
-            </button>
           </div>
 
           <div>

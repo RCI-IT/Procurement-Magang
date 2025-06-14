@@ -9,7 +9,7 @@ const roleAccess = {
     "/confirmation-order",
     "/material",
     "/permintaan-lapangan",
-    "/vendor"
+    "/vendor",
   ],
   USER_PURCHASE: [
     "/home",
@@ -29,6 +29,11 @@ export function middleware(request) {
 
   const token = request.cookies.get("refreshToken")?.value;
   const role = request.cookies.get("role")?.value;
+  
+  // Redirect / ke /home
+  if (pathname === "") {
+    return NextResponse.redirect(new URL("/home", request.url));
+  }
 
   // Allow public routes
   if (
