@@ -63,11 +63,13 @@ const ConfirmationOrderTable = () => {
   }, []);
 
   useEffect(() => {
-    let filtered = data.filter(
-      (item) =>
-        item.nomorCO?.toLowerCase().includes(search.toLowerCase()) ||
-        item.lokasiCO?.toLowerCase().includes(search.toLowerCase())
-    );
+    let filtered = Array.isArray(data)
+      ? data.filter(
+          (item) =>
+            item.nomorCO?.toLowerCase().includes(search.toLowerCase()) ||
+            item.lokasiCO?.toLowerCase().includes(search.toLowerCase())
+        )
+      : [];
 
     if (sortBy === "terbaru") {
       filtered.sort((a, b) => new Date(a.tanggalCO) - new Date(b.tanggalCO));
@@ -169,7 +171,7 @@ const ConfirmationOrderTable = () => {
           <div className="flex space-x-2">
             <input
               type="text"
-              placeholder="Cari PO..."
+              placeholder="Cari CO..."
               className="border border-gray-300 rounded px-4 py-2 text-sm"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

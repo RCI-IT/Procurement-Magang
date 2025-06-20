@@ -58,11 +58,11 @@ const PurchaseOrderTable = () => {
   }, []);
 
   useEffect(() => {
-    let filtered = data.filter(
+    let filtered = Array.isArray(data) ? data.filter(
       (item) =>
         item.nomorPO?.toLowerCase().includes(search.toLowerCase()) ||
         item.lokasiPO?.toLowerCase().includes(search.toLowerCase())
-    );
+    ): [];
 
     if (sortBy === "terbaru") {
       filtered.sort((a, b) => new Date(a.tanggalPO) - new Date(b.tanggalPO));

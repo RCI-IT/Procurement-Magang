@@ -22,7 +22,7 @@ export const createMaterial = async (
   try {
     console.log("Received Data:", req.body);
 
-    const { name, code, description, price, categoryId, vendorId } = req.body;
+    const { name, unit, code, description, price, categoryId, vendorId } = req.body;
     const parsedCategoryId = parseInt(categoryId, 10);
     const parsedPrice = parseFloat(price);
     const parsedVendorId = parseInt(vendorId, 10);
@@ -43,6 +43,7 @@ export const createMaterial = async (
         image,
         code,
         name,
+        unit,
         description,
         price: parsedPrice,
         categoryId: parsedCategoryId,
@@ -181,6 +182,7 @@ export const editMaterial = async (
     // Ambil data dari req.body jika ada
     if (req.body.code) updateData.code = req.body.code;
     if (req.body.name) updateData.name = req.body.name;
+    if (req.body.unit) updateData.unit = req.body.unit;
     if (req.body.description) updateData.description = req.body.description;
     if (req.body.price) updateData.price = parseFloat(req.body.price);
     if (req.body.categoryId)
@@ -235,6 +237,7 @@ export const getMaterialById = async (
     const formattedResponse = {
       id: material.id,
       name: material.name,
+      unit: material.unit,
       code: material.code,
       description: material.description,
       // price: `Rp ${material.price.toLocaleString("id-ID")}`,

@@ -70,6 +70,8 @@ export default function ConfirmationOrderDetail() {
           confirmButtonText: "OK",
         });
       }
+
+      router.refresh();
     } catch (error) {
       console.error("Error saat tanda tangan:", error);
       Swal.fire({
@@ -206,7 +208,6 @@ export default function ConfirmationOrderDetail() {
           setToken,
           () => router.push("/login")
         );
-        if (!response) throw new Error("Gagal mengambil data dari server");
         setCoDetail(response);
         setCoSDetail(response);
         const res = await fetchWithToken(
@@ -275,12 +276,6 @@ export default function ConfirmationOrderDetail() {
         }
       );
 
-      console.log("Response Status:", response.status);
-
-      if (!response) {
-        throw new Error("Gagal mengkonfirmasi");
-      }
-
       console.log("Response Data:", response);
 
       if (response) {
@@ -322,16 +317,17 @@ export default function ConfirmationOrderDetail() {
       <div className="w-full max-w-6xl mx-auto px-8">
         <div></div>
         <div className="text-right space-x-2">
-          {!ConfirmationDetails?.confirmationDetails?.some(
-            (detail) => detail.status === "ACC"
-          ) && (
-            <button
-              onClick={() => router.push(`/confirmation-order/${id}/edit`)}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
-            >
-              Edit
-            </button>
-          )}
+          {user?.role !== "USER_LAPANGAN" &&
+            !ConfirmationDetails?.confirmationDetails?.some(
+              (detail) => detail.status === "ACC"
+            ) && (
+              <button
+                onClick={() => router.push(`/confirmation-order/${id}/edit`)}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
+              >
+                Edit
+              </button>
+            )}
 
           <button
             onClick={handlePrint}
@@ -350,16 +346,16 @@ export default function ConfirmationOrderDetail() {
         <br></br>
         <div
           id="confirmation-order"
-          className="print-container  mx-auto bg-white rounded-lg p-6"
+          className="print-container mx-auto bg-white rounded-lg p-6"
         >
           <div className="flex justify-between items-start mt-4">
             <div className="flex flex-col items-start space-y-2">
               <Image
-                src={`/procurement/logo1.png`}
+                src={`/assets/logo1.png`}
                 alt="Logo"
-                width={200}
-                height={200}
-                className="w-10 h-10 object-contain"
+                width={150}
+                height={150}
+                className="object-contain"
                 unoptimized
                 priority
               />
@@ -438,6 +434,9 @@ export default function ConfirmationOrderDetail() {
                     Nama Barang
                   </th>
                   <th className="border p-2" rowSpan={2}>
+                    Gambar
+                  </th>
+                  <th className="border p-2" rowSpan={2}>
                     Harga
                   </th>
                   <th className="border p-2 w-12 " colSpan="2">
@@ -475,6 +474,17 @@ export default function ConfirmationOrderDetail() {
                         <td className="border px-4 py-2">{item.code}</td>
                         <td className="border px-4 py-2">
                           {item.material ? item.material.name : "N/A"}
+                        </td>
+                        <td className="border px-4 py-2 flex items-center justify-center">
+                          <Image
+                            src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${material.image}`}
+                            alt={material.image}
+                            width={200}
+                            height={200}
+                            className="w-20 h-20 object-contain"
+                            unoptimized
+                            priority
+                          />
                         </td>
                         <td className="border px-4 py-2 text-center">
                           Rp{harga.toLocaleString()}
@@ -516,7 +526,7 @@ export default function ConfirmationOrderDetail() {
 
                 <tr className="font-semibold">
                   <td
-                    colSpan="4"
+                    colSpan="5"
                     className="bg-blue-600 text-white p-2 text-left"
                   >
                     Terbilang
@@ -548,7 +558,7 @@ export default function ConfirmationOrderDetail() {
                 </tr>
                 <tr>
                   <td
-                    colSpan="4"
+                    colSpan="5"
                     className="border p-2 text-gray-800 bg-white italic text-left"
                   >
                     {terbilang(totalHarga) || "Tidak ada total"}
@@ -630,7 +640,7 @@ export default function ConfirmationOrderDetail() {
                           {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
                         </button>
                       )
-                    : user?.fullName}
+                    : getSignatureByRole("PURCHASING")?.userName}
                 </td>
                 <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
                   {!getSignatureByRole("PIC_LAPANGAN")
@@ -647,7 +657,7 @@ export default function ConfirmationOrderDetail() {
                           {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
                         </button>
                       )
-                    : user?.fullName}
+                    : getSignatureByRole("PIC_LAPANGAN")?.userName}
                 </td>
                 <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
                   {!getSignatureByRole("SITE_MANAGER")
@@ -664,7 +674,7 @@ export default function ConfirmationOrderDetail() {
                           {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
                         </button>
                       )
-                    : user?.fullName}
+                    : getSignatureByRole("SITE_MANAGER")?.userName}
                 </td>
               </tr>
               <tr className="text-center bg-gray-300">

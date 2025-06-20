@@ -131,6 +131,7 @@ export default function EditPurchaseOrder() {
               className="w-full border rounded p-2"
               value={coData.nomorCO}
               onChange={(e) => handleChange(e, "nomorCO")}
+              disabled
             />
           </div>
           <div className="mb-4">

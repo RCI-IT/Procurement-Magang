@@ -101,12 +101,13 @@ model PermintaanDetails {
 }
 
 model Materials {
+  id                  Int                   @id @default(autoincrement())
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
   image               String?
   name                String
+  unit                String                @default("pcs")
   description         String
-  id                  Int                   @id @default(autoincrement())
   price               Int
   categoryId          Int
   vendorId            Int

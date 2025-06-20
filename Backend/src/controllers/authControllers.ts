@@ -82,19 +82,18 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // Kirim token ke client
     res
       .cookie("refreshToken", refreshToken, {
-        httpOnly: true,                 // Agar tidak bisa diakses dari JavaScript
-        secure: true,                   // Hanya dikirim via HTTPS (penting jika domain-mu pakai https atau cross-domain)
-        sameSite: "none",              // Diperlukan jika cookie dikirim lintas domain (cross-site)
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
+        httpOnly: true,
+        secure: false, // ⛔ karena belum HTTPS
+        sameSite: "lax", // ✅ aman untuk HTTP lokal
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .cookie("role", user.role, {
-        httpOnly: false,               // Bisa dibaca di frontend (misalnya untuk tampilan UI)
-        secure: true,                  // Harus true kalau pakai "sameSite: 'none'"
-        sameSite: "none",              // Harus sama dengan refreshToken untuk konsistensi cross-site
+        httpOnly: false,
+        secure: false, // ⛔ sama alasan
+        sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        // sameSite: "lax",
-        // secure: process.env.NODE_ENV === "production",
       })
+
       .json({
         message: "Login successful",
         token, // atau token: token
@@ -109,6 +108,7 @@ export const refresh = async (req: Request, res: Response) => {
   const token = req.cookies.refreshToken;
   if (!token) {
     res.sendStatus(401);
+    return
   }
 
   jwt.verify(

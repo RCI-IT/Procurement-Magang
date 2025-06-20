@@ -150,6 +150,12 @@ export default function MaterialPage() {
                 {material.category || "Tidak ada kategori"}
               </span>
             </p>
+            <p className="text-sm text-gray-500 mb-4">
+              Satuan:{" "}
+              <span className="text-gray-700">
+                {material.unit || "Tidak ada kategori"}
+              </span>
+            </p>
             <h4 className="font-bold text-lg mb-2">Deskripsi</h4>
             <p className="text-gray-700 text-sm">
               {material.description || "Tidak ada deskripsi"}

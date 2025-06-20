@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { fetchWithAuth } from "@/services/apiClient";
+import { checkDuplicate } from "@/utils/duplicate-check";
 // import Select from "react-select";
 
 export default function AddPermintaanLapanganForm({}) {
@@ -127,6 +128,20 @@ export default function AddPermintaanLapanganForm({}) {
     };
 
     console.log(finalData);
+    const nomor = formData.nomor;
+    console.log(nomor);
+    const duplicate = await checkDuplicate("permintaan", { nomor });
+
+    console.log(duplicate.nomor);
+    if (duplicate.nomor) {
+      Swal.fire({
+        icon: "warning",
+        title: "Duplikat Data",
+        text: "Kode Permintaan Lapangan tersebut sudah terdaftar.",
+      });
+      return;
+    }
+
     try {
       const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/permintaan`,
@@ -183,7 +198,7 @@ export default function AddPermintaanLapanganForm({}) {
       <div className="flex-1 p-6">
         <h1 className="text-3xl font-bold mb-6">Tambah Permintaan Lapangan</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-gray-300 rounded">
             <div>
               <label className="block font-medium mb-1">Tanggal</label>
               <div className="flex items-center gap-2">
@@ -262,7 +277,6 @@ export default function AddPermintaanLapanganForm({}) {
                 className="border border-gray-300 rounded px-4 py-2 w-full"
               />
             </div>
-
           </div>
           <div className="border rounded p-4">
             <h2 className="text-xl font-semibold">

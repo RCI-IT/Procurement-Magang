@@ -6,6 +6,7 @@ import Select from "react-select";
 import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
+import { checkDuplicate } from "@/utils/duplicate-check";
 
 // ======================== Main Component ========================
 
@@ -156,6 +157,15 @@ export default function AddConfirmationOrder() {
         };
       }),
     };
+    const duplicate = await checkDuplicate("confirmation", { nomorCO });
+    if (duplicate.nomorCO) {
+      Swal.fire({
+        icon: "warning",
+        title: "Duplikat Data",
+        text: "Kode Confirmation Order tersebut sudah terdaftar.",
+      });
+      return;
+    }
 
     try {
       const response = await fetchWithAuth(
@@ -354,21 +364,21 @@ function ClientOnlySelect({ label, options, value, onChange, placeholder }) {
 function DetailTable({ allItems }) {
   return (
     <div className="border-b pb-4">
-      <h3 className="font-semibold">Detail PL</h3>
-      <table className="table-auto w-full mt-2">
-        <thead>
+      <h3 className="font-semibold">Detail Permintaan Lapangan</h3>
+      <table className="w-full border rounded overflow-hidden">
+        <thead className="bg-gray-100 text-gray-700">
           <tr>
             <th className="px-4 py-2">Kode Barang</th>
             <th className="px-4 py-2">Nama Barang</th>
-            <th className="px-4 py-2">Qty</th>
+            <th className="px-4 py-2 text-right">Qty</th>
           </tr>
         </thead>
         <tbody>
           {allItems.map((item) => (
             <tr key={item.id}>
               <td className="border px-4 py-2">{item.code}</td>
-              <td className="border px-4 py-2">{item.material?.name}</td>
-              <td className="border px-4 py-2">{item.qty}</td>
+              <td className="border px-4 py-2">{item.materialName}</td>
+              <td className="border px-4 py-2 text-right">{item.qty}</td>
             </tr>
           ))}
         </tbody>
@@ -406,13 +416,11 @@ function ItemSelector({
                       label="Qty"
                       type="number"
                       value={selected.qty}
-                      onChange={(e) =>
-                        handleItemDetailChange(
-                          item.id,
-                          "qty",
-                          parseInt(e.target.value)
-                        )
-                      }
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const parsed = parseInt(val);
+                        handleItemDetailChange(item.id, "qty", val === "" ? "" : isNaN(parsed) ? 0 : parsed);
+                      }}
                     />
                     <InputField
                       label="Satuan"

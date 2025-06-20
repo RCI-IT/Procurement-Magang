@@ -33,73 +33,87 @@ export default function Sidebar() {
 
   const menuItems = [
     {
-      id: "home",
-      label: "Home",
-      icon: "🏠",
-      page: "home",
-      roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"],
+      group: "Data Master",
+      roles: ["ADMIN", "USER_PURCHASE", "USER_LAPANGAN"],
+      children: [
+        {
+          id: "kategori",
+          label: "Kategori",
+          icon: "🏷️",
+          page: "kategori",
+          roles: ["ADMIN", "USER_PURCHASE"],
+        },
+        {
+          id: "vendor",
+          label: "Vendor",
+          icon: "🏭",
+          page: "vendor",
+          roles: ["ADMIN", "USER_PURCHASE"],
+        },
+        {
+          id: "material",
+          label: "Material",
+          icon: "📦",
+          page: "material",
+          roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"],
+        },
+      ],
     },
     {
-      id: "material",
-      label: "Material",
-      icon: "📦",
-      page: "material",
-      roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"],
+      group: "Transaksi",
+      roles: ["ADMIN", "USER_PURCHASE", "USER_LAPANGAN"],
+      children: [
+        {
+          id: "permintaan-lapangan",
+          label: "Permintaan Lapangan",
+          icon: "📄",
+          page: "permintaan-lapangan",
+          roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"],
+        },
+        {
+          id: "confirmation-order",
+          label: "Confirmation Order",
+          icon: "✔️",
+          page: "confirmation-order",
+          roles: ["USER_PURCHASE", "ADMIN", "USER_LAPANGAN"],
+        },
+        {
+          id: "purchase-order",
+          label: "Purchase Order",
+          icon: "🛒",
+          page: "purchase-order",
+          roles: ["USER_PURCHASE", "ADMIN"],
+        },
+      ],
     },
     {
-      id: "permintaan-lapangan",
-      label: "Permintaan Lapangan",
-      icon: "📄",
-      page: "permintaan-lapangan",
-      roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"],
+      group: "Lainnya",
+      roles: ["ADMIN", "USER_PURCHASE", "USER_LAPANGAN"],
+      children: [
+        {
+          id: "user-control",
+          label: "Users Control",
+          icon: "👤",
+          page: "usercontrol",
+          roles: ["ADMIN"],
+        },
+        {
+          id: "petunjuk-lapangan",
+          label: "Petunjuk Penggunaan",
+          icon: "📘",
+          page: "petunjuk/user-lapangan",
+          roles: ["USER_LAPANGAN"],
+        },
+        {
+          id: "petunjuk-purchase",
+          label: "Petunjuk Penggunaan",
+          icon: "📘",
+          page: "petunjuk/user-purchasing",
+          roles: ["USER_PURCHASE"],
+        },
+      ],
     },
-    {
-      id: "confirmation-order",
-      label: "Confirmation Order",
-      icon: "✔️",
-      page: "confirmation-order",
-      roles: ["USER_PURCHASE", "ADMIN", "USER_LAPANGAN"],
-    },
-    {
-      id: "purchase-order",
-      label: "Purchase Order",
-      icon: "🛒",
-      page: "purchase-order",
-      roles: ["USER_PURCHASE", "ADMIN"],
-    },
-    {
-      id: "vendor",
-      label: "Vendor",
-      icon: "🏭",
-      page: "vendor",
-      roles: ["ADMIN", "USER_PURCHASE"],
-    },
-    {
-      id: "kategori",
-      label: "Kategori",
-      icon: "🏷️",
-      page: "kategori",
-      roles: ["ADMIN", "USER_PURCHASE"],
-    },
-    {
-      id: "user-control",
-      label: "Users Control",
-      icon: "👤",
-      page: "usercontrol",
-      roles: ["ADMIN"],
-    },
-    {
-      id: "petunjuk",
-      label: "Petunjuk Penggunaan",
-      icon: "📘",
-      page: "petunjuk/user-lapangan",
-      roles: ["USER_LAPANGAN"],
-    }
   ];
-
-  const filteredMenus = menuItems.filter((item) =>
-    item.roles.includes(user?.role)
-  );
 
   if (isLoading) {
     return (
@@ -118,7 +132,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="flex items-center px-4 py-4 bg-white border-b">
         <Image
-          src={`/procurement/logo1.png`}
+          src={`/assets/logo1.png`}
           alt="Logo"
           width={200}
           height={200}
@@ -154,28 +168,53 @@ export default function Sidebar() {
           </div>
 
           <ul className="space-y-1 mt-2">
-            {filteredMenus.map((menu) => {
-              const isActive = pathname.includes(menu.page);
+            {menuItems.map((group, groupIndex) => {
+              // Filter grup berdasarkan role
+              if (!group.roles.includes(user?.role)) return null;
+
+              const visibleChildren = group.children.filter((item) =>
+                item.roles.includes(user?.role)
+              );
+
+              if (visibleChildren.length === 0) return null;
+
               return (
-                <li key={menu.id}>
-                  <button
-                    onClick={() => handleNavigation(menu.page)}
-                    className={`flex items-center w-full px-4 py-2 text-sm rounded transition
-                      ${
-                        isActive
-                          ? "bg-blue-100 font-semibold text-blue-800"
-                          : "hover:bg-blue-100"
-                      }
-                      focus:outline-none`}
-                    title={isMinimized ? menu.label : ""}
-                  >
-                    <span className="text-lg">{menu.icon}</span>
-                    {!isMinimized && <span className="ml-3">{menu.label}</span>}
-                  </button>
+                <li key={groupIndex}>
+                  {!isMinimized && (
+                    <h3 className="text-xs font-semibold text-gray-500 mb-1 ml-2 mt-4">
+                      {group.group}
+                    </h3>
+                  )}
+                  <ul className="space-y-1">
+                    {visibleChildren.map((menu) => {
+                      const isActive = pathname.includes(menu.page);
+                      return (
+                        <li key={menu.id}>
+                          <button
+                            onClick={() => handleNavigation(menu.page)}
+                            className={`flex items-center w-full px-4 py-2 text-sm rounded transition
+                    ${
+                      isActive
+                        ? "bg-blue-100 font-semibold text-blue-800"
+                        : "hover:bg-blue-100"
+                    }
+                    focus:outline-none`}
+                            title={isMinimized ? menu.label : ""}
+                          >
+                            <span className="text-lg">{menu.icon}</span>
+                            {!isMinimized && (
+                              <span className="ml-3">{menu.label}</span>
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </li>
               );
             })}
           </ul>
+
         </div>
       </div>
     </div>

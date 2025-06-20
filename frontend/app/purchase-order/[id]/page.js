@@ -243,6 +243,7 @@ export default function DetailPurchaseOrder() {
           confirmButtonText: "OK",
         });
       }
+      router.refresh()
     } catch (error) {
       console.error("Error saat tanda tangan:", error);
       Swal.fire({

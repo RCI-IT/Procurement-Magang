@@ -127,9 +127,6 @@ export default function DetailPermintaanLapangan() {
       const element = document.getElementById("permintaan-lapangan");
       const backButton = document.getElementById("back-button");
 
-      const statusHeaders = document.querySelectorAll(".status-header");
-      const statusColumns = document.querySelectorAll(".status-column");
-
       if (!element) {
         console.error("Element not found!");
         return;
@@ -137,8 +134,35 @@ export default function DetailPermintaanLapangan() {
 
       if (backButton) backButton.style.visibility = "hidden";
 
-      statusHeaders.forEach((el) => el.classList.add("hidden"));
-      statusColumns.forEach((el) => el.classList.add("hidden"));
+      // Hapus kolom status
+      const hiddenStatusHeaders = [];
+      const hiddenStatusColumns = [];
+
+      const statusHeaders = element.querySelectorAll(".status-header");
+      const statusColumns = element.querySelectorAll(".status-column");
+
+      statusHeaders.forEach((el) => {
+        hiddenStatusHeaders.push({ parent: el.parentNode, el });
+        el.remove();
+      });
+
+      statusColumns.forEach((el) => {
+        hiddenStatusColumns.push({ parent: el.parentNode, el });
+        el.remove();
+      });
+
+      // 🔁 Perbaiki colSpan yang awalnya bergantung pada kolom status
+      const fixColspanCells = [];
+      const allCellsWithColspan = element.querySelectorAll("[colspan]");
+
+      allCellsWithColspan.forEach((cell) => {
+        const originalSpan = parseInt(cell.getAttribute("colspan"), 10);
+        if (originalSpan > 1) {
+          const newSpan = originalSpan - 1;
+          fixColspanCells.push({ cell, originalSpan });
+          cell.setAttribute("colspan", newSpan);
+        }
+      });
 
       element.classList.add("pdf-format");
 
@@ -156,8 +180,19 @@ export default function DetailPermintaanLapangan() {
         .then(() => {
           element.classList.remove("pdf-format");
 
-          statusHeaders.forEach((el) => el.classList.remove("hidden"));
-          statusColumns.forEach((el) => el.classList.remove("hidden"));
+          // Kembalikan kolom status
+          hiddenStatusHeaders.forEach(({ parent, el }) => {
+            parent.appendChild(el);
+          });
+
+          hiddenStatusColumns.forEach(({ parent, el }) => {
+            parent.appendChild(el);
+          });
+
+          // Kembalikan colSpan seperti semula
+          fixColspanCells.forEach(({ cell, originalSpan }) => {
+            cell.setAttribute("colspan", originalSpan);
+          });
 
           if (backButton) backButton.style.visibility = "visible";
         });
@@ -193,6 +228,7 @@ export default function DetailPermintaanLapangan() {
           confirmButtonText: "OK",
         });
       }
+      router.refresh();
     } catch (error) {
       console.error("Error saat tanda tangan:", error);
       Swal.fire({
@@ -295,7 +331,7 @@ export default function DetailPermintaanLapangan() {
             <div className="flex justify-between items-center pb-3">
               <div className="flex flex-col items-start space-y-2">
                 <Image
-                  src={`/procurement/logo1.png`}
+                  src={`/assets/logo1.png`}
                   alt="Logo"
                   width={200}
                   height={200}
@@ -451,157 +487,159 @@ export default function DetailPermintaanLapangan() {
                   </td>
                 </tr>
               )}
+            </tbody>
+          </table>
 
-              <tr className="border-t border-gray-300">
-                <td colSpan="6" rowSpan="4" className="p-2 align-top">
-                  <table className="w-full text-sm">
-                    <tbody>
-                      <tr>
-                        <td className="p-2 font-semibold w-[30%]">
-                          Tanggal Delivery
-                        </td>
-                        <td className="p-1 w-3">:</td>
-                        <td className="p-1">{data.tanggalDelivery || ""}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 font-semibold">Lokasi Delivery</td>
-                        <td className="p-1">:</td>
-                        <td className="p-1">{data.lokasi || ""}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 font-semibold">Catatan</td>
-                        <td className="p-1">:</td>
-                        <td className="p-1">{data.catatan || ""}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 font-semibold">PIC Lapangan</td>
-                        <td className="p-1">:</td>
-                        <td className="p-1">{data.picLapangan || ""}</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 font-semibold">Note</td>
-                        <td className="p-1">:</td>
-                        <td className="p-1">{data.note || ""}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </td>
-                <td
-                  colSpan="1"
-                  className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
-                >
-                  Diperiksa
-                </td>
-                <td
-                  colSpan="3"
-                  className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
-                >
-                  Request By
-                </td>
-                {/* <td
+          <table className="w-full border-collapse text-sm border border-gray-300">
+            <tr className="border-t border-gray-300">
+              <td colSpan="5" rowSpan="4" className="p-2 align-top">
+                <table className="w-full text-sm">
+                  <tbody>
+                    <tr>
+                      <td className="p-2 font-semibold w-[30%]">
+                        Tanggal Delivery
+                      </td>
+                      <td className="p-1 w-3">:</td>
+                      <td className="p-1">{data.tanggalDelivery || ""}</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-semibold">Lokasi Delivery</td>
+                      <td className="p-1">:</td>
+                      <td className="p-1">{data.lokasi || ""}</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-semibold">Catatan</td>
+                      <td className="p-1">:</td>
+                      <td className="p-1">{data.catatan || ""}</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-semibold">PIC Lapangan</td>
+                      <td className="p-1">:</td>
+                      <td className="p-1">{data.picLapangan || ""}</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-semibold">Note</td>
+                      <td className="p-1">:</td>
+                      <td className="p-1">{data.note || ""}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+              <td
+                colSpan="1"
+                className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
+              >
+                Diperiksa
+              </td>
+              <td
+                colSpan="1"
+                className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
+              >
+                Request By
+              </td>
+              {/* <td
                   colSpan="2"
                   className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
                 >
                   Dibuat
                 </td> */}
-              </tr>
-              <tr>
-                <td
-                  colSpan="1"
-                  className="border border-gray-300 border-b-0 h-16"
-                >
-                  {getSignatureByRole("ENGINEER_CHECKER")?.qrCode && (
-                    <img
-                      src={getSignatureByRole("ENGINEER_CHECKER").qrCode}
-                      alt="QR PM"
-                      className="mx-auto w-24"
-                    />
-                  )}
-                </td>
-                <td
-                  colSpan="3"
-                  className="border border-gray-300 border-b-0 h-16"
-                >
-                  {getSignatureByRole("ENGINEER_REQUESTER")?.qrCode && (
-                    <img
-                      src={getSignatureByRole("ENGINEER_REQUESTER").qrCode}
-                      alt="QR PM"
-                      className="mx-auto w-24"
-                    />
-                  )}
-                </td>
-                {/* <td
+            </tr>
+            <tr>
+              <td
+                colSpan="1"
+                className="border border-gray-300 border-b-0 h-16"
+              >
+                {getSignatureByRole("ENGINEER_CHECKER")?.qrCode && (
+                  <img
+                    src={getSignatureByRole("ENGINEER_CHECKER").qrCode}
+                    alt="QR PM"
+                    className="mx-auto w-24"
+                  />
+                )}
+              </td>
+              <td
+                colSpan="1"
+                className="border border-gray-300 border-b-0 h-16"
+              >
+                {getSignatureByRole("ENGINEER_REQUESTER")?.qrCode && (
+                  <img
+                    src={getSignatureByRole("ENGINEER_REQUESTER").qrCode}
+                    alt="QR PM"
+                    className="mx-auto w-24"
+                  />
+                )}
+              </td>
+              {/* <td
                   colSpan="2"
                   className="border border-gray-300 border-b-0 h-16"
                 ></td> */}
-              </tr>
-              <tr>
-                <td className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  {!getSignatureByRole("ENGINEER_CHECKER")
-                    ? user?.authorities?.some(
-                        (auth) =>
-                          auth.fileType === "PERMINTAAN_LAPANGAN" &&
-                          auth.role.toUpperCase() === "ENGINEER_CHECKER"
-                      ) && (
-                        <button
-                          onClick={() => handleSign("ENGINEER_CHECKER")}
-                          disabled={loadingButton}
-                          className="user-button-add"
-                        >
-                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
-                        </button>
-                      )
-                    : user?.fullName}
-                </td>
-                <td
-                  className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom"
-                  colSpan="3"
-                >
-                  {!getSignatureByRole("ENGINEER_REQUESTER")
-                    ? user?.authorities?.some(
-                        (auth) =>
-                          auth.fileType === "PERMINTAAN_LAPANGAN" &&
-                          auth.role.toUpperCase() === "ENGINEER_REQUESTER"
-                      ) && (
-                        <button
-                          onClick={() => handleSign("ENGINEER_REQUESTER")}
-                          disabled={loadingButton}
-                          className="user-button-add"
-                        >
-                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
-                        </button>
-                      )
-                    : user?.fullName}
-                </td>
-                {/* <td
+            </tr>
+            <tr>
+              <td className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
+                {!getSignatureByRole("ENGINEER_CHECKER")
+                  ? user?.authorities?.some(
+                      (auth) =>
+                        auth.fileType === "PERMINTAAN_LAPANGAN" &&
+                        auth.role.toUpperCase() === "ENGINEER_CHECKER"
+                    ) && (
+                      <button
+                        onClick={() => handleSign("ENGINEER_CHECKER")}
+                        disabled={loadingButton}
+                        className="user-button-add"
+                      >
+                        {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
+                      </button>
+                    )
+                  : getSignatureByRole("ENGINEER_CHECKER")?.userName}
+              </td>
+              <td
+                className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom"
+                colSpan="1"
+              >
+                {!getSignatureByRole("ENGINEER_REQUESTER")
+                  ? user?.authorities?.some(
+                      (auth) =>
+                        auth.fileType === "PERMINTAAN_LAPANGAN" &&
+                        auth.role.toUpperCase() === "ENGINEER_REQUESTER"
+                    ) && (
+                      <button
+                        onClick={() => handleSign("ENGINEER_REQUESTER")}
+                        disabled={loadingButton}
+                        className="user-button-add"
+                      >
+                        {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
+                      </button>
+                    )
+                  : getSignatureByRole("ENGINEER_REQUESTER")?.userName}
+              </td>
+              {/* <td
                   className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom"
                   colSpan="2"
                 >
                   Nama
                 </td> */}
-              </tr>
+            </tr>
 
-              <tr>
-                <td
-                  colSpan="1"
-                  className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
-                >
-                  Project Manager
-                </td>
-                <td
-                  colSpan="3"
-                  className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
-                >
-                  Site Manager
-                </td>
-                {/* <td
+            <tr>
+              <td
+                colSpan="1"
+                className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
+              >
+                Project Manager
+              </td>
+              <td
+                colSpan="1"
+                className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
+              >
+                Site Manager
+              </td>
+              {/* <td
                   colSpan="2"
                   className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
                 >
                   Logistik
                 </td> */}
-              </tr>
-            </tbody>
+            </tr>
           </table>
 
           <div className="mt-6">

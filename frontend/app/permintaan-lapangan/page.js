@@ -221,6 +221,14 @@ export default function PermintaanLapangan({}) {
           </div>
 
           <div className="flex space-x-2">
+            {user?.role !== "USER_PURCHASE" && (
+              <button
+                onClick={() => router.push("/permintaan-lapangan/add")}
+                className="bg-blue-500 text-white rounded px-4 py-2 text-sm hover:bg-blue-600"
+              >
+                + Permintaan
+              </button>
+            )}
             <input
               type="text"
               placeholder="Cari nomor..."
@@ -231,14 +239,6 @@ export default function PermintaanLapangan({}) {
               }}
               className="border border-gray-300 rounded px-4 py-2 text-sm"
             />
-            {user?.role !== "USER_PURCHASE" && (
-              <button
-                onClick={() => router.push("/permintaan-lapangan/add")}
-                className="bg-blue-500 text-white rounded px-4 py-2 text-sm hover:bg-blue-600"
-              >
-                + Permintaan
-              </button>
-            )}
           </div>
         </div>
 
@@ -278,12 +278,14 @@ export default function PermintaanLapangan({}) {
                         >
                           <Eye className="text-white" />
                         </button>
-                        <button
-                          className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600"
-                          onClick={() => handleDelete(item.id)}
-                        >
-                          <Trash2 className="text-white" />
-                        </button>
+                        {user.role !== "USER_PURCHASE" && (
+                          <button
+                            className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600"
+                            onClick={() => handleDelete(item.id)}
+                          >
+                            <Trash2 className="text-white" />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );

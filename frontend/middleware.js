@@ -10,6 +10,7 @@ const roleAccess = {
     "/material",
     "/permintaan-lapangan",
     "/vendor",
+    "/petunjuk"
   ],
   USER_PURCHASE: [
     "/home",
@@ -19,6 +20,7 @@ const roleAccess = {
     "/kategori",
     "/vendor",
     "/purchase-order",
+    "/petunjuk",
   ],
 };
 
@@ -90,5 +92,5 @@ export function middleware(request) {
 
 // Terapkan middleware ke semua route kecuali static/api
 export const config = {
-  matcher: ["/((?!_next|static|favicon.ico|api).*)"],
+  matcher: ["/((?!_next|static|assets|guide|favicon.ico|api).*)"],
 };
