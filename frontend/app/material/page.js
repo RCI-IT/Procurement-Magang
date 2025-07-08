@@ -73,7 +73,7 @@ export default function Material() {
         Swal.fire({
           icon: "error",
           title: "Data Masih Kosong",
-          text: "Mohon lengkapi semua data termasuk gambar.",
+          text: "Mohon lengkapi semua data, sebelum tambah material.",
         });
       }
 

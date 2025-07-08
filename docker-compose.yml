@@ -8,10 +8,17 @@ services:
     ports:
       - "5000:5000"
     environment:
-      DATABASE_URL: postgresql://postgres:1234@192.168.110.205:5432/Backend
-    volumes:
-      - ./Backend:/app
-    command: ["npm", "run", "dev"]
+      DATABASE_URL: postgres://postgres:rekaciptainovasi@db:5432/Backend
+      JWT_SECRET: your_secret_key_here
+      JWT_REFRESH_SECRET: refresh_secret_key
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - procurement-net
+    extra_hosts:
+      - "procurement.rci:host-gateway"
+      - "api.procurement.rci:host-gateway"
 
   frontend:
     build:
@@ -26,15 +33,53 @@ services:
       - /app/node_modules
       - /app/.next
     environment:
-      - NEXT_PUBLIC_API_URL=http://procurement.rci/api
+      NEXT_PUBLIC_API_URL: http://procurement.rci/api  # Sesuaikan dengan reverse proxy nginx
+    depends_on:
+      - backend
+    networks:
+      - procurement-net
+    extra_hosts:
+      - "procurement.rci:host-gateway"
+
+  db:
+    image: postgres:15
+    container_name: postgresdb
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: rekaciptainovasi
+      POSTGRES_DB: Backend
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - procurement-net
+    extra_hosts:
+      - "procurement.rci:host-gateway"
+      - "api.procurement.rci:host-gateway"
 
   nginx:
     image: nginx:latest
     container_name: procurementnginx
+    restart: unless-stopped
     ports:
       - "80:80"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
     depends_on:
-      - backend
       - frontend
+      - backend
+    networks:
+      - procurement-net
+
+volumes:
+  postgres_data:
+
+networks:
+  procurement-net:
