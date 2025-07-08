@@ -9,9 +9,9 @@ export const createConfirmationOrder = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { nomorCO, tanggalCO, lokasiCO, permintaanId, items } = req.body;
+    const { nomorCO, tanggalCO, lokasiCO, permintaanId, items, vendorId } = req.body;
 
-    // Validasi input untuk pastikan data yang diperlukan lengkap
+    // ✅ 1. Validasi input
     if (
       !nomorCO ||
       !tanggalCO ||
@@ -26,16 +26,25 @@ export const createConfirmationOrder = async (
       return;
     }
 
+    // ✅ 2. Cek Permintaan
     const existingPermintaan = await prisma.permintaanLapangan.findUnique({
       where: { id: permintaanId },
     });
-
     if (!existingPermintaan) {
       res.status(400).json({ message: "Permintaan tidak ditemukan" });
       return;
     }
 
-    // Validasi untuk setiap item, memastikan semua field yang diperlukan ada
+    // ✅ 3. Cek Vendor
+    const vendor = await prisma.vendors.findUnique({
+      where: { id: Number(vendorId) },
+    });
+    if (!vendor) {
+      res.status(404).json({ error: "Vendor tidak ditemukan" });
+      return;
+    }
+
+    // ✅ 4. Validasi Items
     const validatedItems = items.map((item: any) => {
       if (
         !item.materialId ||
@@ -58,7 +67,7 @@ export const createConfirmationOrder = async (
       };
     });
 
-    // Buat confirmation order jika semua validasi sukses
+    // ✅ 5. Buat Confirmation Order
     const confirmationOrder = await prisma.confirmationOrder.create({
       data: {
         nomorCO,
@@ -67,25 +76,24 @@ export const createConfirmationOrder = async (
         permintaan: {
           connect: { id: permintaanId },
         },
+        vendor: {
+          connect: { id: vendor.id }, // ✅ Penting: sambungkan vendor
+        },
         confirmationDetails: {
           create: validatedItems,
         },
       },
       include: {
-        permintaan: true, // ← penting
+        permintaan: true,
         confirmationDetails: {
           include: {
-            material: {
-              include: {
-                vendor: true, // kalau kamu juga ingin info vendor
-              },
-            },
+            material: true,
           },
         },
       },
     });
 
-    // Respons sukses
+    // ✅ 6. Response
     res.status(201).json({
       message: "Confirmation Order berhasil dibuat",
       confirmationOrder,
@@ -98,6 +106,7 @@ export const createConfirmationOrder = async (
     });
   }
 };
+
 // GET All Confirmation Orders
 export const getAllConfirmationOrders = async (
   _req: Request,
@@ -140,11 +149,7 @@ export const getConfirmationOrderById = async (
       include: {
         confirmationDetails: {
           include: {
-            material: {
-              include: {
-                vendor: true,
-              },
-            },
+            material: true,
           },
         },
         permintaan: true,
@@ -342,7 +347,7 @@ export const accConfirmationDetails = async (
     const confirmationOrderId = details[0].confirmationOrderId;
 
     const isSameConfirmationOrder = details.every(
-      (d) => d.confirmationOrderId === confirmationOrderId
+      (d: any) => d.confirmationOrderId === confirmationOrderId
     );
     if (!isSameConfirmationOrder) {
       res.status(400).json({
@@ -390,14 +395,14 @@ export const accConfirmationDetails = async (
         data: {
           nomorPO,
           tanggalPO: today,
-          lokasiPO: details[0].confirmationOrder.lokasiCO,
+          // lokasiPO: details[0].confirmationOrder.lokasiCO,
           confirmationOrderId,
         },
       });
     }
 
     const newPurchaseDetails = await Promise.all(
-      details.map((detail) =>
+      details.map((detail: any) =>
         prisma.purchaseDetails.create({
           data: {
             purchaseOrderId: existingPO!.id,

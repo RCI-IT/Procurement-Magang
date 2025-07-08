@@ -1,0 +1,14 @@
+services:
+  backend:
+    build: ./
+    container_name: ProcurementBackend
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://postgres:rekaciptainovasi@db:5432/Backend
+      SECRET_KEY : "secret_key"
+      JWT_SECRET: your_secret_key_here
+      JWT_REFRESH_SECRET: refresh_secret_key
+    volumes:
+      - .:/app
+    command: ["npm", "run", "dev"]

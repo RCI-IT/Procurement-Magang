@@ -4,11 +4,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import "@/styles/globals.css";
-import html2pdf from "html2pdf.js";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
-import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
+import { pdf } from "@react-pdf/renderer";
+import { ConfirmOrderPDF } from "./ConfrimOrderPDF";
 import Image from "next/image";
 
 export default function ConfirmationOrderDetail() {
@@ -18,7 +18,6 @@ export default function ConfirmationOrderDetail() {
   const [error, setError] = useState(null);
   const router = useRouter();
   const [selectedItems, setSelectedItems] = useState([]);
-  const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [dataSign, setSign] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,6 +52,7 @@ export default function ConfirmationOrderDetail() {
         relatedId: id,
         role: signingRole,
       };
+      console.log("Mengirim payload:", payload);
 
       const result = await fetchWithAuth(url, {
         method: "POST",
@@ -60,21 +60,27 @@ export default function ConfirmationOrderDetail() {
         body: JSON.stringify(payload),
       });
 
-      console.log(payload);
-      console.log(result);
-      if (result) {
-        Swal.fire({
-          icon: "success",
-          title: "Berhasil Tanda Tangan",
-          text: result.message || "Tanda tangan berhasil disimpan.",
-          confirmButtonText: "OK",
-        });
+      if (!result) {
+        throw new Error("Respon dari server kosong.");
       }
 
-      router.refresh();
+      if (result?.error) {
+        throw new Error(result?.error || "Gagal menyimpan tanda tangan.");
+      }
+
+      const alertResult = await Swal.fire({
+        icon: "success",
+        title: "Berhasil Tanda Tangan",
+        text: result?.message || "Tanda tangan berhasil disimpan.",
+        confirmButtonText: "OK",
+      });
+
+      if (alertResult.isConfirmed) {
+        fetchData();
+      }
     } catch (error) {
       console.error("Error saat tanda tangan:", error);
-      Swal.fire({
+      await Swal.fire({
         icon: "error",
         title: "Error",
         text:
@@ -89,46 +95,24 @@ export default function ConfirmationOrderDetail() {
     window.print();
   };
 
-  const handleDownloadPDF = () => {
-    setTimeout(() => {
-      const element = document.getElementById("confirmation-order");
-      const backButton = document.getElementById("back-button");
-
-      const statusHeaders = document.querySelectorAll(".status-header");
-      const statusColumns = document.querySelectorAll(".status-column");
-
-      if (!element) {
-        console.error("Element not found!");
-        return;
-      }
-
-      if (backButton) backButton.style.visibility = "hidden";
-
-      statusHeaders.forEach((el) => el.classList.add("hidden"));
-      statusColumns.forEach((el) => el.classList.add("hidden"));
-
-      element.classList.add("pdf-format");
-
-      html2pdf()
-        .set({
-          margin: 10,
-          filename: `confirmation-order-${id || "unknown"}.pdf`,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-          printMediaType: true,
-        })
-        .from(element)
-        .save()
-        .then(() => {
-          element.classList.remove("pdf-format");
-
-          statusHeaders.forEach((el) => el.classList.remove("hidden"));
-          statusColumns.forEach((el) => el.classList.remove("hidden"));
-
-          if (backButton) backButton.style.visibility = "visible";
-        });
-    }, 500);
+  const handleGeneratePDF = async () => {
+    setLoadingButton(true);
+    try {
+      const blob = await pdf(
+        <ConfirmOrderPDF
+          data={ConfirmationDetail}
+          totalHarga={totalHarga}
+          dataSign={dataSign}
+        />
+      ).toBlob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank"); // <-- Langsung buka tab baru
+    } catch (error) {
+      console.error(error);
+      alert("Gagal membuat PDF");
+    } finally {
+      setLoadingButton(false);
+    }
   };
 
   const terbilang = (angka) => {
@@ -197,36 +181,33 @@ export default function ConfirmationOrderDetail() {
     return hasil.trim() + " Rupiah";
   };
 
+  const fetchData = async () => {
+    try {
+      const confirm = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`,
+        { method: "GET" }
+      );
+      const confirmation = await confirm.json();
+      setCoDetail(confirmation);
+      setCoSDetail(confirmation);
+      const signing = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/signing/CONFIRMATION_ORDER/${id}`,
+        { method: "GET" }
+      );
+      const res = await signing.json();
+
+      if (res && res.signatures) {
+        setSign(res.signatures);
+        console.log("ISI dataSign:", res.signatures);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   useEffect(() => {
     if (!id) return;
-
-    const fetchData = async () => {
-      try {
-        const response = await fetchWithToken(
-          `${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`,
-          token,
-          setToken,
-          () => router.push("/login")
-        );
-        setCoDetail(response);
-        setCoSDetail(response);
-        const res = await fetchWithToken(
-          `${process.env.NEXT_PUBLIC_API_URL}/signing/CONFIRMATION_ORDER/${id}`,
-          token,
-          setToken,
-          () => router.push("/login")
-        );
-
-        if (res && res.signatures) {
-          setSign(res.signatures);
-          console.log("ISI dataSign:", res.signatures);
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
 
     fetchData();
   }, [id]);
@@ -320,7 +301,7 @@ export default function ConfirmationOrderDetail() {
           {user?.role !== "USER_LAPANGAN" &&
             !ConfirmationDetails?.confirmationDetails?.some(
               (detail) => detail.status === "ACC"
-            ) && (
+            ) || dataSign.length < 1 && (
               <button
                 onClick={() => router.push(`/confirmation-order/${id}/edit`)}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
@@ -336,10 +317,10 @@ export default function ConfirmationOrderDetail() {
             Cetak
           </button>
           <button
-            onClick={handleDownloadPDF}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32 text-center"
+            onClick={handleGeneratePDF}
+            className="bg-red-500 text-white rounded hover:bg-red-600 px-4 py-2"
           >
-            Simpan PDF
+            {loadingButton ? "Memproses…" : "Buat PDF"}
           </button>
         </div>
         <br></br>

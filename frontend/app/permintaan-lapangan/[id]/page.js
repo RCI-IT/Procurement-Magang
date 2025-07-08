@@ -3,22 +3,22 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import html2pdf from "html2pdf.js";
 import "@/styles/globals.css";
 import Swal from "sweetalert2";
 import { fetchWithAuth } from "../../../services/apiClient";
-import { fetchWithToken } from "../../../services/fetchWithToken";
+import { PermintaanPDF } from "./PermintaanPDF";
+import { pdf } from "@react-pdf/renderer";
 import Image from "next/image";
 
 export default function DetailPermintaanLapangan() {
   const { id } = useParams();
   const router = useRouter();
   const [data, setData] = useState(null);
-  const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [dataSign, setSign] = useState([]);
   const [loadingButton, setLoadingButton] = useState(false);
+  const [dataFetched, setDataFetched] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -41,7 +41,6 @@ export default function DetailPermintaanLapangan() {
     if (!dateString) return { day: "-", month: "-", year: "-" };
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return { day: "-", month: "-", year: "-" };
-
     const day = date.getDate().toString().padStart(2, "0");
     const monthNames = [
       "Januari",
@@ -65,55 +64,44 @@ export default function DetailPermintaanLapangan() {
   const handleEdit = () => {
     router.push(`/permintaan-lapangan/${id}/edit`);
   };
+
   const handleStatusChange = async (itemId, newStatus) => {
     try {
       const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/permintaan/${itemId}/status`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: newStatus }),
         }
       );
-
-      // const result = await response.json();
+      const result = await response.json();
 
       if (response.ok) {
-        // Update the status in the local state
         setData((prevData) => {
           const updatedDetail = prevData.detail.map((item) =>
             item.id === itemId ? { ...item, status: newStatus } : item
           );
           return { ...prevData, detail: updatedDetail };
         });
-
-        // SweetAlert for success
         Swal.fire({
           icon: "success",
           title: "Status berhasil diperbarui",
-          text: `Status telah diubah menjadi ${newStatus}`,
-          confirmButtonText: "OK",
+          text: `Status telah diubah menjadi ${newStatus}.`,
         });
       } else {
-        // SweetAlert for error
         Swal.fire({
           icon: "error",
           title: "Gagal memperbarui status",
-          text: result.error || "Terjadi kesalahan dalam memperbarui status.",
-          confirmButtonText: "OK",
+          text: result?.error || "Terjadi kesalahan dalam memperbarui status.",
         });
       }
     } catch (error) {
-      console.error("Error updating status:", error);
-
-      // SweetAlert for exception
+      console.error(error);
       Swal.fire({
         icon: "error",
         title: "Error",
         text: "Terjadi kesalahan, coba lagi.",
-        confirmButtonText: "OK",
       });
     }
   };
@@ -122,115 +110,59 @@ export default function DetailPermintaanLapangan() {
     window.print();
   };
 
-  const handleDownloadPDF = () => {
-    setTimeout(() => {
-      const element = document.getElementById("permintaan-lapangan");
-      const backButton = document.getElementById("back-button");
-
-      if (!element) {
-        console.error("Element not found!");
-        return;
-      }
-
-      if (backButton) backButton.style.visibility = "hidden";
-
-      // Hapus kolom status
-      const hiddenStatusHeaders = [];
-      const hiddenStatusColumns = [];
-
-      const statusHeaders = element.querySelectorAll(".status-header");
-      const statusColumns = element.querySelectorAll(".status-column");
-
-      statusHeaders.forEach((el) => {
-        hiddenStatusHeaders.push({ parent: el.parentNode, el });
-        el.remove();
-      });
-
-      statusColumns.forEach((el) => {
-        hiddenStatusColumns.push({ parent: el.parentNode, el });
-        el.remove();
-      });
-
-      // 🔁 Perbaiki colSpan yang awalnya bergantung pada kolom status
-      const fixColspanCells = [];
-      const allCellsWithColspan = element.querySelectorAll("[colspan]");
-
-      allCellsWithColspan.forEach((cell) => {
-        const originalSpan = parseInt(cell.getAttribute("colspan"), 10);
-        if (originalSpan > 1) {
-          const newSpan = originalSpan - 1;
-          fixColspanCells.push({ cell, originalSpan });
-          cell.setAttribute("colspan", newSpan);
-        }
-      });
-
-      element.classList.add("pdf-format");
-
-      html2pdf()
-        .set({
-          margin: 10,
-          filename: `permintaan-lapangan-${id || "unknown"}.pdf`,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-          printMediaType: true,
-        })
-        .from(element)
-        .save()
-        .then(() => {
-          element.classList.remove("pdf-format");
-
-          // Kembalikan kolom status
-          hiddenStatusHeaders.forEach(({ parent, el }) => {
-            parent.appendChild(el);
-          });
-
-          hiddenStatusColumns.forEach(({ parent, el }) => {
-            parent.appendChild(el);
-          });
-
-          // Kembalikan colSpan seperti semula
-          fixColspanCells.forEach(({ cell, originalSpan }) => {
-            cell.setAttribute("colspan", originalSpan);
-          });
-
-          if (backButton) backButton.style.visibility = "visible";
-        });
-    }, 500);
+  const handleGeneratePDF = async () => {
+    setLoadingButton(true);
+    try {
+      const blob = await pdf(
+        <PermintaanPDF
+          data={data}
+          dataSign={dataSign}
+        />
+      ).toBlob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank"); // <-- Langsung buka tab baru
+    } catch (error) {
+      console.error(error);
+      alert("Gagal membuat PDF");
+    } finally {
+      setLoadingButton(false);
+    }
   };
-
   const handleSign = async (signingRole) => {
     setLoadingButton(true);
-
     try {
       const url = `${process.env.NEXT_PUBLIC_API_URL}/signing`;
-
       const payload = {
         userId: user?.id,
         fileType: "PERMINTAAN_LAPANGAN",
         relatedId: id,
         role: signingRole,
       };
-
       const result = await fetchWithAuth(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      console.log(payload);
-      console.log(result);
-      if (result) {
-        Swal.fire({
-          icon: "success",
-          title: "Berhasil Tanda Tangan",
-          text: result.message || "Tanda tangan berhasil disimpan.",
-          confirmButtonText: "OK",
-        });
+      if (!result) {
+        throw new Error("Respon dari server kosong.");
       }
-      router.refresh();
+
+      if (result?.error) {
+        throw new Error(result?.error || "Gagal menyimpan tanda tangan.");
+      }
+
+      const alertResult = await Swal.fire({
+        icon: "success",
+        title: "Berhasil Tanda Tangan",
+        text: result?.message || "Tanda tangan berhasil disimpan.",
+        confirmButtonText: "OK",
+      });
+
+      if (alertResult.isConfirmed) {
+        fetchData();
+      }
     } catch (error) {
-      console.error("Error saat tanda tangan:", error);
+      console.error(error);
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -242,52 +174,43 @@ export default function DetailPermintaanLapangan() {
     }
   };
 
+  const fetchData = async () => {
+    try {
+      const permintaan = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`,
+        { method: "GET" }
+      );
+      const permintaanLap = await permintaan.json();
+      setData(permintaanLap);
+
+      const signing = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/signing/PERMINTAAN_LAPANGAN/${id}`,
+        { method: "GET" }
+      );
+      const res = await signing.json();
+      setSign(Array.isArray(res.signatures) ? res.signatures : []);
+
+      setDataFetched(true);
+    } catch (error) {
+      console.error(error);
+      setDataFetched(false);
+    }
+  };
   useEffect(() => {
     if (!id) return;
-    const fetchData = async () => {
-      try {
-        const result = await fetchWithToken(
-          `${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`,
-          token,
-          setToken,
-          () => router.push("/login")
-        );
-        if (result) {
-          setData(result);
-        } else {
-          router.push("/?page=permintaan-lapangan");
-        }
 
-        const res = await fetchWithToken(
-          `${process.env.NEXT_PUBLIC_API_URL}/signing/PERMINTAAN_LAPANGAN/${id}`,
-          token,
-          setToken,
-          () => router.push("/login")
-        );
-
-        if (res && res.signatures) {
-          setSign(res.signatures);
-          console.log("ISI dataSign:", res.signatures);
-        }
-      } catch (error) {
-        console.error("Gagal mengambil data permintaan lapangan:", error);
-        router.push("/?page=permintaan-lapangan");
-      }
-    };
     fetchData();
   }, [id, router]);
 
-  if (!data)
+  if (!data) {
     return (
       <p className="text-red-500 text-center mt-10">Data tidak ditemukan</p>
     );
+  }
 
   const { day, month, year } = parseDate(data?.tanggal);
-
-  const getSignatureByRole = (role) => {
-    return dataSign.find((sig) => sig.role === role);
-  };
-
+  const getSignatureByRole = (role) =>
+    dataSign.find((sig) => sig.role === role);
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -295,20 +218,20 @@ export default function DetailPermintaanLapangan() {
       </div>
     );
   }
-
   return (
     <div className="flex h-screen">
       <div className="flex-1 p-6">
         <div></div>
         <div className="flex justify-end space-x-2 no-print">
-          {dataSign.length === 0 && (
-            <button
-              onClick={handleEdit}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
-            >
-              Edit
-            </button>
-          )}
+          {user?.role === "USER_PURCHASE" ||
+            (dataSign.length === 0 || data.status === 'READ'&& (
+              <button
+                onClick={handleEdit}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
+              >
+                Edit
+              </button>
+            ))}
           <button
             onClick={handlePrint}
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32 text-center"
@@ -316,10 +239,11 @@ export default function DetailPermintaanLapangan() {
             Cetak
           </button>
           <button
-            onClick={handleDownloadPDF}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32 text-center"
+            onClick={handleGeneratePDF}
+            className="bg-red-500 text-white rounded hover:bg-red-600 px-4 py-2"
+            disabled={loadingButton || !dataFetched}
           >
-            Simpan PDF
+            {loadingButton ? "Memproses…" : "Buat PDF"}
           </button>
         </div>
 
@@ -344,7 +268,8 @@ export default function DetailPermintaanLapangan() {
                     PT. REKA CIPTA INOVASI
                   </h4>
                   <p className="text-sm text-gray-700">
-                    Jl. Aluminium Perumahan Gatot Subroto Town House No. 5<br />
+                    Jl. Aluminium Perumahan Gatot Subroto Town House No. 5
+                    <br />
                     Kel. Sei Sikambing C II, Kec. Medan Helvetia, Medan
                     <br />
                     Sumatera Utara, 20213
@@ -355,7 +280,6 @@ export default function DetailPermintaanLapangan() {
                 <h2 className="text-2xl font-bold text-blue-900 mb-2 text-center">
                   PERMINTAAN LAPANGAN
                 </h2>
-
                 <div className="border border-gray-300">
                   <table className="border-collapse w-full">
                     <tbody>
@@ -381,57 +305,55 @@ export default function DetailPermintaanLapangan() {
               </div>
             </div>
           </div>
-          <br></br>
-          <br></br>
           <table className="w-full border-collapse mt-4 text-sm border border-gray-300">
             <thead className="bg-blue-700 text-white">
               <tr>
                 <th
-                  rowSpan="2"
+                  rowSpan={2}
                   className="border border-gray-300 px-2 text-center"
                 >
                   No.
                 </th>
                 <th
-                  rowSpan="2"
+                  rowSpan={2}
                   className="border border-gray-300 px-2 text-center"
                 >
                   Nama Barang / Jasa
                 </th>
                 <th
-                  rowSpan="2"
+                  rowSpan={2}
                   className="border border-gray-300 px-2 text-center"
                 >
                   Spesifikasi
                 </th>
                 <th
-                  rowSpan="2"
+                  rowSpan={2}
                   className="border border-gray-300 px-2 text-center"
                 >
-                  code
+                  Code
                 </th>
                 <th
-                  colSpan="2"
+                  colSpan={2}
                   className="border border-gray-300 p-2 text-center"
                 >
                   Permintaan
                 </th>
                 <th
-                  rowSpan="2"
+                  rowSpan={2}
                   className="border border-gray-300 px-2 text-center"
                 >
                   Keterangan
                 </th>
                 <th
-                  rowSpan="2"
+                  rowSpan={2}
                   className="border border-gray-300 px-2 text-center status-header"
                 >
                   Status
                 </th>
               </tr>
               <tr>
-                <th className="border border- p-2 text-center">QTY</th>
-                <th className="border border-white p-2 text-center">Satuan</th>
+                <th className="border p-2 text-center">QTY</th>
+                <th className="border p-2 text-center">Satuan</th>
               </tr>
             </thead>
             <tbody>
@@ -472,7 +394,7 @@ export default function DetailPermintaanLapangan() {
                           <option value="READ">READ</option>
                         </select>
                       ) : (
-                        <span>{item.status}</span> // Show the current status if the user cannot change it
+                        <span>{item.status}</span>
                       )}
                     </td>
                   </tr>
@@ -480,7 +402,7 @@ export default function DetailPermintaanLapangan() {
               ) : (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan={8}
                     className="border border-gray-300 px-4 py-2 text-center text-gray-500"
                   >
                     Data Permintaan Sudah Masuk Ke Confirmation Order.
@@ -490,162 +412,127 @@ export default function DetailPermintaanLapangan() {
             </tbody>
           </table>
 
-          <table className="w-full border-collapse text-sm border border-gray-300">
-            <tr className="border-t border-gray-300">
-              <td colSpan="5" rowSpan="4" className="p-2 align-top">
-                <table className="w-full text-sm">
-                  <tbody>
-                    <tr>
-                      <td className="p-2 font-semibold w-[30%]">
-                        Tanggal Delivery
-                      </td>
-                      <td className="p-1 w-3">:</td>
-                      <td className="p-1">{data.tanggalDelivery || ""}</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 font-semibold">Lokasi Delivery</td>
-                      <td className="p-1">:</td>
-                      <td className="p-1">{data.lokasi || ""}</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 font-semibold">Catatan</td>
-                      <td className="p-1">:</td>
-                      <td className="p-1">{data.catatan || ""}</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 font-semibold">PIC Lapangan</td>
-                      <td className="p-1">:</td>
-                      <td className="p-1">{data.picLapangan || ""}</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 font-semibold">Note</td>
-                      <td className="p-1">:</td>
-                      <td className="p-1">{data.note || ""}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
-              <td
-                colSpan="1"
-                className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
-              >
-                Diperiksa
-              </td>
-              <td
-                colSpan="1"
-                className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
-              >
-                Request By
-              </td>
-              {/* <td
-                  colSpan="2"
-                  className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
-                >
-                  Dibuat
-                </td> */}
-            </tr>
-            <tr>
-              <td
-                colSpan="1"
-                className="border border-gray-300 border-b-0 h-16"
-              >
-                {getSignatureByRole("ENGINEER_CHECKER")?.qrCode && (
-                  <img
-                    src={getSignatureByRole("ENGINEER_CHECKER").qrCode}
-                    alt="QR PM"
-                    className="mx-auto w-24"
-                  />
-                )}
-              </td>
-              <td
-                colSpan="1"
-                className="border border-gray-300 border-b-0 h-16"
-              >
-                {getSignatureByRole("ENGINEER_REQUESTER")?.qrCode && (
-                  <img
-                    src={getSignatureByRole("ENGINEER_REQUESTER").qrCode}
-                    alt="QR PM"
-                    className="mx-auto w-24"
-                  />
-                )}
-              </td>
-              {/* <td
-                  colSpan="2"
-                  className="border border-gray-300 border-b-0 h-16"
-                ></td> */}
-            </tr>
-            <tr>
-              <td className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                {!getSignatureByRole("ENGINEER_CHECKER")
-                  ? user?.authorities?.some(
-                      (auth) =>
-                        auth.fileType === "PERMINTAAN_LAPANGAN" &&
-                        auth.role.toUpperCase() === "ENGINEER_CHECKER"
-                    ) && (
-                      <button
-                        onClick={() => handleSign("ENGINEER_CHECKER")}
-                        disabled={loadingButton}
-                        className="user-button-add"
-                      >
-                        {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
-                      </button>
-                    )
-                  : getSignatureByRole("ENGINEER_CHECKER")?.userName}
-              </td>
-              <td
-                className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom"
-                colSpan="1"
-              >
-                {!getSignatureByRole("ENGINEER_REQUESTER")
-                  ? user?.authorities?.some(
-                      (auth) =>
-                        auth.fileType === "PERMINTAAN_LAPANGAN" &&
-                        auth.role.toUpperCase() === "ENGINEER_REQUESTER"
-                    ) && (
-                      <button
-                        onClick={() => handleSign("ENGINEER_REQUESTER")}
-                        disabled={loadingButton}
-                        className="user-button-add"
-                      >
-                        {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
-                      </button>
-                    )
-                  : getSignatureByRole("ENGINEER_REQUESTER")?.userName}
-              </td>
-              {/* <td
-                  className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom"
-                  colSpan="2"
-                >
-                  Nama
-                </td> */}
-            </tr>
+          <table className="w-full border-collapse text-sm border border-gray-300 mt-4">
+            <tbody>
+              <tr>
+                <td colSpan={5} rowSpan={4} className="p-2 align-top w-[60%]">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      <tr>
+                        <td className="p-2 font-semibold w-36">
+                          Tanggal Delivery
+                        </td>
+                        <td className="p-1 w-3">:</td>
+                        <td className="p-1">{data.tanggalDelivery || ""}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 font-semibold">Lokasi Delivery</td>
+                        <td className="p-1">:</td>
+                        <td className="p-1">{data.lokasi || ""}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 font-semibold">Catatan</td>
+                        <td className="p-1">:</td>
+                        <td className="p-1">{data.catatan || ""}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 font-semibold">PIC Lapangan</td>
+                        <td className="p-1">:</td>
+                        <td className="p-1">{data.picLapangan || ""}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 font-semibold">Note</td>
+                        <td className="p-1">:</td>
+                        <td className="p-1">{data.note || ""}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+                {["Diperiksa", "Request By"].map((text, index) => (
+                  <td
+                    key={index}
+                    colSpan={1}
+                    className="border font-semibold bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
+                  >
+                    {text}
+                  </td>
+                ))}
+              </tr>
+              {/* Baris: QR Code */}
+              <tr>
+                {["ENGINEER_CHECKER", "ENGINEER_REQUESTER"].map((role) => {
+                  const signature = getSignatureByRole(role);
+                  return (
+                    <td
+                      key={role}
+                      colSpan={1}
+                      className="border border-gray-300 border-b-0 h-16"
+                    >
+                      {signature?.qrCode && (
+                        <img
+                          src={signature.qrCode}
+                          alt={`QR ${role}`}
+                          className="mx-auto w-24"
+                        />
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
 
-            <tr>
-              <td
-                colSpan="1"
-                className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
-              >
-                Project Manager
-              </td>
-              <td
-                colSpan="1"
-                className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
-              >
-                Site Manager
-              </td>
-              {/* <td
-                  colSpan="2"
+              {/* Baris: Nama atau Tombol */}
+              <tr>
+                {["ENGINEER_CHECKER", "ENGINEER_REQUESTER"].map((role) => {
+                  const signature = getSignatureByRole(role);
+                  const isAuthorized = user?.authorities?.some(
+                    (auth) =>
+                      auth.fileType === "PERMINTAAN_LAPANGAN" &&
+                      auth.role.toUpperCase() === role
+                  );
+
+                  return (
+                    <td
+                      key={role}
+                      className="border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom"
+                    >
+                      {!signature
+                        ? isAuthorized && (
+                            <button
+                              onClick={() => handleSign(role)}
+                              disabled={loadingButton}
+                              className="user-button-add"
+                            >
+                              {loadingButton
+                                ? "Memproses..."
+                                : "Isi Tanda tangan"}
+                            </button>
+                          )
+                        : signature.userName}
+                    </td>
+                  );
+                })}
+              </tr>
+
+              <tr>
+                <td
+                  colSpan={1}
                   className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
                 >
-                  Logistik
-                </td> */}
-            </tr>
+                  Project Manager
+                </td>
+                <td
+                  colSpan={1}
+                  className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
+                >
+                  Site Manager
+                </td>
+              </tr>
+            </tbody>
           </table>
 
           <div className="mt-6">
             <div className="flex justify-between space-x-4">
               <div className="w-1/2"></div>
-
               <div className="w-1/2 mx-auto"></div>
             </div>
           </div>

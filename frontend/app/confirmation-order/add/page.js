@@ -16,7 +16,7 @@ export default function AddConfirmationOrder() {
     lokasiCO: "",
     idPL: "",
     tanggalCO: "",
-    idVendor: "",
+    vendorId: "",
   });
 
   const [permintaanLapangan, setPermintaanLapangan] = useState([]);
@@ -67,10 +67,10 @@ export default function AddConfirmationOrder() {
     setSelectedItems([]);
 
     const selectedVendor = vendors.find(
-      (v) => v.id === parseInt(formData.idVendor)
+      (v) => v.id === parseInt(formData.vendorId)
     );
     setFilteredItems(selectedVendor?.materials || []);
-  }, [formData.idPL, formData.idVendor, permintaanLapangan, vendors]);
+  }, [formData.idPL, formData.vendorId, permintaanLapangan, vendors]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -100,7 +100,7 @@ export default function AddConfirmationOrder() {
     );
   };
 
-  const vendor = vendors.find((v) => v.id === parseInt(formData.idVendor));
+  const vendor = vendors.find((v) => v.id === parseInt(formData.vendorId));
   const totalHarga = selectedItems.reduce((total, item) => {
     const harga = vendor?.materials.find((m) => m.id === item.id)?.price || 0;
     return total + harga * item.qty;
@@ -109,14 +109,14 @@ export default function AddConfirmationOrder() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { nomorCO, lokasiCO, tanggalCO, idPL, idVendor } = formData;
+    const { nomorCO, lokasiCO, tanggalCO, idPL, vendorId } = formData;
 
     if (
       !nomorCO ||
       !lokasiCO ||
       !tanggalCO ||
       !idPL ||
-      !idVendor ||
+      !vendorId ||
       selectedItems.length === 0
     ) {
       Swal.fire({
@@ -143,6 +143,7 @@ export default function AddConfirmationOrder() {
       tanggalCO,
       lokasiCO,
       permintaanId: parseInt(idPL),
+      vendorId,
       items: selectedItems.map((item) => {
         const originalMaterial = filteredItems.find(
           (mat) => mat.id === item.id
@@ -166,6 +167,8 @@ export default function AddConfirmationOrder() {
       });
       return;
     }
+
+    console.log(payload)
 
     try {
       const response = await fetchWithAuth(
@@ -255,14 +258,14 @@ export default function AddConfirmationOrder() {
               label="Pilih Vendor"
               options={vendors.map((vd) => ({ value: vd.id, label: vd.name }))}
               value={vendors.find(
-                (vd) => vd.id === parseInt(formData.idVendor)
+                (vd) => vd.id === parseInt(formData.vendorId)
               )}
-              onChange={(selected) => handleSelectChange("idVendor", selected)}
+              onChange={(selected) => handleSelectChange("vendorId", selected)}
               placeholder="Pilih Vendor"
             />
           )}
 
-          {formData.idVendor && (
+          {formData.vendorId && (
             <ItemSelector
               filteredItems={filteredItems}
               selectedItems={selectedItems}

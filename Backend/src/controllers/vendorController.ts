@@ -71,12 +71,11 @@ export const deleteVendor = async (
 
     const existingVendor = await prisma.vendors.findUnique({
       where: { id: Number(id) },
+      include: {
+        materials: true,
+      },
     });
-
-    if (!existingVendor) {
-      res.status(404).json({ error: "Vendor tidak ditemukan" });
-      return;
-    }
+    
 
     // 1. Ambil semua material milik vendor
     const vendorMaterials = await prisma.materials.findMany({
@@ -124,6 +123,7 @@ export const getVendorById = async (
       where: { id: Number(id) },
       include: {
         materials: true, // Include related materials using the vendorId
+        
       },
     });
 

@@ -10,6 +10,7 @@ const roleAccess = {
     "/material",
     "/permintaan-lapangan",
     "/vendor",
+    "/purchase-order",
     "/petunjuk"
   ],
   USER_PURCHASE: [

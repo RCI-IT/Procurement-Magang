@@ -128,7 +128,7 @@ export const getSigningStatus = async (req: Request, res: Response) => {
       return;
     }
 
-    const result = signedFile.SignedBy.map((entry) => ({
+    const result = signedFile.SignedBy.map((entry: any) => ({
       userId: entry.userId,
       userName: entry.User.fullName,
       role: entry.role,

@@ -4,8 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 
-export default function Sidebar() {
-  const [isMinimized, setIsMinimized] = useState(false);
+export default function Sidebar({ isMinimized, setIsMinimized }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -130,7 +129,7 @@ export default function Sidebar() {
       }`}
     >
       {/* Logo */}
-      <div className="flex items-center px-4 py-4 bg-white border-b">
+      <div className="flex items-center px-4 py-4 bg-white border-b no-print">
         <Image
           src={`/assets/logo1.png`}
           alt="Logo"

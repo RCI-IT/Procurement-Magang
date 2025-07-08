@@ -2,16 +2,20 @@
 FROM node:18-alpine
 
 # Set working directory di dalam container
-WORKDIR /app
+WORKDIR /src
 
 # Copy file package.json dan package-lock.json ke dalam container
-COPY package.json package-lock.json ./
+COPY package*.json ./
+
 
 # Install dependencies
 RUN npm install
 
 # Copy semua file proyek ke dalam container
 COPY . .
+
+# Prisma generate client (make sure schema.prisma is already copied)
+RUN npx prisma generate
 
 # Pastikan TypeScript sudah terinstal secara global
 RUN npm install -g typescript
@@ -23,4 +27,4 @@ RUN npm run build
 EXPOSE 5000
 
 # Jalankan server
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]

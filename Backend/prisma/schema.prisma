@@ -27,19 +27,19 @@ model PermintaanLapangan {
 }
 
 model PurchaseOrder {
+  id                  Int               @id @default(autoincrement())
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
   nomorPO             String            @unique
   tanggalPO           DateTime
-  lokasiPO            String
   keterangan          String?
-  id                  Int               @id @default(autoincrement())
   confirmationOrderId Int               @unique
-  userId              Int?
+  userId              Int?             // ✅ Tambahan
   purchaseDetails     PurchaseDetails[]
   confirmationOrder   ConfirmationOrder @relation("COToPO", fields: [confirmationOrderId], references: [id], onDelete: Cascade)
   user                User?             @relation(fields: [userId], references: [id])
 }
+
 
 model PurchaseDetails {
   qty             Int
@@ -65,10 +65,12 @@ model ConfirmationOrder {
   id                  Int                   @id @default(autoincrement())
   userId              Int?
   permintaanId        Int?
+  vendorId            Int?
   confirmationDetails ConfirmationDetails[]
   permintaan          PermintaanLapangan?   @relation(fields: [permintaanId], references: [id])
   user                User?                 @relation(fields: [userId], references: [id])
   purchaseOrder       PurchaseOrder?        @relation("COToPO")
+  vendor              Vendors?           @relation(fields: [vendorId], references: [id]) // ✅ Tambahan  
 }
 
 model ConfirmationDetails {
@@ -135,6 +137,7 @@ model Vendors {
   phone     String?
   id        Int         @id @default(autoincrement())
   materials Materials[]
+  ConfirmOrder ConfirmationOrder[]
 }
 
 model User {

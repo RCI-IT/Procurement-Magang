@@ -1,6 +1,15 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, SigningAuthority, UserRole, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
+
+type UserWithAuthorities = {
+  id: number;
+  username: string;
+  fullName: string;
+  email: string;
+  role: UserRole;
+  SigningAuthority: SigningAuthority[];
+};
 
 const prisma = new PrismaClient();
 
@@ -8,7 +17,13 @@ export const createUser = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { username, password, email, fullName, role } = req.body;
+  const { username, password, email, fullName, role: roleString} = req.body;
+
+  if (!Object.values(UserRole).includes(roleString)) {
+    res.status(400).json({ error: "Invalid role" });
+    return;
+  }
+  const role = roleString as UserRole;
   const hashedPassword = await bcrypt.hash(password, 10);
 
   if (!username || !password || !email || !fullName || !role) {
@@ -57,13 +72,13 @@ export const getAllUsers = async (
     });
 
     // supaya frontend gampang pakai (biar sama kayak getById)
-    const formattedUsers = users.map((user) => ({
+    const formattedUsers = users.map((user: UserWithAuthorities) => ({
       id: user.id,
       username: user.username,
       fullName: user.fullName,
       email: user.email,
       role: user.role,
-      authorities: user.SigningAuthority.map((auth) => ({
+      authorities: user.SigningAuthority.map((auth: SigningAuthority) => ({
         fileType: auth.fileType,
         role: auth.role,
       })),
@@ -99,7 +114,7 @@ export const getUserById = async (
       fullName: user.fullName,
       email: user.email,
       role: user.role,
-      authorities: user.SigningAuthority.map((auth) => ({
+      authorities: user.SigningAuthority.map((auth: SigningAuthority) => ({
         fileType: auth.fileType,
         role: auth.role,
       })),

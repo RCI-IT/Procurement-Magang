@@ -9,6 +9,7 @@ import { checkDuplicate } from "@/utils/duplicate-check";
 
 export default function AddPermintaanLapanganForm({}) {
   const router = useRouter();
+  const [detailErrors, setDetailErrors] = useState([]);
 
   const [formData, setFormData] = useState({
     nomor: "",
@@ -21,7 +22,7 @@ export default function AddPermintaanLapanganForm({}) {
         id: Date.now(),
         materialName: "",
         qty: "",
-        satuan: "",
+        satuan: "pcs",
         mention: "",
         code: "",
         keterangan: "",
@@ -42,21 +43,16 @@ export default function AddPermintaanLapanganForm({}) {
     }
   };
 
-  // Fungsi helper untuk cari code berdasarkan materialId
-  // const getCodeByMaterialId = (id) => {
-  //   const m = materials.find((mat) => mat.id.toString() === id.toString());
-  //   return m ? m.code : "";
-  // };
-
   // Modifikasi handleDetailChange untuk otomatis isi code material jika materialId berubah
   const handleDetailChange = (index, field, value) => {
     setFormData((prev) => {
       const updatedDetails = [...prev.detail];
+
       let newDetail = { ...updatedDetails[index], [field]: value };
 
+      // Future logic seperti otomatis isi kode material bisa ditambahkan kembali di sini
       // if (field === "materialName") {
       //   const newCode = getCodeByMaterialId(value);
-      //   // Jika code kosong atau sama dengan kode sebelumnya, update otomatis
       //   if ( !newDetail.code ||
       //     newDetail.code === updatedDetails[index].code ||
       //     newDetail.code === ""
@@ -79,7 +75,7 @@ export default function AddPermintaanLapanganForm({}) {
           id: Date.now(),
           materialName: "",
           qty: "",
-          satuan: "",
+          satuan: "pcs",
           mention: "",
           code: "",
           keterangan: "",
@@ -114,6 +110,30 @@ export default function AddPermintaanLapanganForm({}) {
       return;
     }
 
+    const errors = formData.detail.map((item) => {
+      return {
+        materialName: !item.materialName.trim(),
+        qty: !item.qty,
+        satuan: !item.satuan.trim(),
+        code: !item.code.trim(),
+      };
+    });
+
+    const hasErrors = errors.some(
+      (err) => err.materialName || err.qty || err.satuan || err.code
+    );
+
+    setDetailErrors(errors); // untuk tampilkan error di UI
+
+    if (hasErrors) {
+      Swal.fire({
+        icon: "warning",
+        title: "Detail tidak lengkap",
+        text: "Isi semua kolom Nama, Qty, Satuan, dan Kode pada detail.",
+      });
+      return;
+    }
+
     const finalData = {
       ...formData,
       tanggal: `${formData.tanggal.year}-${formData.tanggal.month}-${formData.tanggal.day}`,
@@ -138,6 +158,25 @@ export default function AddPermintaanLapanganForm({}) {
         icon: "warning",
         title: "Duplikat Data",
         text: "Kode Permintaan Lapangan tersebut sudah terdaftar.",
+      });
+      return;
+    }
+
+    const seenCodes = new Set();
+    const duplicateCode = formData.detail.find((item) => {
+      const trimmedCode = item.code.trim();
+      if (seenCodes.has(trimmedCode)) {
+        return true;
+      }
+      seenCodes.add(trimmedCode);
+      return false;
+    });
+
+    if (duplicateCode) {
+      Swal.fire({
+        icon: "error",
+        title: "Kode Duplikat",
+        text: `Kode "${duplicateCode.code}" muncul lebih dari sekali. Gunakan kode unik.`,
       });
       return;
     }
@@ -173,7 +212,7 @@ export default function AddPermintaanLapanganForm({}) {
             id: Date.now(),
             materialName: "",
             qty: "",
-            satuan: "",
+            satuan: "pcs",
             mention: "",
             code: "",
             keterangan: "",
@@ -282,127 +321,181 @@ export default function AddPermintaanLapanganForm({}) {
             <h2 className="text-xl font-semibold">
               Detail Permintaan Lapangan
             </h2>
-            {formData.detail.map((item, index) => (
-              <div key={item.id} className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col">
-                  <label className="block font-medium">
-                    Nama Barang / Jasa:
-                  </label>
-
-                  <input
-                    type="text"
-                    value={item.materialName}
-                    onChange={(e) =>
-                      handleDetailChange(index, "materialName", e.target.value)
-                    }
-                    className="border border-gray-300 rounded px-2 py-1 w-full"
-                  />
-                  {/* <Select
-                  options={materials.map((material) => ({
-                    value: material.id,
-                    label: material.name,
-                  }))}
-                  value={
-                    item.materialId
-                      ? {
-                          value: item.materialId,
-                          label: materials.find(
-                            (m) => m.id === parseInt(item.materialId)
-                          )?.name,
-                        }
-                      : null
-                  }
-                  onChange={(selected) =>
-                    handleDetailChange(
-                      index,
-                      "materialId",
-                      selected?.value || ""
-                    )
-                  }
-                  placeholder="Pilih Material"
-                  isClearable
-                  className="text-sm"
-                /> */}
-
-                  <br />
-
+            {formData.detail.map((item, index) => {
+              const codeOccurrences = formData.detail.filter(
+                (d, i) =>
+                  d.code?.trim() &&
+                  d.code.trim() === item.code.trim() &&
+                  i !== index
+              );
+              const isDuplicateCode = codeOccurrences.length > 0;
+              return (
+                <div key={item.id} className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col">
-                    <label className="block font-medium">Spesifikasi:</label>
+                    <label className="block font-medium">
+                      Nama Barang / Jasa:
+                    </label>
+
                     <input
                       type="text"
-                      value={item.mention}
+                      value={item.materialName}
                       onChange={(e) =>
-                        handleDetailChange(index, "mention", e.target.value)
+                        handleDetailChange(
+                          index,
+                          "materialName",
+                          e.target.value
+                        )
                       }
-                      className="border border-gray-300 rounded px-2 py-1 w-full"
+                      className={`border ${
+                        detailErrors[index]?.materialName
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      } rounded px-2 py-1 w-full`}
                     />
+                    {detailErrors[index]?.materialName && (
+                      <span className="text-red-600 text-sm mt-1">
+                        Nama wajib diisi
+                      </span>
+                    )}
+                    {/* <Select
+                    options={materials.map((material) => ({
+                      value: material.id,
+                      label: material.name,
+                    }))}
+                    value={
+                      item.materialId
+                        ? {
+                            value: item.materialId,
+                            label: materials.find(
+                              (m) => m.id === parseInt(item.materialId)
+                            )?.name,
+                          }
+                        : null
+                    }
+                    onChange={(selected) =>
+                      handleDetailChange(
+                        index,
+                        "materialId",
+                        selected?.value || ""
+                      )
+                    }
+                    placeholder="Pilih Material"
+                    isClearable
+                    className="text-sm"
+                  /> */}
+
                     <br />
+
                     <div className="flex flex-col">
-                      <label className="block font-medium">Code:</label>
+                      <label className="block font-medium">Spesifikasi:</label>
                       <input
                         type="text"
-                        value={item.code}
+                        value={item.mention}
                         onChange={(e) =>
-                          handleDetailChange(index, "code", e.target.value)
+                          handleDetailChange(index, "mention", e.target.value)
+                        }
+                        className={`border ${
+                          detailErrors[index]?.mention
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        } rounded px-2 py-1 w-full`}
+                      />
+                      {detailErrors[index]?.mention && (
+                        <span className="text-red-600 text-sm mt-1">
+                          Spesifikasi wajib diisi
+                        </span>
+                      )}
+                      <br />
+                      <div className="flex flex-col">
+                        <label className="block font-medium">Code:</label>
+                        <input
+                          type="text"
+                          value={item.code}
+                          onChange={(e) =>
+                            handleDetailChange(index, "code", e.target.value)
+                          }
+                          className={`border ${
+                            isDuplicateCode || detailErrors[index]?.code
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          } rounded px-2 py-1 w-full`}
+                        />
+                        {detailErrors[index]?.code && (
+                          <span className="text-red-600 text-sm mt-1">
+                            Code wajib diisi
+                          </span>
+                        )}
+                        {isDuplicateCode && (
+                          <span className="text-red-600 text-sm mt-1">
+                            Kode duplikat, gunakan kode berbeda
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="block font-medium">
+                      Keterangan Detail:
+                    </label>
+                    <textarea
+                      value={item.keterangan}
+                      onChange={(e) =>
+                        handleDetailChange(index, "keterangan", e.target.value)
+                      }
+                      className="border border-gray-300 rounded px-4 py-2 w-full h-24"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col">
+                      <label className="block font-medium">Qty:</label>
+                      <input
+                        type="number"
+                        placeholder="Qty"
+                        value={item.qty}
+                        onChange={(e) =>
+                          handleDetailChange(index, "qty", e.target.value)
+                        }
+                        className={`border ${
+                          detailErrors[index]?.qty
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        } rounded px-2 py-1 w-full`}
+                      />
+                      {detailErrors[index]?.qty && (
+                        <span className="text-red-600 text-sm mt-1">
+                          Quantity wajib diisi
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col">
+                      <label className="block font-medium">Satuan:</label>
+                      <input
+                        type="text"
+                        placeholder="Satuan"
+                        value={item.satuan}
+                        onChange={(e) =>
+                          handleDetailChange(index, "satuan", e.target.value)
                         }
                         className="border border-gray-300 rounded px-2 py-1 w-full"
                       />
                     </div>
                   </div>
-                </div>
 
-                <div className="flex flex-col">
-                  <label className="block font-medium">
-                    Keterangan Detail:
-                  </label>
-                  <textarea
-                    value={item.keterangan}
-                    onChange={(e) =>
-                      handleDetailChange(index, "keterangan", e.target.value)
-                    }
-                    className="border border-gray-300 rounded px-4 py-2 w-full h-24"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col">
-                    <label className="block font-medium">Qty:</label>
-                    <input
-                      type="number"
-                      placeholder="Qty"
-                      value={item.qty}
-                      onChange={(e) =>
-                        handleDetailChange(index, "qty", e.target.value)
-                      }
-                      className="border border-gray-300 rounded px-2 py-1 w-full"
-                    />
-                  </div>
-
-                  <div className="flex flex-col">
-                    <label className="block font-medium">Satuan:</label>
-                    <input
-                      type="text"
-                      placeholder="Satuan"
-                      value={item.satuan}
-                      onChange={(e) =>
-                        handleDetailChange(index, "satuan", e.target.value)
-                      }
-                      className="border border-gray-300 rounded px-2 py-1 w-full"
-                    />
+                  <div className="col-span-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => removeDetail(index)}
+                      className="w-32 h-10 bg-red-500 text-white rounded px-4 py-1 hover:bg-red-700"
+                    >
+                      Hapus Detail
+                    </button>
                   </div>
                 </div>
-
-                <div className="col-span-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => removeDetail(index)}
-                    className="w-32 h-10 bg-red-500 text-white rounded px-4 py-1 hover:bg-red-700"
-                  >
-                    Hapus Detail
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
 
             <div className="py-4">
               <button

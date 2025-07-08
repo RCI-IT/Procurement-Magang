@@ -24,21 +24,23 @@ const months = [
   "Desember",
 ];
 
-export default function PermintaanLapangan({}) {
+export default function PermintaanLapangan() {
   const [rowsToShow, setRowsToShow] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [updatedData, setUpdatedData] = useState([]);
   const [sortOrder, setSortOrder] = useState("desc");
-  const router = useRouter();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (!storedUser) {
+    const storedToken = localStorage.getItem("token");
+
+    if (!storedUser || !storedToken) {
       setTimeout(() => router.push("/login"), 800);
       return;
     }
@@ -46,6 +48,7 @@ export default function PermintaanLapangan({}) {
     try {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
+      setToken(storedToken);
       setTimeout(() => setIsLoading(false), 500);
     } catch (error) {
       console.error("User JSON parse error:", error);
@@ -54,7 +57,6 @@ export default function PermintaanLapangan({}) {
   }, [router]);
 
   const getMonthName = (monthNumber) => months[monthNumber - 1];
-
   const parseDate = (dateString) => {
     const date = new Date(dateString);
     return {
@@ -63,10 +65,11 @@ export default function PermintaanLapangan({}) {
       year: date.getFullYear(),
     };
   };
-
   const getStatus = (status) => status;
 
   useEffect(() => {
+    if (!token) return;
+
     const fetchPermintaanLapangan = async () => {
       try {
         const data = await fetchWithToken(
@@ -75,17 +78,18 @@ export default function PermintaanLapangan({}) {
           setToken,
           () => router.push("/login")
         );
-
-        if (Array.isArray(data)) setUpdatedData(data);
+        if (Array.isArray(data)) {
+          setUpdatedData(data);
+        }
       } catch (error) {
         console.error("Gagal mengambil data permintaan lapangan:", error);
       }
     };
     fetchPermintaanLapangan();
-  }, []);
+  }, [token, router]);
 
   const handleDetail = async (id) => {
-    if (user.role === "USER_PURCHASE" || user.role === "ADMIN") {
+    if (user?.role === "USER_PURCHASE" || user?.role === "ADMIN") {
       try {
         const response = await fetchWithAuth(
           `${process.env.NEXT_PUBLIC_API_URL}/permintaan/${id}`,
@@ -95,15 +99,14 @@ export default function PermintaanLapangan({}) {
             body: JSON.stringify({ status: "READ" }),
           }
         );
-
-        if (!response) throw new Error("Gagal memperbarui status ke READ");
-
+        if (!response) {
+          throw new Error("Gagal memperbarui status ke READ");
+        }
         setUpdatedData((prevData) =>
           prevData.map((item) =>
             item.id === id ? { ...item, status: "READ" } : item
           )
         );
-
         router.push(`/permintaan-lapangan/${id}`);
       } catch (error) {
         console.error("Gagal memperbarui status:", error);
@@ -123,7 +126,6 @@ export default function PermintaanLapangan({}) {
       confirmButtonText: "Ya, hapus!",
       cancelButtonText: "Batal",
     });
-
     if (!result.isConfirmed) return;
 
     try {
@@ -133,22 +135,19 @@ export default function PermintaanLapangan({}) {
           method: "DELETE",
         }
       );
-
       if (!response.ok) {
         const errorData = await response.json();
         const message =
           errorData.error || errorData.message || "Gagal menghapus permintaan.";
-
         Swal.fire("Gagal!", message, "error");
         return;
       }
-
-      setUpdatedData((prevData) => prevData.filter((item) => item.id !== id));
-
+      setUpdatedData((prevData) =>
+        prevData.filter((item) => item.id !== id)
+      );
       Swal.fire("Dihapus!", "Permintaan berhasil dihapus.", "success");
     } catch (error) {
       console.error("Gagal menghapus permintaan lapangan:", error);
-
       Swal.fire(
         "Terjadi kesalahan!",
         "Terjadi kesalahan saat menghapus permintaan.",
@@ -156,17 +155,16 @@ export default function PermintaanLapangan({}) {
       );
     }
   };
-
+  
   const sortedData = [...updatedData].sort((a, b) => {
     const dateA = new Date(a.tanggal);
     const dateB = new Date(b.tanggal);
     return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
   });
-
   const filteredData = sortedData.filter((item) =>
     item.nomor?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+  
   useEffect(() => {
     setTotalPages(Math.ceil(filteredData.length / rowsToShow));
   }, [filteredData.length, rowsToShow]);
@@ -268,9 +266,7 @@ export default function PermintaanLapangan({}) {
                         {day} {getMonthName(month)} {year}
                       </td>
                       <td className="border px-4 py-2">{item.lokasi}</td>
-                      <td className="border px-4 py-2">
-                        {getStatus(item.status)}
-                      </td>
+                      <td className="border px-4 py-2">{getStatus(item.status)}</td>
                       <td className="border px-4 py-2 flex justify-center gap-2">
                         <button
                           className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
@@ -278,7 +274,7 @@ export default function PermintaanLapangan({}) {
                         >
                           <Eye className="text-white" />
                         </button>
-                        {user.role !== "USER_PURCHASE" && (
+                        {user?.role !== "USER_PURCHASE" && (
                           <button
                             className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600"
                             onClick={() => handleDelete(item.id)}
@@ -293,7 +289,7 @@ export default function PermintaanLapangan({}) {
               ) : (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan={6}
                     className="border px-4 py-2 text-center text-gray-500"
                   >
                     Tidak ada data ditemukan.

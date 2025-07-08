@@ -41,62 +41,75 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
+    // 👉 Cek apakah database kosong (tidak ada user)
+    const userCount = await prisma.user.count();
+    if (userCount === 0) {
+      console.log("⚠️ Tidak ada user, membuat user default...");
+
+      const defaultUsername = 'admin';
+      const defaultPassword = 'admin123'; // ganti di production
+      const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+      await prisma.user.create({
+        data: {
+          username: defaultUsername,
+          password: hashedPassword,
+          email: "admin@example.com",
+          fullName: "Super Admin",
+          role: "ADMIN", // pastikan enum UserRole punya 'admin'
+        },
+      });
+
+      console.log(`✅ User default dibuat: ${defaultUsername}/${defaultPassword}`);
+    }
+
     const user = await prisma.user.findUnique({
       where: { username },
     });
 
     if (!user) {
-      res.status(400).json({ message: "User not found" });
+      res.status(400).json({ message: "Username not found" });
       return;
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    const isMatchNoCrypt = await (password === user.password);
+    const isMatchNoCrypt = password === user.password;
     if (!isMatch && !isMatchNoCrypt) {
       res.status(400).json({ message: "Invalid credentials" });
       return;
     }
 
-    // Set cookie
-    // res.cookie("session_token", SESSION_TOKEN, {
-    //   httpOnly: true,
-    //   secure: false,
-    //   sameSite: "lax",
-    //   maxAge: 3600000, // 1 jam
-    // });
     // Buat JWT token
     const token = jwt.sign(
       { userId: user.id, username: user.username },
       process.env.JWT_SECRET!,
-      { expiresIn: "1m" } // Token akan expire dalam 1 jam
+      { expiresIn: "15m" }
     );
 
     const refreshToken = jwt.sign(
       { userId: user.id },
       process.env.JWT_REFRESH_SECRET!,
-      {
-        expiresIn: "7d", // lebih lama
-      }
+      { expiresIn: "7d" }
     );
 
-    // Kirim token ke client
     res
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        secure: false, // ⛔ karena belum HTTPS
-        sameSite: "lax", // ✅ aman untuk HTTP lokal
+        secure: false,
+        sameSite: "lax",
+        // domain: "procurement.rci",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .cookie("role", user.role, {
-        httpOnly: false,
-        secure: false, // ⛔ sama alasan
+        httpOnly: true,
+        secure: false,
         sameSite: "lax",
+        // domain: "procurement.rci",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
-
       .json({
         message: "Login successful",
-        token, // atau token: token
+        token,
       });
   } catch (err) {
     console.error(err);

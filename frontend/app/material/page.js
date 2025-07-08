@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { fetchWithToken } from "@/services/fetchWithToken";
 import { useRouter } from "next/navigation";
 import { Eye, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
@@ -17,13 +16,14 @@ export default function Material() {
   const [rowsToShow, setRowsToShow] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState("terbaru");
+  const [token, setToken] = useState(null);
   const router = useRouter();
 
-  const [token, setToken] = useState(null);
-
+  // 1️⃣ Ambil user & token dari localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (!storedUser) {
+    const storedToken = localStorage.getItem("token");
+    if (!storedUser || !storedToken) {
       setTimeout(() => router.push("/login"), 800);
       return;
     }
@@ -31,6 +31,7 @@ export default function Material() {
     try {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
+      setToken(storedToken);
       setTimeout(() => setIsLoading(false), 500);
     } catch (error) {
       console.error("User JSON parse error:", error);
@@ -38,41 +39,61 @@ export default function Material() {
     }
   }, [router]);
 
-  const getData = async () => {
-    const materialData = await fetchWithToken(
-      `${process.env.NEXT_PUBLIC_API_URL}/materials`,
-      token,
-      setToken,
-      () => router.push("/login")
-    );
-    const vendorData = await fetchWithToken(
-      `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
-      token,
-      setToken,
-      () => router.push("/login")
-    );
-
-    if (Array.isArray(materialData)) setMaterials(materialData);
-    if (Array.isArray(vendorData)) setVendors(vendorData);
-  };
-
+  // 2️⃣ Ambil data dari server setelah token tersedia
   useEffect(() => {
-    fetchData();
+    if (token) {
+      fetchData();
+    }
   }, [token]);
 
-  const fetchData = () => {
-    getData();
+  const fetchData = async () => {
+    try {
+      const materialResponse = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/materials`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // ✅ Sekarang dengan token
+          },
+        }
+      );
+      const vendorResponse = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // ✅ Sekarang dengan token
+          },
+        }
+      );
+
+      if (!materialResponse.ok || !vendorResponse.ok) {
+        Swal.fire({
+          icon: "error",
+          title: "Data Masih Kosong",
+          text: "Mohon lengkapi semua data termasuk gambar.",
+        });
+      }
+
+      const materialData = await materialResponse.json();
+      const vendorData = await vendorResponse.json();
+
+      if (Array.isArray(materialData)) setMaterials(materialData);
+      if (Array.isArray(vendorData)) setVendors(vendorData);
+    } catch (error) {
+      console.error("Error saat mendapatkan data:", error);
+    }
   };
 
   const handleVendorClick = (vendorId) => {
     if (vendorId) router.push(`/vendor/${vendorId}`);
   };
-
   const handleMaterialClick = (materialId) => {
     localStorage.setItem("selectedMaterialId", materialId);
     router.push(`/material/${materialId}`);
   };
-
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Apakah kamu yakin?",
@@ -82,7 +103,6 @@ export default function Material() {
       confirmButtonText: "Ya, hapus!",
       cancelButtonText: "Batal",
     });
-
     if (!result.isConfirmed) return;
 
     try {
@@ -92,20 +112,17 @@ export default function Material() {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // ✅ Sekarang dengan token
           },
         }
       );
-
       if (!response.ok) {
         const errorData = await response.json();
         const message =
-          errorData.error || errorData.message || "Gagal menghapus permintaan.";
-
+          errorData.error || errorData.message || "Gagal menghapus material.";
         Swal.fire("Gagal!", message, "error");
         return;
       }
-
       setMaterials((prev) => prev.filter((material) => material.id !== id));
       Swal.fire("Berhasil!", "Material berhasil dihapus.", "success");
     } catch (error) {
@@ -117,7 +134,6 @@ export default function Material() {
       );
     }
   };
-
   const sortedMaterials = [...materials]
     .filter((m) => m.name.toLowerCase().includes(searchQuery))
     .sort((a, b) => {
@@ -138,18 +154,16 @@ export default function Material() {
           return 0;
       }
     });
-
   const totalPages = Math.ceil(sortedMaterials.length / rowsToShow);
   const currentData = sortedMaterials.slice(
     (currentPage - 1) * rowsToShow,
     currentPage * rowsToShow
   );
-
-  if (!materials)
+  if (!materials) {
     return (
       <div className="text-center text-gray-500">Material tidak ditemukan.</div>
     );
-
+  }
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -280,12 +294,14 @@ export default function Material() {
                           >
                             <Eye className="text-white" />
                           </button>
-                          {user?.role !== "USER_LAPANGAN" &&   <button
-                            onClick={() => handleDelete(material.id)}
-                            className="bg-red-500 text-white rounded px-2 py-1 ml-2"
-                          >
-                            <Trash2 className="text-white" />
-                          </button>}
+                          {user?.role !== "USER_LAPANGAN" && (
+                            <button
+                              onClick={() => handleDelete(material.id)}
+                              className="bg-red-500 text-white rounded px-2 py-1 ml-2"
+                            >
+                              <Trash2 className="text-white" />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );

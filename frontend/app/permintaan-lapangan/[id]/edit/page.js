@@ -40,11 +40,7 @@ export default function EditPermintaanLapangan() {
           () => router.push("/login")
         );
 
-        if (result) {
-          setFormData(result);
-        } else {
-          router.push("/?page=permintaan-lapangan");
-        }
+        if (result) setFormData(result)
       } catch (error) {
         console.error("Gagal mengambil data permintaan lapangan:", error);
       } finally {
@@ -54,25 +50,6 @@ export default function EditPermintaanLapangan() {
 
     fetchData();
   }, [id, router]);
-
-  // const fetchMaterialNames = async () => {
-  //   try {
-  //     const data = await fetchWithToken(
-  //       `${process.env.NEXT_PUBLIC_API_URL}/materials`,
-  //       token,
-  //       setToken,
-  //       () => router.push("/login")
-  //     );
-  //     const materialMap = data.reduce((acc, material) => {
-  //       acc[material.id] = material.name;
-  //       return acc;
-  //     }, {});
-  //     setMaterials(materialMap);
-  //     setLoading(false);
-  //   } catch (error) {
-  //     console.error("Gagal mengambil nama material:", error);
-  //   }
-  // };
 
   const handleDetailChange = (index, field, value) => {
     const newDetail = [...formData.detail];

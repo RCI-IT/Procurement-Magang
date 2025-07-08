@@ -2,19 +2,24 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import html2pdf from "html2pdf.js";
 import "@/styles/globals.css";
-import { fetchWithToken } from "../../../services/fetchWithToken";
+import { fetchWithAuth } from "@/services/apiClient";
+import Image from "next/image";
+import { capitalizeIndonesia } from "@/utils/capitalizeIndonesia";
+import { terbilang } from "@/utils/terbilang";
+import { pdf } from "@react-pdf/renderer";
+import { PurchaseOrderPDF } from "./PurchaseOrderPDF";
+import Swal from "sweetalert2";
 
 export default function DetailPurchaseOrder() {
   const { id } = useParams();
   const router = useRouter();
   const [data, setData] = useState(null);
   const [PurchaseDetails, setPoDetail] = useState(null);
-  const [token, setToken] = useState(null);
   const [dataSign, setSign] = useState([]);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingButton, setLoadingButton] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -62,70 +67,64 @@ export default function DetailPurchaseOrder() {
     window.print();
   };
 
-  const handleDownloadPDF = () => {
-    setTimeout(() => {
-      const element = document.getElementById("purchase-order");
-      const backButton = document.getElementById("back-button");
+  const handleGeneratePDF = async () => {
+    setLoadingButton(true);
+    try {
+      const blob = await pdf(
+        <PurchaseOrderPDF
+          data={data}
+          PurchaseDetails={PurchaseDetails}
+          totalHarga={totalHarga}
+          dataSign={dataSign}
+        />
+      ).toBlob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank"); // <-- Langsung buka tab baru
+    } catch (error) {
+      console.error(error);
+      alert("Gagal membuat PDF");
+    } finally {
+      setLoadingButton(false);
+    }
+  };
 
-      if (!element) {
-        console.error("Element not found!");
-        return;
+  const fetchData = async () => {
+    try {
+      const result = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`,
+        {
+          method: "GET",
+        }
+      );
+
+      if (result) {
+        const data = await result.json();
+        setData(data);
+        setPoDetail(data);
+      } else {
+        router.push("/purchase-order");
       }
 
-      if (backButton) backButton.style.visibility = "hidden";
+      const res = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_API_URL}/signing/PURCHASE_ORDER/${id}`,
+        {
+          method: "GET",
+        }
+      );
 
-      element.classList.add("pdf-format");
-
-      html2pdf()
-        .set({
-          margin: 10,
-          filename: `purchase-order-${id || "unknown"}.pdf`,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        })
-        .from(element)
-        .save()
-        .then(() => {
-          element.classList.remove("pdf-format");
-          if (backButton) backButton.style.visibility = "visible";
-        });
-    }, 500);
+      if (res) {
+        const response = await res.json();
+        setSign(response.signatures);
+        console.log("ISI dataSign:", response.signatures);
+      }
+    } catch (error) {
+      console.error("Gagal mengambil data purchase order:", error);
+      router.push("/purchase-order");
+    }
   };
 
   useEffect(() => {
     if (!id) return;
-    const fetchData = async () => {
-      try {
-        const result = await fetchWithToken(
-          `${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`,
-          token,
-          setToken,
-          () => router.push("/login")
-        );
-        if (result) {
-          setData(result);
-          setPoDetail(result);
-        } else {
-          router.push("/purchase-order");
-        }
-
-        const res = await fetchWithToken(
-          `${process.env.NEXT_PUBLIC_API_URL}/signing/PL/${id}`,
-          token,
-          setToken,
-          () => router.push("/login")
-        );
-
-        if (res && res.signatures) {
-          setSign(res.signatures);
-          console.log("ISI dataSign:", res.signatures);
-        }
-      } catch (error) {
-        console.error("Gagal mengambil data purchase order:", error);
-        router.push("/purchase-order");
-      }
-    };
     fetchData();
   }, [id, router]);
 
@@ -136,72 +135,6 @@ export default function DetailPurchaseOrder() {
 
   const { day, month, year } = parseDate(data?.tanggalPO);
 
-  const terbilang = (angka) => {
-    const satuan = [
-      "",
-      "Satu",
-      "Dua",
-      "Tiga",
-      "Empat",
-      "Lima",
-      "Enam",
-      "Tujuh",
-      "Delapan",
-      "Sembilan",
-    ];
-    const belasan = [
-      "Sepuluh",
-      "Sebelas",
-      "Dua Belas",
-      "Tiga Belas",
-      "Empat Belas",
-      "Lima Belas",
-      "Enam Belas",
-      "Tujuh Belas",
-      "Delapan Belas",
-      "Sembilan Belas",
-    ];
-    const puluhan = [
-      "",
-      "",
-      "Dua Puluh",
-      "Tiga Puluh",
-      "Empat Puluh",
-      "Lima Puluh",
-      "Enam Puluh",
-      "Tujuh Puluh",
-      "Delapan Puluh",
-      "Sembilan Puluh",
-    ];
-    const ribuan = ["", "Ribu", "Juta", "Miliar", "Triliun"];
-
-    if (angka === 0) return "Nol Rupiah";
-
-    const konversi = (num) => {
-      if (num < 10) return satuan[num];
-      if (num < 20) return belasan[num - 10];
-      if (num < 100)
-        return puluhan[Math.floor(num / 10)] + " " + satuan[num % 10];
-      if (num < 1000)
-        return satuan[Math.floor(num / 100)] + " Ratus " + konversi(num % 100);
-      return "";
-    };
-
-    let hasil = "";
-    let i = 0;
-
-    while (angka > 0) {
-      let bagian = angka % 1000;
-      if (bagian > 0) {
-        hasil = konversi(bagian) + " " + ribuan[i] + " " + hasil;
-      }
-      angka = Math.floor(angka / 1000);
-      i++;
-    }
-
-    return hasil.trim() + " Rupiah";
-  };
-
   const totalHarga =
     PurchaseDetails?.purchaseDetails?.reduce((sum, poItem) => {
       const material = poItem.material;
@@ -211,7 +144,10 @@ export default function DetailPurchaseOrder() {
     }, 0) || 0;
 
   const getSignatureByRole = (role) => {
-    return dataSign.find((sig) => sig.role === role);
+    if (!Array.isArray(dataSign)) return null;
+
+    const signature = dataSign.find((sig) => sig.role === role);
+    return signature || null;
   };
 
   const handleSign = async (signingRole) => {
@@ -233,17 +169,24 @@ export default function DetailPurchaseOrder() {
         body: JSON.stringify(payload),
       });
 
-      console.log(payload);
-      console.log(result);
-      if (result) {
-        Swal.fire({
-          icon: "success",
-          title: "Berhasil Tanda Tangan",
-          text: result.message || "Tanda tangan berhasil disimpan.",
-          confirmButtonText: "OK",
-        });
+      if (!result) {
+        throw new Error("Respon dari server kosong.");
       }
-      router.refresh()
+
+      if (result?.error) {
+        throw new Error(result?.error || "Gagal menyimpan tanda tangan.");
+      }
+
+      const alertResult = await Swal.fire({
+        icon: "success",
+        title: "Berhasil Tanda Tangan",
+        text: result?.message || "Tanda tangan berhasil disimpan.",
+        confirmButtonText: "OK",
+      });
+
+      if (alertResult.isConfirmed) {
+        fetchData();
+      }
     } catch (error) {
       console.error("Error saat tanda tangan:", error);
       Swal.fire({
@@ -262,7 +205,7 @@ export default function DetailPurchaseOrder() {
   return (
     <div className="flex h-screen">
       <div className="flex-1 p-6">
-        <div className="flex justify-end space-x-2 no-print">
+        <div className="flex justify-end space-x-2 no-print p-6">
           <button
             onClick={handlePrint}
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32"
@@ -270,72 +213,145 @@ export default function DetailPurchaseOrder() {
             Cetak
           </button>
           <button
-            onClick={handleDownloadPDF}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32"
+            onClick={handleGeneratePDF}
+            className="bg-red-500 text-white rounded hover:bg-red-600 px-4 py-2"
           >
-            Simpan PDF
+            {loadingButton ? "Memproses…" : "Buat PDF"}
           </button>
+          {/* <PDFDownloadLink
+            document={
+              <PurchaseOrderPDF
+                data={data}
+                PurchaseDetails={PurchaseDetails}
+                totalHarga={totalHarga}
+                dataSign={dataSign}
+              />
+            }
+            fileName={`purchase-order-${data?.nomorPO}.pdf`}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-32 flex justify-center items-center"
+          >
+            {({ loading }) => (loading ? "Memproses…" : "Simpan PDF")}
+          </PDFDownloadLink> */}
         </div>
 
         <div
           id="purchase-order"
-          className="print-container mx-auto bg-white rounded-lg p-6"
+          className="print-area print-container mx-auto bg-white rounded-lg p-6"
         >
-          <div className="border-b-4 border-blue-600 mt-4">
-            <div className="flex justify-between items-center pb-3">
-              <h1 className="text-lg font-bold text-blue-900 uppercase">
-                Reka Cipta Inovasi
-              </h1>
-              <h2 className="text-lg font-bold text-blue-900 uppercase">
-                Purchase Order
-              </h2>
-              <div className="border border-gray-300 text-sm">
-                <table className="border-collapse w-full">
-                  <tbody>
+          <div className="flex justify-between">
+            <div>
+              <Image
+                src={`/assets/logo1.png`}
+                alt="Logo"
+                width={150}
+                height={150}
+                className="object-contain"
+                unoptimized
+                priority
+              />
+              <p className="text-blue-900 font-bold text-lg uppercase">
+                PT. REKA CIPTA INOVASI
+              </p>
+              <p className="text-sm text-gray-700">
+                Jl. Aluminium Perumahan Gatot Subroto Town House No. 5<br />
+                Kel. Sei Sikambing C II, Kec. Medan Helvetia, Medan
+                <br />
+                Sumatera Utara, 20213
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-blue-900 font-bold text-2xl uppercase">
+                PURCHASE ORDER
+              </p>
+              <table className="border border-gray-300">
+                <tbody>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <td className="px-4 bg-gray-50 dark:bg-gray-800">
+                      Tanggal
+                    </td>
+                    <td className="px-4">
+                      {day} {month} {year}
+                    </td>
+                  </tr>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <td className="px-4 bg-gray-50 dark:bg-gray-800">
+                      Nomor Purchase Order
+                    </td>
+                    <td className="px-4">{data.nomorPO}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <td className="px-4 bg-gray-50 dark:bg-gray-800">
+                      Nomor PL
+                    </td>
+                    <td className="px-4">
+                      {data.confirmationOrder.permintaan?.nomor}
+                    </td>
+                  </tr>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <td className="px-4 bg-gray-50 dark:bg-gray-800">
+                      Nomor Confirmation
+                    </td>
+                    <td className="px-4">{data.confirmationOrder.nomorCO}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <td className="px-4 bg-gray-50 dark:bg-gray-800">
+                      Nomor Kontrak
+                    </td>
+                    <td className="px-4"></td>
+                  </tr>
+
+                  {data.keterangan && (
                     <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">
-                        Tanggal Purchase Order
+                      <td className="px-4 bg-gray-50 dark:bg-gray-800">
+                        Keterangan
                       </td>
-                      <td className="border border-gray-300 px-2 py-1">
-                        {day} {month} {year}
+                      <td className="px-4 border border-gray-300 py-1">
+                        {data.keterangan}
                       </td>
                     </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">
-                        Nomor Purchase Order
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1">
-                        {data.nomorPO}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-2 py-1 font-semibold">
-                        Lokasi Purchase Order
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1">
-                        {data.lokasiPO}
-                      </td>
-                    </tr>
-                    {data.keterangan && (
-                      <tr>
-                        <td className="border border-gray-300 px-2 py-1 font-semibold">
-                          Keterangan
-                        </td>
-                        <td className="border border-gray-300 px-2 py-1">
-                          {data.keterangan}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="border border-blue-600 rounded overflow-hidden inline-block">
+            {/* Header */}
+            <div className="bg-blue-600 text-white font-bold p-2">SUPPLIER</div>
+
+            {/* Konten */}
+            <div className="bg-white p-3 space-y-1">
+              <div className="flex">
+                <div className="w-28 font-semibold">Name</div>
+                <div>: {data.confirmationOrder?.vendor?.name}</div>
+              </div>
+              <div className="flex">
+                <div className="w-28 font-semibold">Address</div>
+                <div>
+                  :
+                  {capitalizeIndonesia(data.confirmationOrder?.vendor?.address)}
+                  {data.confirmationOrder?.vendor?.address &&
+                  data.confirmationOrder?.vendor?.city
+                    ? ", "
+                    : ""}
+                  {capitalizeIndonesia(data.confirmationOrder?.vendor?.city)}
+                </div>
+              </div>
+              <div className="flex">
+                <div className="w-28 font-semibold">Phone</div>
+                <div>: {data.confirmationOrder?.vendor?.phone}</div>
+              </div>
+              <div className="flex">
+                <div className="w-28 font-semibold">Reference</div>
+                <div>: </div>
               </div>
             </div>
           </div>
-          <br />
-          <table className="w-full border-collapse mt-4 text-sm border border-gray-300">
-            <thead className="bg-blue-700 text-white">
-              <tr>
-                <th className="border p-2" rowSpan={2}>
+
+          <table className="border border-blue-600 rounded w-full table-auto">
+            <thead>
+              <tr className="bg-blue-600 text-white font-bold">
+                <th className="border p-2 w-16" rowSpan={2}>
                   No.
                 </th>
                 <th className="border p-2" rowSpan={2}>
@@ -347,19 +363,18 @@ export default function DetailPurchaseOrder() {
                 <th className="border p-2" rowSpan={2}>
                   Harga
                 </th>
-                <th className="border p-2 w-12" colSpan="2">
+                <th className="border p-2" colSpan={2}>
                   Permintaan
                 </th>
-                <th className="border p-2 w-35" rowSpan={2}>
+                <th className="border p-2" rowSpan={2}>
                   Total
                 </th>
               </tr>
               <tr className="bg-blue-600 text-white">
-                <th className="border p-2 w-12">QTY</th>
-                <th className="border p-2 w-12">Satuan</th>
+                <th className="border p-2">QTY</th>
+                <th className="border p-2">Satuan</th>
               </tr>
             </thead>
-
             <tbody>
               {PurchaseDetails?.purchaseDetails?.length > 0 ? (
                 PurchaseDetails.purchaseDetails.map((item, index) => {
@@ -369,7 +384,7 @@ export default function DetailPurchaseOrder() {
 
                   return (
                     <tr key={index}>
-                      <td className="border px-4 py-2 text-center">
+                      <td className="border px-4 py-2 text-center w-16">
                         {index + 1}
                       </td>
                       <td className="border px-4 py-2">{item.code}</td>
@@ -393,11 +408,13 @@ export default function DetailPurchaseOrder() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={8} className="text-center text-gray-500 py-4">
+                  <td colSpan="7" className="text-center p-4">
                     Tidak ada data
                   </td>
                 </tr>
               )}
+            </tbody>
+            <tfoot>
               <tr className="font-semibold">
                 <td
                   colSpan="4"
@@ -420,7 +437,7 @@ export default function DetailPurchaseOrder() {
                   {terbilang(totalHarga) || "-"}
                 </td>
               </tr>
-            </tbody>
+            </tfoot>
           </table>
 
           <table className="w-full border mt-6">
@@ -448,92 +465,61 @@ export default function DetailPurchaseOrder() {
                   Disetujui
                 </td>
               </tr>
+
+              {/* Baris QRCode */}
               <tr>
-                <td className="border-b-0 border h-24 w-1/4">
-                  {getSignatureByRole("PURCHASING")?.qrCode && (
-                    <img
-                      src={getSignatureByRole("PURCHASING").qrCode}
-                      alt="QR PM"
-                      className="mx-auto w-24"
-                    />
-                  )}
-                </td>
-                <td className="border-b-0 border h-24 w-1/4">
-                  {getSignatureByRole("PURCHASING")?.qrCode && (
-                    <img
-                      src={getSignatureByRole("PURCHASING").qrCode}
-                      alt="QR PM"
-                      className="mx-auto w-24"
-                    />
-                  )}
-                </td>
-                <td className="border-b-0 border h-24 w-1/4">
-                  {getSignatureByRole("PURCHASING")?.qrCode && (
-                    <img
-                      src={getSignatureByRole("PURCHASING").qrCode}
-                      alt="QR PM"
-                      className="mx-auto w-24"
-                    />
-                  )}
-                </td>
+                {["PURCHASING", "FINANCE", "DIREKSI"].map((role) => {
+                  const signature = getSignatureByRole(role);
+                  return (
+                    <td key={role} className="border-b-0 border h-24 w-1/4">
+                      {signature?.qrCode && (
+                        <img
+                          src={signature.qrCode}
+                          alt={`QR ${role}`}
+                          className="mx-auto w-24"
+                        />
+                      )}
+                    </td>
+                  );
+                })}
                 <td className="border-b-0 border h-24 w-1/4"></td>
               </tr>
+
+              {/* Baris Button / User Name */}
               <tr className="text-center">
-                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  {!getSignatureByRole("PURCHASING")
-                    ? user?.authorities?.some(
-                        (auth) =>
-                          auth.fileType === "PURCHASE_ORDER" &&
-                          auth.role.toUpperCase() === "PURCHASING"
-                      ) && (
-                        <button
-                          onClick={() => handleSign("PURCHASING")}
-                          disabled={loadingButton}
-                          className="user-button-add"
-                        >
-                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
-                        </button>
-                      )
-                    : user?.fullName}
-                </td>
-                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  {!getSignatureByRole("FINANCE")
-                    ? user?.authorities?.some(
-                        (auth) =>
-                          auth.fileType === "PURCHASE_ORDER" &&
-                          auth.role.toUpperCase() === "FINANCE"
-                      ) && (
-                        <button
-                          onClick={() => handleSign("FINANCE")}
-                          disabled={loadingButton}
-                          className="user-button-add"
-                        >
-                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
-                        </button>
-                      )
-                    : user?.fullName}
-                </td>
-                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  {!getSignatureByRole("DIREKSI")
-                    ? user?.authorities?.some(
-                        (auth) =>
-                          auth.fileType === "PURCHASE_ORDER" &&
-                          auth.role.toUpperCase() === "DIREKSI"
-                      ) && (
-                        <button
-                          onClick={() => handleSign("DIREKSI")}
-                          disabled={loadingButton}
-                          className="user-button-add"
-                        >
-                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
-                        </button>
-                      )
-                    : user?.fullName}
-                </td>
+                {["PURCHASING", "FINANCE", "DIREKSI"].map((role) => {
+                  const signature = getSignatureByRole(role);
+                  const hasAuthority = user?.authorities?.some(
+                    (auth) =>
+                      auth.fileType === "PURCHASE_ORDER" &&
+                      auth.role.toUpperCase() === role
+                  );
+                  return (
+                    <td
+                      key={role}
+                      className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom"
+                    >
+                      {!signature
+                        ? hasAuthority && (
+                            <button
+                              onClick={() => handleSign(role)}
+                              disabled={loadingButton}
+                              className="user-button-add"
+                            >
+                              {loadingButton
+                                ? "Memproses..."
+                                : "Isi Tanda tangan"}
+                            </button>
+                          )
+                        : signature?.userName}
+                    </td>
+                  );
+                })}
                 <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
                   Nama
                 </td>
               </tr>
+
               <tr className="text-center bg-gray-300">
                 <td className="border p-2">Purchasing</td>
                 <td className="border p-2">Finance</td>
@@ -542,15 +528,6 @@ export default function DetailPurchaseOrder() {
               </tr>
             </tbody>
           </table>
-
-          <div id="back-button" className="text-right mt-6">
-            <button
-              onClick={() => router.push("/purchase-order")}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 no-print"
-            >
-              Kembali
-            </button>
-          </div>
         </div>
       </div>
     </div>

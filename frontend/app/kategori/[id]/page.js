@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Swal from "sweetalert2";
-import { fetchWithToken } from "../../../services/fetchWithToken";
+import { fetchWithAuth } from "@/services/apiClient";
 
 export default function KategoriDetailPage() {
   const params = useParams();
@@ -16,13 +16,6 @@ export default function KategoriDetailPage() {
   const router = useRouter();
   const [sortBy, setSortBy] = useState("name");
 
-  const [token, setToken] = useState(null);
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) setToken(storedToken);
-  }, []);
-
   useEffect(() => {
     if (id) {
       fetchCategoryDetail();
@@ -31,21 +24,23 @@ export default function KategoriDetailPage() {
 
   const fetchCategoryDetail = async () => {
     try {
-      const res = await fetchWithToken(
+      // 1️⃣ Ambil response category
+      const categoryResponse = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/categories/${id}`,
-        token,
-        setToken,
-        () => router.push("/login")
+        { method: "GET" }
       );
-      const material = await fetchWithToken(
+      const categoryData = await categoryResponse.json();
+
+      // 2️⃣ Ambil response materials
+      const materialResponse = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_API_URL}/materials?categoryId=${id}`,
-        token,
-        setToken,
-        () => router.push("/login")
-      )
-      if (!res) throw new Error("Gagal mengambil data kategori");
-      setCategory(res);
-      setMaterial(material)
+        { method: "GET" }
+      );
+      const materialData = await materialResponse.json();
+
+      // 3️⃣ Simpan state
+      setCategory(categoryData);
+      setMaterial(materialData);
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
