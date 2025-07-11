@@ -8,6 +8,7 @@ import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
 import Pagination from "@/component/Pagination";
+import Link from "next/link";
 
 const ConfirmationOrderTable = () => {
   const [data, setData] = useState([]);
@@ -198,6 +199,8 @@ const ConfirmationOrderTable = () => {
                 <th className="border p-2">Nomor</th>
                 <th className="border p-2">Tanggal</th>
                 <th className="border p-2">Lokasi</th>
+                <th className="border p-2">Permintaan</th>
+                <th className="border p-2">Status</th>
                 <th className="border p-2">Aksi</th>
               </tr>
             </thead>
@@ -219,6 +222,14 @@ const ConfirmationOrderTable = () => {
                         : "N/A"}
                     </td>
                     <td className="border p-2">{co.lokasiCO}</td>
+                    <td className="border p-2">
+                      <Link href={`/permintaan-lapangan/${co.permintaan?.id}`}>
+                        <span className="text-blue-600 hover:underline font-medium">
+                          {co.permintaan?.nomor}
+                        </span>
+                      </Link>
+                    </td>
+                    <td className="border p-2">{co.status}</td>
                     <td className="border p-2">
                       <ActionButtons
                         onView={() =>

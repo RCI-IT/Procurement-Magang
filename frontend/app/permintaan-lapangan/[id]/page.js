@@ -223,8 +223,8 @@ export default function DetailPermintaanLapangan() {
       <div className="flex-1 p-6">
         <div></div>
         <div className="flex justify-end space-x-2 no-print">
-          {user?.role === "USER_PURCHASE" ||
-            (dataSign.length === 0 || data.status === 'READ'&& (
+          {user?.role === "USER_LAPANGAN" &&
+            (dataSign.length << 0 || data.status !== 'READ'&& (
               <button
                 onClick={handleEdit}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"

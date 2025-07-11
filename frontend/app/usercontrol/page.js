@@ -3,23 +3,23 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { fetchWithToken } from "../../services/fetchWithToken";
-import { Eye, EyeOff, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import "../../styles/globals.css";
 import Pagination from "@/component/Pagination";
 import { FaRegEdit } from "react-icons/fa";
 
-function PasswordCell({ password }) {
-  const [showPassword, setShowPassword] = useState(false);
-  return (
-    <div className="flex items-center justify-center gap-2">
-      <span>{showPassword ? password : "Coba Tekan Ini ~>"}</span>
-      <button onClick={() => setShowPassword(!showPassword)}>
-        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-      </button>
-    </div>
-  );
-}
+// function PasswordCell({ password }) {
+//   const [showPassword, setShowPassword] = useState(false);
+//   return (
+//     <div className="flex items-center justify-center gap-2">
+//       <span>{showPassword ? password : "Coba Tekan Ini ~>"}</span>
+//       <button onClick={() => setShowPassword(!showPassword)}>
+//         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+//       </button>
+//     </div>
+//   );
+// }
 
 export default function User() {
   const [users, setUsers] = useState([]);
@@ -204,7 +204,7 @@ export default function User() {
                   <th>Username</th>
                   <th>Fullname</th>
                   <th>Email</th>
-                  <th>Password</th>
+                  {/* <th>Password</th> */}
                   <th>Role</th>
                   <th>Aksi</th>
                 </tr>
@@ -216,9 +216,9 @@ export default function User() {
                     <td>{user.username}</td>
                     <td>{user.fullName}</td>
                     <td>{user.email}</td>
-                    <td>
+                    {/* <td>
                       <PasswordCell password={user.password} />
-                    </td>
+                    </td> */}
                     <td>{user.role}</td>
                     <td className="space-x-2">
                       <button

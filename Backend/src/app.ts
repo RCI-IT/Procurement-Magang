@@ -1,5 +1,6 @@
 // 🔧 Core Modules
 import path from "path";
+import fs from "fs"; 
 
 // 📦 Third-party Modules
 import express from "express";
@@ -19,6 +20,12 @@ import sign from "./routes/sign";
 // 🔒 Middleware
 import authMiddleware from "./middleware/authMiddleware";
 
+// 🗂️ Ensure Upload Directory Exists
+const uploadDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const app = express();
 const corsOptions = {
   origin: [
@@ -35,9 +42,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use("/uploads", express.static(path.join(uploadDir)));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Public routes
 app.use("/auth", auth);

@@ -202,7 +202,7 @@ const PurchaseOrderTable = () => {
                             })
                           : "N/A"}
                       </td>
-                      <td className="border p-2">{po.lokasiPO}</td>
+                      <td className="border p-2">{po.confirmationOrder?.lokasiCO}</td>
                       <td className="border px-4 py-2 text-center">
                         {confirm ? (
                           <button

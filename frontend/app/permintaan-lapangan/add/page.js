@@ -10,10 +10,11 @@ import { checkDuplicate } from "@/utils/duplicate-check";
 export default function AddPermintaanLapanganForm({}) {
   const router = useRouter();
   const [detailErrors, setDetailErrors] = useState([]);
+  const today = new Date().toISOString().split("T")[0];
 
   const [formData, setFormData] = useState({
     nomor: "",
-    tanggal: { day: "", month: "", year: "" },
+    tanggal: today,
     lokasi: "",
     picLapangan: "",
     keterangan: "",
@@ -32,15 +33,7 @@ export default function AddPermintaanLapanganForm({}) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.startsWith("tanggal")) {
-      const field = name.split(".")[1];
-      setFormData((prev) => ({
-        ...prev,
-        tanggal: { ...prev.tanggal, [field]: value },
-      }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Modifikasi handleDetailChange untuk otomatis isi code material jika materialId berubah
@@ -96,9 +89,7 @@ export default function AddPermintaanLapanganForm({}) {
 
     if (
       !formData.nomor ||
-      !formData.tanggal.day ||
-      !formData.tanggal.month ||
-      !formData.tanggal.year ||
+      !formData.tanggal ||
       !formData.lokasi ||
       !formData.picLapangan
     ) {
@@ -136,7 +127,7 @@ export default function AddPermintaanLapanganForm({}) {
 
     const finalData = {
       ...formData,
-      tanggal: `${formData.tanggal.year}-${formData.tanggal.month}-${formData.tanggal.day}`,
+      tanggal: formData.tanggal,
       detail: formData.detail.map((d) => ({
         materialName: d.materialName,
         qty: Number(d.qty),
@@ -240,49 +231,13 @@ export default function AddPermintaanLapanganForm({}) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-gray-300 rounded">
             <div>
               <label className="block font-medium mb-1">Tanggal</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  name="tanggal.day"
-                  placeholder="day"
-                  value={formData.tanggal.day}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded px-2 py-1 w-16"
-                />
-                <span>/</span>
-                <select
-                  name="tanggal.month"
-                  value={formData.tanggal.month}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded px-2 py-1 w-auto min-w-[80px]"
-                >
-                  <option value="">month</option>
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {new Date(0, i).toLocaleString("id-ID", {
-                        month: "long",
-                      })}
-                    </option>
-                  ))}
-                </select>
-                <span>/</span>
-                <select
-                  name="tanggal.year"
-                  value={formData.tanggal.year}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded px-2 py-1 w-24"
-                >
-                  <option value="">year</option>
-                  {Array.from(
-                    { length: new Date().getFullYear() - 2018 },
-                    (_, i) => (
-                      <option key={2019 + i} value={2019 + i}>
-                        {2019 + i}
-                      </option>
-                    )
-                  )}
-                </select>
-              </div>
+              <input
+                type="date"
+                name="tanggal"
+                value={formData.tanggal}
+                onChange={handleChange}
+                className="border border-gray-300 rounded px-3 py-2 w-60"
+              />
             </div>
 
             <div>

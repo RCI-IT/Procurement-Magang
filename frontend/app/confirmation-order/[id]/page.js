@@ -267,7 +267,29 @@ export default function ConfirmationOrderDetail() {
           confirmButtonText: "OK",
         });
 
-        router.back();
+        if (
+          ConfirmationDetails?.confirmationDetails?.length > 0 &&
+          ConfirmationDetails.confirmationDetails.every(
+            (detail) => detail.status === "ACC"
+          )
+        ) {
+          const response = await fetchWithAuth(
+            `${process.env.NEXT_PUBLIC_API_URL}/confirmation/${id}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ status: "COMPLETED" }),
+            }
+          );
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Gagal update acc-details");
+          }
+        }
+        fetchData();
       }
     } catch (error) {
       console.error("Error konfirmasi: ", error.message);
@@ -298,10 +320,11 @@ export default function ConfirmationOrderDetail() {
       <div className="w-full max-w-6xl mx-auto px-8">
         <div></div>
         <div className="text-right space-x-2">
-          {user?.role !== "USER_LAPANGAN" &&
+          {user?.role === "USER_PURCHASE" &&
             !ConfirmationDetails?.confirmationDetails?.some(
               (detail) => detail.status === "ACC"
-            ) || dataSign.length < 1 && (
+            ) &&
+            dataSign.length === 0 && (
               <button
                 onClick={() => router.push(`/confirmation-order/${id}/edit`)}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
@@ -393,6 +416,14 @@ export default function ConfirmationOrderDetail() {
                       {ConfirmationDetails?.permintaan?.nomor || "N/A"}
                     </td>
                   </tr>
+                  <tr className="border">
+                    <td className="border px-2 py-1 font-semibold text-center">
+                      Lokasi CO
+                    </td>
+                    <td className="border px-2 py-1 text-center">
+                      {ConfirmationDetails?.lokasiCO || "N/A"}
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -426,12 +457,9 @@ export default function ConfirmationOrderDetail() {
                   <th className="border p-2 w-35" rowSpan={2}>
                     Total
                   </th>
-                  {(user?.role === "USER_LAPANGAN" ||
-                    user?.role === "ADMIN") && (
-                    <th className="border p-2 w-35 status-header" rowSpan={2}>
-                      Aksi
-                    </th>
-                  )}
+                  <th className="border p-2 w-35 status-header" rowSpan={2}>
+                    Aksi
+                  </th>
                 </tr>
                 <tr className="bg-blue-600 text-white">
                   <th className="border p-2 w-12">QTY</th>
@@ -477,23 +505,25 @@ export default function ConfirmationOrderDetail() {
                         <td className="border px-4 py-2 text-center">
                           Rp{total.toLocaleString()}
                         </td>
-                        {(user?.role === "USER_LAPANGAN" ||
-                          user?.role === "ADMIN") && (
-                          <td className="border px-4 py-2 text-center status-column">
-                            {item.status === "ACC" ? (
-                              <span className="text-green-600 font-semibold">
-                                ACC
-                              </span>
-                            ) : (
-                              <input
-                                type="checkbox"
-                                checked={selectedItems.includes(item.id)}
-                                onChange={() => handleCheckboxChange(item.id)}
-                                className="w-6 h-6"
-                              />
-                            )}
-                          </td>
-                        )}
+                        <td className="border px-4 py-2 text-center status-column">
+                          {item.status === "ACC" ? (
+                            <span className="text-green-600 font-semibold">
+                              ACC
+                            </span>
+                          ) : user?.role === "USER_LAPANGAN" ||
+                            user?.role === "ADMIN" ? (
+                            <input
+                              type="checkbox"
+                              checked={selectedItems.includes(item.id)}
+                              onChange={() => handleCheckboxChange(item.id)}
+                              className="w-6 h-6"
+                            />
+                          ) : (
+                            <span className="text-gray-500 italic">
+                              Belum ACC
+                            </span>
+                          )}
+                        </td>
                       </tr>
                     );
                   })
@@ -526,16 +556,19 @@ export default function ConfirmationOrderDetail() {
                   >
                     Rp{totalHarga.toLocaleString()}
                   </td>
-                  {(user?.role === "USER_LAPANGAN" ||
-                    user?.role === "ADMIN") && (
-                    <td
-                      colSpan="1"
-                      rowSpan={2}
-                      className="p-2 text-center border status-column"
-                    >
-                      <ActionButtons onKonfirmasi={handleKonfirmasi} />
-                    </td>
-                  )}
+                  {ConfirmationDetail?.confirmationDetails?.some(
+                    (detail) => detail.status !== "ACC"
+                  ) &&
+                    (user?.role === "USER_LAPANGAN" ||
+                      user?.role === "ADMIN") && (
+                      <td
+                        colSpan="1"
+                        rowSpan={2}
+                        className="p-2 text-center border status-column"
+                      >
+                        <ActionButtons onKonfirmasi={handleKonfirmasi} />
+                      </td>
+                    )}
                 </tr>
                 <tr>
                   <td
