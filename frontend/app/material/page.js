@@ -14,7 +14,7 @@ export default function Material() {
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [rowsToShow, setRowsToShow] = useState(5);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1); 
   const [sortBy, setSortBy] = useState("terbaru");
   const [token, setToken] = useState(null);
   const router = useRouter();
@@ -41,33 +41,27 @@ export default function Material() {
 
   // 2️⃣ Ambil data dari server setelah token tersedia
   useEffect(() => {
-    if (token) {
-      fetchData();
-    }
+    if (token) fetchData();
   }, [token]);
 
   const fetchData = async () => {
     try {
-      const materialResponse = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_API_URL}/materials`,
-        {
+      const [materialResponse, vendorResponse] = await Promise.all([
+        fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/materials`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // ✅ Sekarang dengan token
+            Authorization: `Bearer ${token}`,
           },
-        }
-      );
-      const vendorResponse = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_API_URL}/vendors`,
-        {
+        }),
+        fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/vendors`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // ✅ Sekarang dengan token
+            Authorization: `Bearer ${token}`,
           },
-        }
-      );
+        }),
+      ]);
 
       if (!materialResponse.ok || !vendorResponse.ok) {
         Swal.fire({
@@ -75,6 +69,7 @@ export default function Material() {
           title: "Data Masih Kosong",
           text: "Mohon lengkapi semua data, sebelum tambah material.",
         });
+        return;
       }
 
       const materialData = await materialResponse.json();
@@ -90,10 +85,12 @@ export default function Material() {
   const handleVendorClick = (vendorId) => {
     if (vendorId) router.push(`/vendor/${vendorId}`);
   };
+
   const handleMaterialClick = (materialId) => {
     localStorage.setItem("selectedMaterialId", materialId);
     router.push(`/material/${materialId}`);
   };
+
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Apakah kamu yakin?",
@@ -103,6 +100,7 @@ export default function Material() {
       confirmButtonText: "Ya, hapus!",
       cancelButtonText: "Batal",
     });
+
     if (!result.isConfirmed) return;
 
     try {
@@ -112,10 +110,11 @@ export default function Material() {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // ✅ Sekarang dengan token
+            Authorization: `Bearer ${token}`,
           },
         }
       );
+
       if (!response.ok) {
         const errorData = await response.json();
         const message =
@@ -123,22 +122,26 @@ export default function Material() {
         Swal.fire("Gagal!", message, "error");
         return;
       }
+
       setMaterials((prev) => prev.filter((material) => material.id !== id));
       Swal.fire("Berhasil!", "Material berhasil dihapus.", "success");
     } catch (error) {
       console.error("Error deleting material:", error);
-      Swal.fire(
-        "Gagal!",
-        `Gagal menghapus material: ${error.message}`,
-        "error"
-      );
+      Swal.fire("Gagal!", `Gagal menghapus material: ${error.message}`, "error");
     }
   };
-  const sortedMaterials = [...materials]
-    .filter((m) => m.name.toLowerCase().includes(searchQuery))
+
+  // 🔎 Search + Sort
+  const filteredAndSortedMaterials = [...materials]
+    .filter(
+      (item) =>
+        item.code?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     .sort((a, b) => {
       const vendorA = vendors.find((v) => v.id === a.vendorId)?.name || "";
       const vendorB = vendors.find((v) => v.id === b.vendorId)?.name || "";
+
       switch (sortBy) {
         case "nama":
           return a.name.localeCompare(b.name);
@@ -154,16 +157,13 @@ export default function Material() {
           return 0;
       }
     });
-  const totalPages = Math.ceil(sortedMaterials.length / rowsToShow);
-  const currentData = sortedMaterials.slice(
+
+  const totalPages = Math.ceil(filteredAndSortedMaterials.length / rowsToShow);
+  const currentData = filteredAndSortedMaterials.slice(
     (currentPage - 1) * rowsToShow,
     currentPage * rowsToShow
   );
-  if (!materials) {
-    return (
-      <div className="text-center text-gray-500">Material tidak ditemukan.</div>
-    );
-  }
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -171,6 +171,12 @@ export default function Material() {
       </div>
     );
   }
+
+  if (!materials.length) {
+    return (
+      <div className="text-center text-gray-500">Material tidak ditemukan.</div>
+    );
+  } 
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -232,6 +238,7 @@ export default function Material() {
                   <th className="border px-4 py-2">No</th>
                   <th className="border px-4 py-2">Code</th>
                   <th className="border px-4 py-2">Nama</th>
+                  <th className="border px-4 py-2">Satuan</th>
                   <th className="border px-4 py-2">Gambar</th>
                   <th className="border px-4 py-2">Vendor</th>
                   <th className="border px-4 py-2">Harga</th>
@@ -255,6 +262,9 @@ export default function Material() {
                         </td>
                         <td className="border px-4 py-2 text-center">
                           {material.name}
+                        </td>
+                        <td className="border px-4 py-2 text-center">
+                          {material.unit}
                         </td>
                         <td className="border px-4 py-2 text-center">
                           <img

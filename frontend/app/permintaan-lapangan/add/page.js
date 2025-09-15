@@ -194,7 +194,7 @@ export default function AddPermintaanLapanganForm({}) {
 
       setFormData({
         nomor: "",
-        tanggal: { day: "", month: "", year: "" },
+        tanggal: today,
         lokasi: "",
         picLapangan: "",
         keterangan: "",
@@ -211,7 +211,9 @@ export default function AddPermintaanLapanganForm({}) {
         ],
       });
 
-      router.back();
+      const data = await response.json()
+      const newId = data.id
+      router.push(`/permintaan-lapangan/${newId}`);
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
@@ -362,7 +364,7 @@ export default function AddPermintaanLapanganForm({}) {
                       )}
                       <br />
                       <div className="flex flex-col">
-                        <label className="block font-medium">Code:</label>
+                        <label className="block font-medium">Code Budget:</label>
                         <input
                           type="text"
                           value={item.code}

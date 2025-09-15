@@ -114,10 +114,7 @@ export default function DetailPermintaanLapangan() {
     setLoadingButton(true);
     try {
       const blob = await pdf(
-        <PermintaanPDF
-          data={data}
-          dataSign={dataSign}
-        />
+        <PermintaanPDF data={data} dataSign={dataSign} />
       ).toBlob();
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank"); // <-- Langsung buka tab baru
@@ -224,14 +221,14 @@ export default function DetailPermintaanLapangan() {
         <div></div>
         <div className="flex justify-end space-x-2 no-print">
           {user?.role === "USER_LAPANGAN" &&
-            (dataSign.length << 0 || data.status !== 'READ'&& (
+            (dataSign.length <= 0 || data.status !== "READ") && (
               <button
                 onClick={handleEdit}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-32 text-center"
               >
                 Edit
               </button>
-            ))}
+            )}
           <button
             onClick={handlePrint}
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-32 text-center"
@@ -460,7 +457,7 @@ export default function DetailPermintaanLapangan() {
               </tr>
               {/* Baris: QR Code */}
               <tr>
-                {["ENGINEER_CHECKER", "ENGINEER_REQUESTER"].map((role) => {
+                {["ENGINEER_CHECKER", "LOGISTIC"].map((role) => {
                   const signature = getSignatureByRole(role);
                   return (
                     <td
@@ -482,7 +479,7 @@ export default function DetailPermintaanLapangan() {
 
               {/* Baris: Nama atau Tombol */}
               <tr>
-                {["ENGINEER_CHECKER", "ENGINEER_REQUESTER"].map((role) => {
+                {["ENGINEER_CHECKER", "LOGISTIC"].map((role) => {
                   const signature = getSignatureByRole(role);
                   const isAuthorized = user?.authorities?.some(
                     (auth) =>
@@ -524,7 +521,7 @@ export default function DetailPermintaanLapangan() {
                   colSpan={1}
                   className="border bg-gray-300 border-gray-300 h-8 text-center text-sm py-1"
                 >
-                  Site Manager
+                  Engineer
                 </td>
               </tr>
             </tbody>

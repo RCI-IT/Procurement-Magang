@@ -11,11 +11,12 @@ import { checkDuplicate } from "@/utils/duplicate-check";
 // ======================== Main Component ========================
 
 export default function AddConfirmationOrder() {
+  const today = new Date().toISOString().split("T")[0];
   const [formData, setFormData] = useState({
     nomorCO: "",
     lokasiCO: "",
     idPL: "",
-    tanggalCO: "",
+    tanggalCO: today,
     vendorId: "",
   });
 
@@ -168,7 +169,7 @@ export default function AddConfirmationOrder() {
       return;
     }
 
-    console.log(payload)
+    console.log(payload);
 
     try {
       const response = await fetchWithAuth(
@@ -186,7 +187,9 @@ export default function AddConfirmationOrder() {
           title: "Berhasil",
           text: "Confirmation Order berhasil ditambahkan!",
         });
-        router.back();
+        const data = await response.json(); 
+        const newId = data.id;
+        router.push(`/confirmation-order/${newId}`);
       } else {
         Swal.fire({
           icon: "error",
@@ -422,7 +425,11 @@ function ItemSelector({
                       onChange={(e) => {
                         const val = e.target.value;
                         const parsed = parseInt(val);
-                        handleItemDetailChange(item.id, "qty", val === "" ? "" : isNaN(parsed) ? 0 : parsed);
+                        handleItemDetailChange(
+                          item.id,
+                          "qty",
+                          val === "" ? "" : isNaN(parsed) ? 0 : parsed
+                        );
                       }}
                     />
                     <InputField

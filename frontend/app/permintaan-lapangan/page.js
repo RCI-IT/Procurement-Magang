@@ -42,9 +42,7 @@ export default function PermintaanLapangan() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    const storedToken = localStorage.getItem("token");
-
-    if (!storedUser || !storedToken) {
+    if (!storedUser) {
       setTimeout(() => router.push("/login"), 800);
       return;
     }
@@ -52,8 +50,50 @@ export default function PermintaanLapangan() {
     try {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
-      setToken(storedToken);
-      setTimeout(() => setIsLoading(false), 500);
+      const fetchData = async () => {
+        try {
+          const REQUIRED_ROLES = ["LOGISTIC", "ENGINEER_CHECKER"];
+
+          const data = await fetchWithToken(
+            `${process.env.NEXT_PUBLIC_API_URL}/permintaan`,
+            token,
+            setToken,
+            () => router.push("/login")
+          );
+
+          const allData = data;
+          const signedData = [];
+          for (const pl of allData) {
+            const signing = await fetchWithAuth(
+              `${process.env.NEXT_PUBLIC_API_URL}/signing/PERMINTAAN_LAPANGAN/${pl.id}`,
+              { method: "GET" }
+            );
+            const res = await signing.json();
+
+            if (res && Array.isArray(res.signatures)) {
+              const signedRoles = res.signatures.map((sig) => sig.role);
+              const allRolesSigned = REQUIRED_ROLES.every((role) =>
+                signedRoles.includes(role)
+              );
+
+              if (allRolesSigned) {
+                signedData.push(pl);
+              }
+            }
+          }
+          if (parsedUser?.role === "USER_PURCHASE") {
+            setUpdatedData(signedData);
+          } else {
+            setUpdatedData(allData);
+          }
+        } catch (err) {
+          console.error(err.message);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchData();
     } catch (error) {
       console.error("User JSON parse error:", error);
       router.push("/login");
@@ -70,27 +110,6 @@ export default function PermintaanLapangan() {
     };
   };
   const getStatus = (status) => status;
-
-  useEffect(() => {
-    if (!token) return;
-
-    const fetchPermintaanLapangan = async () => {
-      try {
-        const data = await fetchWithToken(
-          `${process.env.NEXT_PUBLIC_API_URL}/permintaan`,
-          token,
-          setToken,
-          () => router.push("/login")
-        );
-        if (Array.isArray(data)) {
-          setUpdatedData(data);
-        }
-      } catch (error) {
-        console.error("Gagal mengambil data permintaan lapangan:", error);
-      }
-    };
-    fetchPermintaanLapangan();
-  }, [token, router]);
 
   const handleDetail = async (id) => {
     if (user?.role === "USER_PURCHASE" || user?.role === "ADMIN") {
@@ -263,7 +282,11 @@ export default function PermintaanLapangan() {
                 paginatedData.map((item, index) => {
                   const { day, month, year } = parseDate(item.tanggal);
                   return (
-                    <tr key={item.id} className="hover:bg-gray-100 text-center">
+                    <tr key={item.id} className={`"hover:bg-gray-100 text-center "  ${
+                          item.status.toLowerCase() === "pending"
+                            ? "bg-yellow-100 text-yellow-800 font-semibold"
+                            : ""
+                        }`}>
                       <td className="border px-4 py-2">
                         {(currentPage - 1) * rowsToShow + index + 1}
                       </td>
@@ -273,11 +296,7 @@ export default function PermintaanLapangan() {
                       </td>
                       <td className="border px-4 py-2">{item.lokasi}</td>
                       <td
-                        className={`border px-4 py-2 ${
-                          item.status.toLowerCase() === "pending"
-                            ? "bg-yellow-100 text-yellow-800 font-semibold"
-                            : ""
-                        }`}
+                        className={`border px-4 py-2`}
                       >
                         {getStatus(item.status)}
                       </td>
@@ -288,7 +307,7 @@ export default function PermintaanLapangan() {
                         >
                           <Eye className="text-white" />
                         </button>
-                        {user?.role !== "USER_PURCHASE" && (
+                        {user?.role !== "USER_PURCHASE" && item.status !== 'READ' && (
                           <button
                             className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600"
                             onClick={() => handleDelete(item.id)}

@@ -3,18 +3,9 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const PermintaanStatus = {
-  PENDING: "PENDING",
-  APPROVED: "APPROVED",
-  REJECTED: "REJECTED",
-  PROCESSING: "PROCESSING",
-  COMPLETED: "COMPLETED",
-  CANCELLED: "CANCELLED",
-} as const;
-
 export const createPermintaanLapangan = async (req: Request, res: Response) => {
   try {
-    const { nomor, tanggal, lokasi, picLapangan, keterangan, detail } =
+    const { nomor, tanggal, lokasi, picLapangan, keterangan, detail, projectId } =
       req.body;
     if (
       !nomor ||
@@ -42,6 +33,7 @@ export const createPermintaanLapangan = async (req: Request, res: Response) => {
         lokasi,
         picLapangan,
         keterangan,
+        projectId,
         detail: {
           create: detail.map((item: any) => ({
             materialName: item.materialName,
@@ -57,6 +49,7 @@ export const createPermintaanLapangan = async (req: Request, res: Response) => {
 
     res.status(201).json({
       message: "Permintaan lapangan berhasil dibuat",
+      id: newPermintaan.id,
       data: newPermintaan,
     });
   } catch (error: any) {

@@ -56,7 +56,7 @@ const menuGroups = [
         label: "Purchase Order",
         icon: "🛒",
         page: "purchase-order",
-        roles: ["USER_PURCHASE", "ADMIN"],
+        roles: ["USER_PURCHASE", "ADMIN", "USER_LAPANGAN"],
       },
     ],
   },

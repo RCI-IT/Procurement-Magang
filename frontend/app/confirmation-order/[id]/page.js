@@ -267,9 +267,10 @@ export default function ConfirmationOrderDetail() {
           confirmButtonText: "OK",
         });
 
+        fetchData();
         if (
           ConfirmationDetails?.confirmationDetails?.length > 0 &&
-          ConfirmationDetails.confirmationDetails.every(
+          ConfirmationDetails.confirmationDetails.some(
             (detail) => detail.status === "ACC"
           )
         ) {
@@ -289,7 +290,6 @@ export default function ConfirmationOrderDetail() {
             throw new Error(errorData.message || "Gagal update acc-details");
           }
         }
-        fetchData();
       }
     } catch (error) {
       console.error("Error konfirmasi: ", error.message);
@@ -449,14 +449,25 @@ export default function ConfirmationOrderDetail() {
                     Gambar
                   </th>
                   <th className="border p-2" rowSpan={2}>
-                    Harga
+                    Spesifikasi
                   </th>
+                  {user?.role === "USER_LAPANGAN" ? (
+                    ""
+                  ) : (
+                    <th className="border p-2" rowSpan={2}>
+                      Harga
+                    </th>
+                  )}
                   <th className="border p-2 w-12 " colSpan="2">
                     Permintaan
                   </th>
-                  <th className="border p-2 w-35" rowSpan={2}>
-                    Total
-                  </th>
+                  {user?.role === "USER_LAPANGAN" ? (
+                    ""
+                  ) : (
+                    <th className="border p-2 w-35" rowSpan={2}>
+                      Total
+                    </th>
+                  )}
                   <th className="border p-2 w-35 status-header" rowSpan={2}>
                     Aksi
                   </th>
@@ -495,23 +506,36 @@ export default function ConfirmationOrderDetail() {
                             priority
                           />
                         </td>
-                        <td className="border px-4 py-2 text-center">
-                          Rp{harga.toLocaleString()}
+                        <td className="border px-4 py-2">
+                          {item.material ? item.material.description : "N/A"}
                         </td>
+                        {user?.role === "USER_LAPANGAN" ? (
+                          ""
+                        ) : (
+                          <td className="border px-4 py-2 text-center">
+                            Rp{harga.toLocaleString()}
+                          </td>
+                        )}
+
                         <td className="border px-4 py-2 text-center">{qty}</td>
                         <td className="border px-4 py-2 text-center">
                           {item.satuan || "N/A"}
                         </td>
-                        <td className="border px-4 py-2 text-center">
-                          Rp{total.toLocaleString()}
-                        </td>
+                        {user?.role === "USER_LAPANGAN" ? (
+                          ""
+                        ) : (
+                          <td className="border px-4 py-2 text-center">
+                            Rp{total.toLocaleString()}
+                          </td>
+                        )}
                         <td className="border px-4 py-2 text-center status-column">
                           {item.status === "ACC" ? (
                             <span className="text-green-600 font-semibold">
                               ACC
                             </span>
-                          ) : user?.role === "USER_LAPANGAN" ||
-                            user?.role === "ADMIN" ? (
+                          ) : (user?.role === "USER_LAPANGAN" ||
+                              user?.role === "ADMIN") &&
+                            ConfirmationDetail.status !== "COMPLETED" ? (
                             <input
                               type="checkbox"
                               checked={selectedItems.includes(item.id)}
@@ -520,7 +544,9 @@ export default function ConfirmationOrderDetail() {
                             />
                           ) : (
                             <span className="text-gray-500 italic">
-                              Belum ACC
+                              {ConfirmationDetail.status === "COMPLETED"
+                                ? "Tidak ACC"
+                                : "Belum ACC"}
                             </span>
                           )}
                         </td>
@@ -566,7 +592,11 @@ export default function ConfirmationOrderDetail() {
                         rowSpan={2}
                         className="p-2 text-center border status-column"
                       >
-                        <ActionButtons onKonfirmasi={handleKonfirmasi} />
+                        {ConfirmationDetail.status !== "COMPLETED" ? (
+                          <ActionButtons onKonfirmasi={handleKonfirmasi} />
+                        ) : (
+                          ""
+                        )}
                       </td>
                     )}
                 </tr>
@@ -609,93 +639,72 @@ export default function ConfirmationOrderDetail() {
                   Diketahui
                 </td>
               </tr>
-              <tr>
-                <td className="border-b-0 border h-24 w-1/4">
-                  {getSignatureByRole("PURCHASING")?.qrCode && (
-                    <img
-                      src={getSignatureByRole("PURCHASING").qrCode}
-                      alt="QR PM"
-                      className="mx-auto w-24"
-                    />
-                  )}
-                </td>
-                <td className="border-b-0 border h-24 w-1/4">
-                  {getSignatureByRole("PIC_LAPANGAN")?.qrCode && (
-                    <img
-                      src={getSignatureByRole("PIC_LAPANGAN").qrCode}
-                      alt="QR PM"
-                      className="mx-auto w-24"
-                    />
-                  )}
-                </td>
-                <td className="border-b-0 border h-24 w-1/4">
-                  {getSignatureByRole("SITE_MANAGER")?.qrCode && (
-                    <img
-                      src={getSignatureByRole("SITE_MANAGER").qrCode}
-                      alt="QR PM"
-                      className="mx-auto w-24"
-                    />
-                  )}
-                </td>
-              </tr>
-              <tr className="text-center">
-                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  {!getSignatureByRole("PURCHASING")
-                    ? user?.authorities?.some(
+              {["qr", "label", "role"].map((type) => (
+                <tr
+                  key={type}
+                  className={`text-center align-bottom ${
+                    type === "role" ? "bg-gray-300" : ""
+                  }`}
+                >
+                  {["PURCHASING", "PIC_LAPANGAN", "SITE_MANAGER"].map(
+                    (role) => {
+                      const signature = getSignatureByRole(role);
+                      const canSign = user?.authorities?.some(
                         (auth) =>
                           auth.fileType === "CONFIRMATION_ORDER" &&
-                          auth.role.toUpperCase() === "PURCHASING"
-                      ) && (
-                        <button
-                          onClick={() => handleSign("PURCHASING")}
-                          disabled={loadingButton}
-                          className="user-button-add"
-                        >
-                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
-                        </button>
-                      )
-                    : getSignatureByRole("PURCHASING")?.userName}
-                </td>
-                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  {!getSignatureByRole("PIC_LAPANGAN")
-                    ? user?.authorities?.some(
-                        (auth) =>
-                          auth.fileType === "CONFIRMATION_ORDER" &&
-                          auth.role.toUpperCase() === "PIC_LAPANGAN"
-                      ) && (
-                        <button
-                          onClick={() => handleSign("PIC_LAPANGAN")}
-                          disabled={loadingButton}
-                          className="user-button-add"
-                        >
-                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
-                        </button>
-                      )
-                    : getSignatureByRole("PIC_LAPANGAN")?.userName}
-                </td>
-                <td className="no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom">
-                  {!getSignatureByRole("SITE_MANAGER")
-                    ? user?.authorities?.some(
-                        (auth) =>
-                          auth.fileType === "CONFIRMATION_ORDER" &&
-                          auth.role.toUpperCase() === "SITE_MANAGER"
-                      ) && (
-                        <button
-                          onClick={() => handleSign("SITE_MANAGER")}
-                          disabled={loadingButton}
-                          className="user-button-add"
-                        >
-                          {loadingButton ? "Memproses..." : "Isi Tanda tangan"}
-                        </button>
-                      )
-                    : getSignatureByRole("SITE_MANAGER")?.userName}
-                </td>
-              </tr>
-              <tr className="text-center bg-gray-300">
-                <td className="border p-2">Purchasing</td>
-                <td className="border p-2">PIC Lapangan</td>
-                <td className="border p-2">Site Manager</td>
-              </tr>
+                          auth.role.toUpperCase() === role
+                      );
+
+                      // Tentukan className sesuai baris
+                      const tdClassName =
+                        type === "qr"
+                          ? "border-b-0 border h-24 w-1/4"
+                          : type === "label"
+                          ? "no-print border border-gray-300 border-t-0 text-center p-1 leading-none align-bottom"
+                          : "border p-2"; // for 'role'
+
+                      return (
+                        <td key={role + type} className={tdClassName}>
+                          {type === "qr" && signature?.qrCode && (
+                            <img
+                              src={signature.qrCode}
+                              alt={`QR ${role}`}
+                              className="mx-auto w-24"
+                            />
+                          )}
+
+                          {type === "label" &&
+                            (!signature
+                              ? canSign && (
+                                  <button
+                                    onClick={() => handleSign(role)}
+                                    disabled={loadingButton}
+                                    className="user-button-add"
+                                  >
+                                    {loadingButton
+                                      ? "Memproses..."
+                                      : "Isi Tanda tangan"}
+                                  </button>
+                                )
+                              : signature.userName)}
+
+                          {type === "role" && (
+                            <>
+                              {role === "PURCHASING"
+                                ? "Purchasing"
+                                : role === "PIC_LAPANGAN"
+                                ? "PIC Lapangan"
+                                : role === "SITE_MANAGER"
+                                ? "Site Manager"
+                                : role}
+                            </>
+                          )}
+                        </td>
+                      );
+                    }
+                  )}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

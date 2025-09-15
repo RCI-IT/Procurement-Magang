@@ -16,7 +16,6 @@ export const createConfirmationOrder = async (
     if (
       !nomorCO ||
       !tanggalCO ||
-      !lokasiCO ||
       !permintaanId ||
       !Array.isArray(items) ||
       items.length === 0
@@ -73,7 +72,6 @@ export const createConfirmationOrder = async (
       data: {
         nomorCO,
         tanggalCO: new Date(tanggalCO),
-        lokasiCO,
         permintaan: {
           connect: { id: permintaanId },
         },
@@ -97,6 +95,7 @@ export const createConfirmationOrder = async (
     // ✅ 6. Response
     res.status(201).json({
       message: "Confirmation Order berhasil dibuat",
+      id: confirmationOrder.id,
       confirmationOrder,
     });
   } catch (error) {

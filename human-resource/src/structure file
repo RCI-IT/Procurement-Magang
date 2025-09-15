@@ -1,0 +1,233 @@
+frontend_hr/
+├── public/
+├── src/
+│   ├── assets/              # Gambar, logo, dll
+│   ├── components/          # Reusable UI components
+│   │   ├── Button/
+│   │   └── Table/
+│   ├── features/            # Modular fitur per domain
+│   │   ├── auth/
+│   │   │   ├── hooks/useAuth.ts
+│   │   │   ├── LoginPage.tsx
+│   │   │   └── authService.ts
+│   │   ├── karyawan/
+│   │   │   ├── hooks/useKaryawanData.ts
+│   │   │   ├── components/KaryawanTable.tsx
+│   │   │   └── karyawanService.ts
+│   │   └── departemen/
+│   │       ├── hooks/useDepartemenData.ts
+│   │       ├── components/DepartemenTable.tsx
+│   │       └── departemenService.ts
+│   ├── hooks/              # Global custom hooks
+│   │   └── useWindowSize.ts
+│   ├── pages/              # Page-level components (routing target)
+│   │   ├── Dashboard.tsx
+│   │   ├── Login.tsx
+│   │   └── KaryawanPage.tsx
+│   ├── routes/             # React Router config
+│   │   └── index.tsx
+│   ├── services/           # Fetch API global (axios, fetcher, etc)
+│   │   ├── fetcher.ts
+│   │   └── apiURL.ts
+│   ├── store/              # Zustand/Redux (jika pakai)
+│   ├── types/              # Global type declarations
+│   │   ├── employee.ts
+│   │   └── auth.ts
+│   ├── utils/              # Fungsi helper umum
+│   │   ├── localStorage.ts
+│   │   ├── fileValidation.ts
+│   │   ├── numberOnly.ts
+│   │   └── setCurrency.ts
+│   ├── App.tsx
+│   └── main.tsx
+├── .env
+├── tsconfig.json
+├── vite.config.ts
+└── package.json
+
+
+
+3. Dashboard Template + Routing Setup
+pages/
+├── Dashboard.tsx
+├── Login.tsx
+├── KaryawanPage.tsx
+└── DepartemenPage.tsx
+
+
+ Dashboard.tsx
+tsx
+Copy
+Edit
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const Dashboard = () => {
+  return (
+    <div>
+      <h2>Dashboard HR</h2>
+      <nav>
+        <Link to="/karyawan">Karyawan</Link> | 
+        <Link to="/departemen">Departemen</Link>
+      </nav>
+    </div>
+  );
+};
+
+export default Dashboard;
+
+
+ Login.tsx (sederhana)
+tsx
+Copy
+Edit
+import React, { useState } from 'react';
+import { useAuth } from '../features/auth/hooks/useAuth';
+
+const Login = () => {
+  const { handleLogin, error } = useAuth();
+  const [user, setUser] = useState({ username: '', password: '' });
+
+  return (
+    <div>
+      <h2>Login</h2>
+      <input placeholder="Username" onChange={(e) => setUser({ ...user, username: e.target.value })} />
+      <input placeholder="Password" type="password" onChange={(e) => setUser({ ...user, password: e.target.value })} />
+      <button onClick={() => handleLogin(user.username, user.password)}>Login</button>
+      {error && <p>{error}</p>}
+    </div>
+  );
+};
+
+export default Login;
+✨ KaryawanPage.tsx & DepartemenPage.tsx
+tsx
+Copy
+Edit
+// KaryawanPage.tsx
+import { KaryawanTable } from '../features/karyawan/components/KaryawanTable';
+export default function KaryawanPage() {
+  return (
+    <div>
+      <h2>Data Karyawan</h2>
+      <KaryawanTable />
+    </div>
+  );
+}
+tsx
+Copy
+Edit
+// DepartemenPage.tsx
+import { DepartemenTable } from '../features/departemen/components/DepartemenTable';
+export default function DepartemenPage() {
+  return (
+    <div>
+      <h2>Data Departemen</h2>
+      <DepartemenTable />
+    </div>
+  );
+}
+🔁 4. Routing Setup
+✨ routes/index.tsx
+tsx
+Copy
+Edit
+import { Routes, Route } from 'react-router-dom';
+import Dashboard from '../pages/Dashboard';
+import Login from '../pages/Login';
+import KaryawanPage from '../pages/KaryawanPage';
+import DepartemenPage from '../pages/DepartemenPage';
+import PrivateRoute from './PrivateRoute';
+
+const AppRoutes = () => {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+      <Route path="/karyawan" element={<PrivateRoute><KaryawanPage /></PrivateRoute>} />
+      <Route path="/departemen" element={<PrivateRoute><DepartemenPage /></PrivateRoute>} />
+    </Routes>
+  );
+};
+
+export default AppRoutes;
+✨ App.tsx
+tsx
+Copy
+Edit
+import { BrowserRouter } from 'react-router-dom';
+import AppRoutes from './routes';
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  );
+}
+
+export default App;
+
+
+
+Dengan setup ini kamu sudah punya:
+
+✅ Modular fitur karyawan & departemen
+✅ PrivateRoute untuk secure page
+✅ Dashboard HR simple & clean
+✅ Reuse data lewat localStorage + SWR
+
+Kalau kamu mau:
+🛠️ Aku bisa bantu setup themeing, dark mode, atau layout dengan sidebar dan topbar juga.
+💡 Atau langsung konversi ke Next.js kalau butuh SSR.
+
+
+ Bonus: Versi dengan Nama Bulan (dalam Bahasa Indonesia)
+ts
+Copy
+Edit
+const bulanIndo = [
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+];
+
+const rawDate = "4202-03-01T00:00:00.000Z";
+const date = new Date(rawDate);
+
+const day = String(date.getDate()).padStart(2, "0");
+const monthName = bulanIndo[date.getMonth()];
+const year = date.getFullYear();
+
+const formatted = `${day} ${monthName} ${year}`;
+console.log(formatted); // Output: "01 Maret 4202"
+
+
+
+Custom Format Manual: DD/MM/YYYY
+ts
+Copy
+Edit
+const rawDate = "4202-03-01T00:00:00.000Z";
+const date = new Date(rawDate);
+
+const day = String(date.getDate()).padStart(2, "0");
+const month = String(date.getMonth() + 1).padStart(2, "0"); // bulan dari 0
+const year = date.getFullYear();
+
+const formatted = `${day}/${month}/${year}`;
+console.log(formatted); // Output: "01/03/4202"
+
+
+
+1. Gunakan toLocaleDateString (Simple)
+
+const rawDate = "4202-03-01T00:00:00.000Z";
+const date = new Date(rawDate);
+
+const formatted = date.toLocaleDateString("id-ID", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+});
+
+console.log(formatted); // Output: "01 Maret 4202"

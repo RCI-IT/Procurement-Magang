@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Employees {
+  id             String                  @id @default(uuid())
+  employeeNumber String                  @unique
+  idCardNumber   String                  @unique
+  image          String
+  fullName       String
+  birth          String
+  birthDate      DateTime                @db.Date
+  gender         String
+  religion       String
+  address        String
+  email          String                  @unique
+  phone          String                  @unique
+  education      String
+  school         String
+  major          String
+  position       String
+  status         Status                  @default(ACTIVE)
+  leaveDate      DateTime?               @db.Date // untuk cuti
+  resignDate     DateTime?               @db.Date // untuk berhenti
+  salary         Int                     @default(0)
+  hireDate       DateTime?               @db.Date
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  document       EmployeeDocuments?
+  sertificate    EmployeeCertification[]
+}
+
+enum Status {
+  ACTIVE
+  ONLEAVE
+  RESIGN
+}
+
+model EmployeeDocuments {
+  id         String    @id @default(uuid())
+  employeeId String    @unique
+  idCard     String
+  taxCard    String?
+  familyCard String
+  diploma    String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  employee   Employees @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model EmployeeCertification {
+  id               String    @id @default(uuid())
+  certificate      String?
+  employeeId       String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  qualification    String // KUALIFIKASI
+  subQualification String // SUBKUALIFIKASI
+  certificateNo    String    @unique // NO. SERTIFIKAT
+  registrationNo   String? // NO. REGISTRASI
+  level            Int? // LEVEL
+  issueDate        DateTime // MASA AKTIF TERBIT
+  expireDate       DateTime // MASA AKTIF EXPIRED
+  status           String // TERPAKAI/BELUM
+  company          String? // PERUSAHAAN
+  documentLink     String? // LINK DOCUMENT
+  account          String? // Akun
+  password         String? // Password
+  sbu              String? // SBU
+  employee         Employees @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+// model Department {
+//   id          String                 @id @default(uuid())
+//   departmentName String                 @unique
+//   createdAt      DateTime               @default(now())
+//   updatedAt      DateTime               @updatedAt
+//   employees     Employees[]
+// }

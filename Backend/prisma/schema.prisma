@@ -8,6 +8,68 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Project {
+  id             String   @id @default(uuid())
+  name           String
+  code           String
+  location       String
+  owner          String
+  contractNo     String
+  startDate      DateTime
+  endDate        DateTime
+  projectManager String
+
+  status           ProjectStatus
+  assignments      ProjectAssignment[]
+  budgetItem       BudgetItem[]
+  budgetCategories BudgetCategory[]
+  fieldRequests    PermintaanLapangan[]
+  purchaseOrders   PurchaseOrder[]
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+}
+
+model ProjectAssignment {
+  id            String      @id @default(cuid())
+  employeeId    String // Foreign key dari backend karyawan
+  projectId     String
+  roleInProject ProjectRole
+
+  project   Project  @relation(fields: [projectId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([employeeId, projectId])
+}
+
+model BudgetCategory {
+  id       String           @id @default(uuid())
+  name     String
+  parentId String?
+  projectId String?
+  parent   BudgetCategory?  @relation("CategoryParent", fields: [parentId], references: [id])
+  children BudgetCategory[] @relation("CategoryParent")
+
+  items     BudgetItem[]
+  Project   Project?     @relation(fields: [projectId], references: [id])
+}
+
+model BudgetItem {
+  id          String  @id @default(cuid())
+  projectId   String
+  categoryId  String?
+  // budgetCode  String  @unique
+  description String // Contoh: Rental Mobil Operasional
+  unit        String? // Contoh: Unit, Org, Lot, Bln
+  quantity    Float? // Contoh: 2
+  frequency   Int? // Contoh: 2 Bln
+  duration    Int? // Contoh: 4 Bln (lama waktu)
+
+  project        Project         @relation(fields: [projectId], references: [id])
+  budgetCategory BudgetCategory? @relation(fields: [categoryId], references: [id])
+
+  @@unique([projectId, categoryId, description], name: "unique_item_per_project")
+}
+
 model PermintaanLapangan {
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
@@ -15,15 +77,35 @@ model PermintaanLapangan {
   tanggal            DateTime
   lokasi             String
   picLapangan        String
-  status             PermintaanStatus    @default(PENDING)
+  status             Status              @default(PENDING)
   isConfirmed        Boolean             @default(false)
   isReceived         Boolean             @default(false)
   keterangan         String?
   id                 Int                 @id @default(autoincrement())
   userId             Int?
+  projectId          String?
   confirmationOrders ConfirmationOrder[]
   detail             PermintaanDetails[]
   user               User?               @relation(fields: [userId], references: [id])
+  project            Project?            @relation(fields: [projectId], references: [id])
+}
+
+model ConfirmationOrder {
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  nomorCO             String                @unique
+  tanggalCO           DateTime
+  keterangan          String?
+  status              Status                @default(PENDING)
+  id                  Int                   @id @default(autoincrement())
+  userId              Int?
+  permintaanId        Int?
+  vendorId            Int?
+  confirmationDetails ConfirmationDetails[]
+  permintaan          PermintaanLapangan?   @relation(fields: [permintaanId], references: [id])
+  user                User?                 @relation(fields: [userId], references: [id])
+  purchaseOrder       PurchaseOrder?        @relation("COToPO")
+  vendor              Vendors?              @relation(fields: [vendorId], references: [id]) // ✅ Tambahan  
 }
 
 model PurchaseOrder {
@@ -34,43 +116,12 @@ model PurchaseOrder {
   tanggalPO           DateTime
   keterangan          String?
   confirmationOrderId Int               @unique
-  userId              Int?             // ✅ Tambahan
+  userId              Int? // ✅ Tambahan
   purchaseDetails     PurchaseDetails[]
   confirmationOrder   ConfirmationOrder @relation("COToPO", fields: [confirmationOrderId], references: [id], onDelete: Cascade)
   user                User?             @relation(fields: [userId], references: [id])
-}
-
-
-model PurchaseDetails {
-  qty             Int
-  code            String
-  satuan          String
-  keterangan      String?
-  status          POStatus      @default(IN_PROGRESS)
-  id              Int           @id @default(autoincrement())
-  purchaseOrderId Int
-  materialId      Int
-  material        Materials     @relation(fields: [materialId], references: [id], onDelete: Cascade)
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
-}
-
-model ConfirmationOrder {
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  nomorCO             String                @unique
-  tanggalCO           DateTime
-  lokasiCO            String
-  keterangan          String?
-  status              COStatus              @default(PENDING)
-  id                  Int                   @id @default(autoincrement())
-  userId              Int?
-  permintaanId        Int?
-  vendorId            Int?
-  confirmationDetails ConfirmationDetails[]
-  permintaan          PermintaanLapangan?   @relation(fields: [permintaanId], references: [id])
-  user                User?                 @relation(fields: [userId], references: [id])
-  purchaseOrder       PurchaseOrder?        @relation("COToPO")
-  vendor              Vendors?           @relation(fields: [vendorId], references: [id]) // ✅ Tambahan  
+  projectId           String?
+  Project             Project?          @relation(fields: [projectId], references: [id])
 }
 
 model ConfirmationDetails {
@@ -78,7 +129,7 @@ model ConfirmationDetails {
   code                String
   keterangan          String?
   satuan              String
-  status              DetailStatus      @default(PENDING)
+  status              Status            @default(PENDING)
   mention             String?
   id                  Int               @id @default(autoincrement())
   confirmationOrderId Int
@@ -95,11 +146,24 @@ model PermintaanDetails {
   mention      String?
   code         String
   keterangan   String?
-  status       PLDStatus          @default(PENDING)
+  status       Status             @default(PENDING)
   id           Int                @id @default(autoincrement())
   permintaanId Int
   materialName String
   permintaan   PermintaanLapangan @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
+}
+
+model PurchaseDetails {
+  qty             Int
+  code            String
+  satuan          String
+  keterangan      String?
+  status          Status        @default(IN_PROGRESS)
+  id              Int           @id @default(autoincrement())
+  purchaseOrderId Int
+  materialId      Int
+  material        Materials     @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
 }
 
 model Materials {
@@ -129,14 +193,14 @@ model Categories {
 }
 
 model Vendors {
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  name      String
-  address   String?
-  city      String?
-  phone     String?
-  id        Int         @id @default(autoincrement())
-  materials Materials[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  name         String
+  address      String?
+  city         String?
+  phone        String?
+  id           Int                 @id @default(autoincrement())
+  materials    Materials[]
   ConfirmOrder ConfirmationOrder[]
 }
 
@@ -187,38 +251,17 @@ model SigningAuthority {
   @@unique([userId, fileType, role])
 }
 
-enum PermintaanStatus {
+enum Status {
+  ACTIVE
   PENDING
   APPROVED
   REJECTED
-  IN_PROGRESS
+  IN_PROGRESS // gunakan ini, hindari "PROCESSING" supaya tidak ambigu
   CLOSED
   CANCELLED
   READ
-}
-
-enum COStatus {
-  PENDING
-  CLOSED
-  APPROVED
-  REJECTED
-  PROCESSING
   COMPLETED
-  CANCELLED
-  IN_PROGRESS
-  READ
-}
-
-enum POStatus {
-  PENDING
-  CLOSED
-  APPROVED
-  REJECTED
-  PROCESSING
-  COMPLETED
-  CANCELLED
-  IN_PROGRESS
-  READ
+  ACC // jika tetap dibutuhkan
 }
 
 enum UserRole {
@@ -227,43 +270,33 @@ enum UserRole {
   USER_LAPANGAN
 }
 
-enum DetailStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  IN_PROGRESS
-  CLOSED
-  CANCELLED
-  READ
-  ACC
-}
-
-enum PLDStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  IN_PROGRESS
-  CLOSED
-  CANCELLED
-  READ
-}
-
 enum FileType {
   PERMINTAAN_LAPANGAN
   CONFIRMATION_ORDER
   PURCHASE_ORDER
-  PL
-  CO
-  PO
 }
 
 enum SigningRole {
   ENGINEER_REQUESTER
   ENGINEER_CHECKER
+  LOGISTIC
   PIC_LAPANGAN
   PURCHASING
   SITE_MANAGER
   VENDOR
   FINANCE
   DIREKSI
+}
+
+enum ProjectStatus {
+  BERJALAN
+  SELESAI
+  TERTUNDA
+  ONGOING
+}
+
+enum ProjectRole {
+  PM
+  PROCUREMENT
+  STAFF
 }

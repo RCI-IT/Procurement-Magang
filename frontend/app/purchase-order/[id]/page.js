@@ -328,7 +328,7 @@ export default function DetailPurchaseOrder() {
               <div className="flex">
                 <div className="w-28 font-semibold">Address</div>
                 <div>
-                  :
+                  :{" "}
                   {capitalizeIndonesia(data.confirmationOrder?.vendor?.address)}
                   {data.confirmationOrder?.vendor?.address &&
                   data.confirmationOrder?.vendor?.city

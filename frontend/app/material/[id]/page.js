@@ -130,7 +130,7 @@ export default function MaterialPage() {
             <img
               src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${material.imageUrl}`}
               alt={material.image}
-              className="object-cover max-h-72"
+              className="w-[400px] h-[200px] object-cover mx-auto"
             />
           </div>
           <div className="flex-grow">

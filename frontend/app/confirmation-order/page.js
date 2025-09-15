@@ -34,34 +34,60 @@ const ConfirmationOrderTable = () => {
     try {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
-      setTimeout(() => setIsLoading(false), 500);
+
+      const fetchData = async () => {
+        try {
+          const REQUIRED_ROLES = ["PURCHASING"];
+          const response = await fetchWithToken(
+            `${process.env.NEXT_PUBLIC_API_URL}/confirmation`,
+            token,
+            setToken,
+            () => router.push("/login")
+          );
+          if (!response) {
+            throw new Error(`Gagal mengambil data: ${response.statusText}`);
+          }
+
+          const allData = response;
+          const signedData = [];
+
+          for (const co of allData) {
+            const signing = await fetchWithAuth(
+              `${process.env.NEXT_PUBLIC_API_URL}/signing/CONFIRMATION_ORDER/${co.id}`,
+              { method: "GET" }
+            );
+            const res = await signing.json();
+
+            if (res && Array.isArray(res.signatures)) {
+              const signedRoles = res.signatures.map((sig) => sig.role);
+              const allRolesSigned = REQUIRED_ROLES.every((role) =>
+                signedRoles.includes(role)
+              );
+
+              if (allRolesSigned) {
+                signedData.push(co);
+              }
+            }
+          }
+
+          if (parsedUser?.role === "USER_LAPANGAN") {
+            setData(signedData);
+          } else {
+            setData(allData);
+          }
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchData();
     } catch (error) {
       console.error("User JSON parse error:", error);
       router.push("/login");
     }
   }, [router]);
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetchWithToken(
-          `${process.env.NEXT_PUBLIC_API_URL}/confirmation`,
-          token,
-          setToken,
-          () => router.push("/login")
-        );
-        if (!response) {
-          throw new Error(`Gagal mengambil data: ${response.statusText}`);
-        }
-        setData(response);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   useEffect(() => {
     let filtered = Array.isArray(data)
@@ -126,7 +152,7 @@ const ConfirmationOrderTable = () => {
     }
   };
 
-  const ActionButtons = ({ onView, onDelete }) => (
+  const ActionButtons = ({ onView, onDelete, status }) => (
     <div className="flex justify-center gap-4">
       <button
         onClick={onView}
@@ -134,12 +160,14 @@ const ConfirmationOrderTable = () => {
       >
         <Eye />
       </button>
-      <button
-        onClick={onDelete}
-        className="bg-red-500 hover:bg-red-600 text-white rounded-xl w-12 h-12 flex items-center justify-center"
-      >
-        <Trash2 />
-      </button>
+      {user?.role !== "USER_LAPANGAN" && status !== "COMPLETED" && (
+        <button
+          onClick={onDelete}
+          className="bg-red-500 hover:bg-red-600 text-white rounded-xl w-12 h-12 flex items-center justify-center"
+        >
+          <Trash2 />
+        </button>
+      )}
     </div>
   );
 
@@ -207,7 +235,12 @@ const ConfirmationOrderTable = () => {
             <tbody>
               {paginatedData.length > 0 ? (
                 paginatedData.map((co, index) => (
-                  <tr key={co.id} className="text-center border">
+                  <tr
+                    key={co.id}
+                    className={`text-center border ${
+                      co.status === "PENDING" ? "bg-yellow-100" : "bg-none"
+                    }`}
+                  >
                     <td className="border p-2">
                       {(currentPage - 1) * rowsToShow + index + 1}
                     </td>
@@ -236,6 +269,7 @@ const ConfirmationOrderTable = () => {
                           router.push(`/confirmation-order/${co.id}`)
                         }
                         onDelete={() => handleDelete(co.id)}
+                        status={co.status}
                       />
                     </td>
                   </tr>

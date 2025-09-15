@@ -16,9 +16,21 @@ services:
         condition: service_healthy
     networks:
       - procurement-net
-    extra_hosts:
-      - "procurement.rci:host-gateway"
-      - "api.procurement.rci:host-gateway"
+
+  employeebackend:
+    build: ./backendHR
+    container_name: employeebackend
+    hostname: employeebackend
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgres://postgres:rekaciptainovasi@employee-db:5432/humanresource?schema=public
+      PORT: 4000
+    depends_on:
+      employee-db:
+        condition: service_healthy
+    networks:
+      - procurement-net
 
   frontend:
     build:
@@ -27,19 +39,36 @@ services:
     container_name: procurementfrontend
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3000"
     volumes:
       - ./frontend:/app
       - /app/node_modules
       - /app/.next
     environment:
-      NEXT_PUBLIC_API_URL: http://procurement.rci/api  # Sesuaikan dengan reverse proxy nginx
+      NEXT_PUBLIC_API_URL: http://backend:5000  # internal call
     depends_on:
       - backend
     networks:
       - procurement-net
-    extra_hosts:
-      - "procurement.rci:host-gateway"
+
+  employee-frontend:
+    build:
+      context: ./human-resource
+      dockerfile: Dockerfile
+    container_name: employeefrontend
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./human-resource:/src
+      - /app/node_modules
+      - /app/.next
+    environment:
+      NEXT_PUBLIC_API_URL: http://employeebackend:4000  # internal call
+    depends_on:
+      - employeebackend
+    networks:
+      - procurement-net
 
   db:
     image: postgres:15
@@ -60,9 +89,26 @@ services:
       retries: 5
     networks:
       - procurement-net
-    extra_hosts:
-      - "procurement.rci:host-gateway"
-      - "api.procurement.rci:host-gateway"
+
+  employee-db:
+    image: postgres:15
+    container_name: employeedb
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: rekaciptainovasi
+      POSTGRES_DB: humanresource
+    ports:
+      - "5433:5432"
+    volumes:
+      - employee_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - procurement-net
 
   nginx:
     image: nginx:latest
@@ -75,11 +121,14 @@ services:
     depends_on:
       - frontend
       - backend
+      - employeebackend
+      - employee-frontend
     networks:
       - procurement-net
 
 volumes:
   postgres_data:
+  employee_postgres_data:
 
 networks:
   procurement-net:

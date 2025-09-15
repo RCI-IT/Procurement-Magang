@@ -17,6 +17,7 @@ const FILE_TYPES = [
 const SIGNING_ROLES = [
   { value: "ENGINEER_REQUESTER", label: "Engineer Requester" },
   { value: "ENGINEER_CHECKER", label: "Engineer Checker" },
+  { value: "LOGISTIC", label: "Logistic" },
   { value: "PIC_LAPANGAN", label: "PIC Lapangan" },
   { value: "PURCHASING", label: "Purchasing" },
   { value: "SITE_MANAGER", label: "Site Manager" },

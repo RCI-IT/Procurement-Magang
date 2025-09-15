@@ -7,25 +7,47 @@ import Swal from "sweetalert2";
 import { fetchWithToken } from "@/services/fetchWithToken";
 import { fetchWithAuth } from "@/services/apiClient";
 import Pagination from "@/component/Pagination";
+import { sortData } from "@/utils/sortUtils";
 
 const PurchaseOrderTable = () => {
+  const router = useRouter();
+
   const [data, setData] = useState([]);
   const [confirmation, setConfirmation] = useState([]);
   const [search, setSearch] = useState("");
   const [rowsToShow, setRowsToShow] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
-  const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sortBy, setSortBy] = useState("terbaru");
+  const [sortConfig, setSortConfig] = useState({
+    key: "tanggalPO",
+    direction: "desc",
+  });
+  const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [totalPages, setTotalPages] = useState(0);
 
+  // Ambil user & token dari localStorage
   useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      setTimeout(() => router.push("/login"), 800);
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+    } catch (err) {
+      console.error("Gagal parsing user:", err);
+    }
+
     const storedToken = localStorage.getItem("token");
     if (storedToken) setToken(storedToken);
-  }, []);
-  const router = useRouter();
+  }, [router]);
 
+  // Ambil data Purchase dan Confirmation
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -35,9 +57,9 @@ const PurchaseOrderTable = () => {
           setToken,
           () => router.push("/login")
         );
-        if (!response) {
-          throw new Error(`Gagal mengambil data: ${response.statusText}`);
-        }
+
+        if (!response) throw new Error("Gagal mengambil data Purchase Order");
+
         setData(response);
 
         const confirmData = await fetchWithToken(
@@ -46,6 +68,7 @@ const PurchaseOrderTable = () => {
           setToken,
           () => router.push("/login")
         );
+
         if (confirmData) setConfirmation(confirmData);
       } catch (err) {
         setError(err.message);
@@ -54,32 +77,39 @@ const PurchaseOrderTable = () => {
       }
     };
 
-    fetchData();
-  }, []);
+    if (token) fetchData();
+  }, [token]);
 
+  const handleSort = (key) => {
+    const direction =
+      sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc";
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) return "⇅";
+    return sortConfig.direction === "asc" ? "▲" : "▼";
+  };
+
+  // Sort
+  const sortedData = sortData(data, sortConfig);
+
+  // Filter berdasarkan search query
+  const filteredData = sortedData.filter((item) =>
+    item.nomorPO?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Hitung total halaman
   useEffect(() => {
-    let filtered = Array.isArray(data) ? data.filter(
-      (item) =>
-        item.nomorPO?.toLowerCase().includes(search.toLowerCase()) ||
-        item.lokasiPO?.toLowerCase().includes(search.toLowerCase())
-    ): [];
+    setTotalPages(Math.ceil(filteredData.length / rowsToShow));
+  }, [filteredData, rowsToShow]);
 
-    if (sortBy === "terbaru") {
-      filtered.sort((a, b) => new Date(a.tanggalPO) - new Date(b.tanggalPO));
-    } else if (sortBy === "terlama") {
-      filtered.sort((a, b) => new Date(b.tanggalPO) - new Date(a.tanggalPO));
-    }
-
-    setFilteredData(filtered);
-    setCurrentPage(1);
-  }, [search, data, sortBy]);
-
-  const totalPages = Math.ceil(filteredData.length / rowsToShow);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * rowsToShow,
     currentPage * rowsToShow
   );
 
+  // Handle Delete
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Yakin ingin menghapus Purchase Order ini?",
@@ -94,14 +124,10 @@ const PurchaseOrderTable = () => {
       try {
         const response = await fetchWithAuth(
           `${process.env.NEXT_PUBLIC_API_URL}/purchase/${id}`,
-          {
-            method: "DELETE",
-          }
+          { method: "DELETE" }
         );
 
-        if (!response.ok) {
-          throw new Error("Gagal menghapus Purchase Order");
-        }
+        if (!response.ok) throw new Error("Gagal menghapus Purchase Order");
 
         Swal.fire("Dihapus!", "Purchase Order berhasil dihapus.", "success");
         setData(data.filter((item) => item.id !== id));
@@ -119,12 +145,14 @@ const PurchaseOrderTable = () => {
       >
         <Eye />
       </button>
-      <button
-        onClick={onDelete}
-        className="bg-red-500 hover:bg-red-600 text-white rounded-xl w-12 h-12 flex items-center justify-center"
-      >
-        <Trash2 />
-      </button>
+      {user?.role === "ADMIN" && (
+        <button
+          onClick={onDelete}
+          className="bg-red-500 hover:bg-red-600 text-white rounded-xl w-12 h-12 flex items-center justify-center"
+        >
+          <Trash2 />
+        </button>
+      )}
     </div>
   );
 
@@ -138,7 +166,14 @@ const PurchaseOrderTable = () => {
             <label className="mr-2">Urutkan:</label>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSortBy(value);
+                setSortConfig({
+                  key: "tanggalPO",
+                  direction: value === "terbaru" ? "desc" : "asc",
+                });
+              }}
               className="border border-gray-300 rounded px-2 py-1 text-sm"
             >
               <option value="terbaru">Terbaru</option>
@@ -174,8 +209,18 @@ const PurchaseOrderTable = () => {
             <thead>
               <tr className="bg-blue-600 text-white">
                 <th className="border p-2">No.</th>
-                <th className="border p-2">Nomor PO</th>
-                <th className="border p-2">Tanggal PO</th>
+                <th
+                  className="border p-2"
+                  onClick={() => handleSort("nomorPO")}
+                >
+                  Nomor PO {getSortIcon("nomorPO")}
+                </th>
+                <th
+                  className="border p-2"
+                  onClick={() => handleSort("tanggalPO")}
+                >
+                  Tanggal PO {getSortIcon("tanggalPO")}
+                </th>
                 <th className="border p-2">Lokasi</th>
                 <th className="border p-2">No CO</th>
                 <th className="border p-2">Aksi</th>
@@ -202,14 +247,15 @@ const PurchaseOrderTable = () => {
                             })
                           : "N/A"}
                       </td>
-                      <td className="border p-2">{po.confirmationOrder?.lokasiCO}</td>
+                      <td className="border p-2">
+                        {po.confirmationOrder?.lokasiCO}
+                      </td>
                       <td className="border px-4 py-2 text-center">
                         {confirm ? (
                           <button
-                            onClick={() => {
-                              if (confirm.id)
-                                router.push(`/confirmation-order/${confirm.id}`);
-                            }}
+                            onClick={() =>
+                              router.push(`/confirmation-order/${confirm.id}`)
+                            }
                             className="text-blue-500 underline"
                           >
                             {confirm.nomorCO}
@@ -229,7 +275,7 @@ const PurchaseOrderTable = () => {
                 })
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center p-4">
+                  <td colSpan="6" className="text-center p-4">
                     Tidak ada data Purchase Order
                   </td>
                 </tr>

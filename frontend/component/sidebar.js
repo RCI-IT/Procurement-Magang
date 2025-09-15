@@ -32,6 +32,87 @@ export default function Sidebar({ isMinimized, setIsMinimized }) {
 
   const menuItems = [
     {
+      group: "Manajemen Proyek",
+      roles: ["ADMIN", "USER_PURCHASE", "USER_LAPANGAN"],
+      children: [
+        {
+          id: "proyek-saya",
+          label: "Proyek Saya",
+          icon: "🏗️",
+          page: "proyek",
+          roles: ["ADMIN","USER_PURCHASE", "USER_LAPANGAN"],
+        },
+        {
+          id: "manajemen-proyek",
+          label: "Manajemen Proyek",
+          icon: "🗂️",
+          page: "admin/proyek",
+          roles: ["ADMIN"],
+        },
+        {
+          id: "penugasan-tim",
+          label: "Penugasan Tim",
+          icon: "👥",
+          page: "admin/penugasan",
+          roles: ["ADMIN"],
+        },
+        {
+          id: "manajemen-tim",
+          label: "Manajemen Tim",
+          icon: "👷",
+          page: "admin/karyawan",
+          roles: ["ADMIN"],
+        },
+      ],
+    },
+    {
+      group: "Transaksi",
+      roles: ["ADMIN", "USER_PURCHASE", "USER_LAPANGAN"],
+      children: [
+        {
+          id: "permintaan-lapangan",
+          label: "Permintaan Lapangan",
+          icon: "📄",
+          page: "permintaan-lapangan",
+          roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"],
+        },
+        {
+          id: "confirmation-order",
+          label: "Confirmation Order",
+          icon: "✔️",
+          page: "confirmation-order",
+          roles: ["USER_PURCHASE", "ADMIN", "USER_LAPANGAN"],
+        },
+        {
+          id: "purchase-order",
+          label: "Purchase Order",
+          icon: "🛒",
+          page: "purchase-order",
+          roles: ["USER_PURCHASE", "ADMIN", "USER_LAPANGAN"],
+        },
+      ],
+    },
+    {
+      group: "Anggaran",
+      roles: ["ADMIN", "USER_PURCHASE"],
+      children: [
+        {
+          id: "rencana-anggaran",
+          label: "Rencana Anggaran (RAB)",
+          icon: "📑",
+          page: "anggaran/rab",
+          roles: ["ADMIN", "USER_PURCHASE"],
+        },
+        {
+          id: "realisasi-anggaran",
+          label: "Realisasi & Kas",
+          icon: "💰",
+          page: "anggaran/realisasi",
+          roles: ["ADMIN", "USER_PURCHASE"],
+        },
+      ],
+    },
+    {
       group: "Data Master",
       roles: ["ADMIN", "USER_PURCHASE", "USER_LAPANGAN"],
       children: [
@@ -59,29 +140,22 @@ export default function Sidebar({ isMinimized, setIsMinimized }) {
       ],
     },
     {
-      group: "Transaksi",
-      roles: ["ADMIN", "USER_PURCHASE", "USER_LAPANGAN"],
+      group: "Laporan",
+      roles: ["ADMIN", "USER_PURCHASE"],
       children: [
         {
-          id: "permintaan-lapangan",
-          label: "Permintaan Lapangan",
-          icon: "📄",
-          page: "permintaan-lapangan",
-          roles: ["USER_LAPANGAN", "USER_PURCHASE", "ADMIN"],
+          id: "laporan-pengadaan",
+          label: "Laporan Pengadaan",
+          icon: "📊",
+          page: "laporan/pengadaan",
+          roles: ["ADMIN", "USER_PURCHASE"],
         },
         {
-          id: "confirmation-order",
-          label: "Confirmation Order",
-          icon: "✔️",
-          page: "confirmation-order",
-          roles: ["USER_PURCHASE", "ADMIN", "USER_LAPANGAN"],
-        },
-        {
-          id: "purchase-order",
-          label: "Purchase Order",
-          icon: "🛒",
-          page: "purchase-order",
-          roles: ["USER_PURCHASE", "ADMIN"],
+          id: "laporan-anggaran",
+          label: "Laporan Anggaran",
+          icon: "📉",
+          page: "laporan/anggaran",
+          roles: ["ADMIN"],
         },
       ],
     },
@@ -113,6 +187,8 @@ export default function Sidebar({ isMinimized, setIsMinimized }) {
       ],
     },
   ];
+  
+  
 
   if (isLoading) {
     return (

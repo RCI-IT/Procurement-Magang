@@ -1,6 +1,6 @@
 // 🔧 Core Modules
 import path from "path";
-import fs from "fs"; 
+import fs from "fs";
 
 // 📦 Third-party Modules
 import express from "express";
@@ -16,6 +16,8 @@ import usersRoutes from "./routes/users";
 import confirmationRoutes from "./routes/confirmation";
 import purchaseRoutes from "./routes/purchase";
 import sign from "./routes/sign";
+import { Project } from "./routes/project";
+import { Budget } from "./routes/budgetPlan"
 
 // 🔒 Middleware
 import authMiddleware from "./middleware/authMiddleware";
@@ -31,7 +33,6 @@ const corsOptions = {
   origin: [
     "http://localhost:3000",
     "http://192.168.110.253:3000",
-    "http://192.168.110.5:3000",
     "http://procurement.rci:3000",
   ],
   methods: "GET,POST,PUT,DELETE,OPTIONS",
@@ -60,6 +61,8 @@ app.use("/users", usersRoutes);
 app.use("/confirmation", confirmationRoutes);
 app.use("/purchase", purchaseRoutes);
 app.use("/signing", sign);
+app.use("/projects", Project)
+app.use("/budget-plan", Budget)
 app.use(
   (
     err: any,
