@@ -27,5 +27,5 @@ export const fetchWithAuth = async (url, options = {}) => {
     res = await doRequest();
   }
 
-  return res;
+  return res.json();
 };

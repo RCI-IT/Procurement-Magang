@@ -41,7 +41,7 @@ export default function LoginPage() {
         fullName: validUser.fullName,
         role: validUser.role,
         authorities: validUser.authorities, 
-        token: data.token,
+        // token: data.token,
       };
 
       localStorage.setItem("user", JSON.stringify(userData));

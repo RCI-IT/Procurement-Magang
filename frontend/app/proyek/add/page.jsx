@@ -1,12 +1,26 @@
 "use client";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import StatusSelect from "@/component/statusSelect";
+import { fetchWithAuth } from "@/services/apiClient";
 import Swal from "sweetalert2";
+
+// Contoh Data
+// {name: '14Oktober', code: 'dfjkdlkj', location: 'sdjkfks', owner: 'dfdk', contractNo: 'sdsd', …}
+// code : "dfjkdlkj"
+// contractNo : "sdsd"
+// endDate : "2025-10-14"
+// location : "sdjkfks"
+// name : "14Oktober"
+// owner : "dfdk"
+// projectManager : "cvcv"
+// startDate : "2025-10-02"
+// status : "BERJALAN"
 
 const today = new Date().toISOString().split("T")[0];
 
 export default function ProyekAdd() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -19,10 +33,11 @@ export default function ProyekAdd() {
     const finalData = {
       ...data,
     };
+    console.log(finalData)
 
     try {
       const response = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_API_URL}/project`,
+        `${process.env.NEXT_PUBLIC_API_URL}/projects`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -30,7 +45,7 @@ export default function ProyekAdd() {
         }
       );
 
-      if (!response.ok) {
+      if (!response) {
         throw new Error("Gagal menambahkan permintaan lapangan");
       }
 
@@ -39,6 +54,7 @@ export default function ProyekAdd() {
         title: "Permintaan berhasil ditambahkan!",
         confirmButtonText: "Ok",
       });
+      router.push(`/proyek`);
     } catch (error) {
       console.error(error);
       Swal.fire({
@@ -158,6 +174,7 @@ export default function ProyekAdd() {
               {...register("startDate", {
                 required: "Tanggal mulai kerja wajib diisi.",
               })}
+              defaultValue={today}
               className="w-full px-3 py-2 border border-gray-300 
               rounded-md shadow-sm placeholder-gray-400 
               focus:outline-none focus:ring-2 focus:ring-blue-500
@@ -216,7 +233,7 @@ export default function ProyekAdd() {
             <Controller
               name="status"
               control={control}
-              defaultValue="PENDING"
+              defaultValue="BERJALAN"
               rules={{ required: "Status wajib dipilih" }}
               render={({ field }) => (
                 <StatusSelect

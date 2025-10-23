@@ -1,10 +1,10 @@
 import Select from "react-select";
 
 const statusOptions = [
-  { value: "PENDING", label: "Pending", color: "#FACC15" },
-  { value: "ACTIVE", label: "Active", color: "#4ADE80" },
-  { value: "COMPLETED", label: "Completed", color: "#60A5FA" },
-  { value: "CANCELLED", label: "Cancelled", color: "#F87171" },
+  // { value: "PENDING", label: "Pending", color: "#FACC15" },
+  { value: "BERJALAN", label: "Berjalan", color: "#4ADE80" },
+  { value: "SELESAI", label: "Selesai", color: "#60A5FA" },
+  { value: "TERTUNDA", label: "Tertunda", color: "#F87171" },
 ];
 
 const colourStyles = {
