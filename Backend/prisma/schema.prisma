@@ -15,8 +15,8 @@ model Project {
   location       String
   owner          String
   contractNo     String
-  startDate      DateTime
-  endDate        DateTime
+  startDate      DateTime @db.Date
+  endDate        DateTime @db.Date
   projectManager String
 
   status           ProjectStatus
@@ -42,15 +42,15 @@ model ProjectAssignment {
 }
 
 model BudgetCategory {
-  id       String           @id @default(uuid())
-  name     String
-  parentId String?
+  id        String           @id @default(uuid())
+  name      String
+  parentId  String?
   projectId String?
-  parent   BudgetCategory?  @relation("CategoryParent", fields: [parentId], references: [id])
-  children BudgetCategory[] @relation("CategoryParent")
+  parent    BudgetCategory?  @relation("CategoryParent", fields: [parentId], references: [id])
+  children  BudgetCategory[] @relation("CategoryParent")
 
-  items     BudgetItem[]
-  Project   Project?     @relation(fields: [projectId], references: [id])
+  items   BudgetItem[]
+  Project Project?     @relation(fields: [projectId], references: [id])
 }
 
 model BudgetItem {
@@ -63,6 +63,7 @@ model BudgetItem {
   quantity    Float? // Contoh: 2
   frequency   Int? // Contoh: 2 Bln
   duration    Int? // Contoh: 4 Bln (lama waktu)
+  price       Int?
 
   project        Project         @relation(fields: [projectId], references: [id])
   budgetCategory BudgetCategory? @relation(fields: [categoryId], references: [id])

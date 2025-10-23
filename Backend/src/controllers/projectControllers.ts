@@ -90,6 +90,7 @@ export const projectController = {
         message: "Invalid or missing request body.",
         providedData: value,
       });
+      return;
     }
 
     // Daftar field yang wajib diisi
@@ -116,19 +117,21 @@ export const projectController = {
         message: `Missing required fields: ${missingFields.join(", ")}`,
         providedData: value,
       });
-    } 
+      return;
+    }
 
     try {
       const existingProject = await prisma.project.findFirst({
         where: {
-          code : value.code
-        }
-      })
+          code: value.code,
+        },
+      });
 
-      if(existingProject){
+      if (existingProject) {
         res.status(StatusCodes.CONFLICT).json({
           message: `Project with code "${value.code}" already exists.`,
         });
+        return;
       }
 
       const newProject = await prisma.project.create({
@@ -153,6 +156,7 @@ export const projectController = {
       const data = await prisma.project.findMany();
       if (data.length > 0) {
         res.status(StatusCodes.OK).json(data);
+        return;
       } else {
         return handleNotFoundResponse(res, "No data was found.");
       }
@@ -189,12 +193,42 @@ export const projectController = {
       const data = await prisma.project.findUnique({ where: { id } });
 
       if (!data) {
-        return handleNotFoundResponse(res, `${id} does not exist.`);
+        handleNotFoundResponse(res, `${id} does not exist.`);
+        return;
       }
+
+      if (
+        !updatedData ||
+        typeof updatedData !== "object" ||
+        Array.isArray(updatedData)
+      ) {
+        res.status(StatusCodes.BAD_REQUEST).json({
+          message: "Invalid or missing request body.",
+          providedData: updatedData,
+        });
+        return;
+      }
+
+      // 🧩 Ubah semua field yang namanya mengandung "Date" menjadi objek Date
+      const formattedData = Object.entries(updatedData).reduce(
+        (acc, [key, value]) => {
+          if (
+            typeof value === "string" &&
+            key.toLowerCase().includes("date") &&
+            /^\d{4}-\d{2}-\d{2}$/.test(value)
+          ) {
+            acc[key] = new Date(value);
+          } else {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, any>
+      );
 
       const updateData = await prisma.project.update({
         where: { id },
-        data: updatedData,
+        data: formattedData,
       });
 
       res.status(StatusCodes.OK).json(updateData);
@@ -218,6 +252,33 @@ export const projectController = {
       return handleBadRequestResponse(
         res,
         "An error occurred while processing the request."
+      );
+    }
+  },
+  delete: async (req: Request, res: Response) => {
+    const id = req.params.id;
+
+    try {
+      const data = await prisma.project.findUnique({
+        where: { id: id },
+      });
+      const budget = await prisma.budgetItem.findMany({
+        where: { projectId: id },
+      });
+      if (data && budget.length === 0) {
+        await prisma.project.delete({
+          where: { id: id },
+        });
+        res.status(200).json({ message: "Proyek berhasil dihapus." });
+      } else if (budget.length > 0) {
+        res.status(400).json({ message: "Ada budget dengan Proyek ini." });
+      } else {
+        res.status(500).json({ error: "Gagal menghapus proyek." });
+      }
+    } catch (error) {
+      return handleBadRequestResponse(
+        res,
+        "An error occured while fetching data."
       );
     }
   },

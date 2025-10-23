@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "http",
-        hostname: "192.168.110.254", // Allow loading images from this IP address
+        hostname: "192.168.110.253", // Allow loading images from this IP address
         port: "4000", // On port 4000
       }, 
       {
