@@ -323,14 +323,17 @@ export default function EditableMaterialTable({ initialData = mockData }) {
           Simpan Perubahan
         </button>
       </div>
-      <h2 className="text-xl font-semibold mb-2 text-blue-700">
-        Daftar Material Berdasarkan Kategori
-      </h2>
-      {renderCategories(data.categories)}
+      {/* MATERIAL TANPA KATEGORI */}
       <h2 className="text-xl font-semibold mt-6 mb-2 text-blue-700">
         Material Tanpa Kategori
       </h2>
       {renderMaterials(data.uncategorizedMaterials, ["uncategorizedMaterials"])}
+      
+      {/* KATEGORI + SUBKATEGORI */}
+      <h2 className="text-xl font-semibold mb-2 text-blue-700">
+        Daftar Material Berdasarkan Kategori
+      </h2>
+      {renderCategories(data.categories)}
     </div>
   );
 }
