@@ -104,20 +104,21 @@ const mockData = {
           children: [],
         },
         {
-          id: "cat-t-1", 
-          kategori: "Pemasangan Tiang", 
-          materials:[
+          id: "cat-t-1",
+          kategori: "Pemasangan Tiang",
+          materials: [
             {
               id: "1234",
-              name: "Bata", 
-              qty: 5, 
+              name: "Bata",
+              qty: 5,
               unit: "truk",
               frequency: "1",
-              duration: "2 hari", 
-              harga: 10000
-            }
-          ]
-        }
+              duration: "2 hari",
+              harga: 10000,
+            },
+          ],
+          children: [],
+        },
       ],
     },
   ],
@@ -137,14 +138,46 @@ const mockData = {
 export default function EditableMaterialTable({ initialData = mockData }) {
   const [data, setData] = useState(initialData);
 
-  // tracking perubahan
   const [changes, setChanges] = useState({
     added: { categories: [], materials: [] },
     updated: { categories: [], materials: [] },
     deleted: { categories: [], materials: [] },
   });
 
-  // ubah nilai material
+  // ✅ Tambah kategori baru
+  const handleAddCategory = (path) => {
+    const newData = structuredClone(data);
+    let target = newData;
+    for (const p of path) target = target[p];
+
+    target.push({
+      kategori: "Kategori Baru",
+      materials: [],
+      children: [],
+    });
+
+    setData(newData);
+  };
+
+  // ✅ Tambah material baru
+  const handleAddMaterial = (path) => {
+    const newData = structuredClone(data);
+    let target = newData;
+    for (const p of path) target = target[p];
+
+    target.push({
+      name: "Material Baru",
+      qty: 1,
+      unit: "pcs",
+      frequency: "",
+      duration: "",
+      harga: 0,
+    });
+
+    setData(newData);
+  };
+
+  // ✅ Update material
   const handleMaterialChange = (path, field, value) => {
     setData((prev) => {
       const updated = structuredClone(prev);
@@ -153,7 +186,6 @@ export default function EditableMaterialTable({ initialData = mockData }) {
       const mat = target[path.at(-1)];
       mat[field] = value;
 
-      // catat perubahan
       setChanges((prevChanges) => ({
         ...prevChanges,
         updated: {
@@ -169,7 +201,7 @@ export default function EditableMaterialTable({ initialData = mockData }) {
     });
   };
 
-  // hapus material
+  // ✅ Hapus material
   const handleDeleteMaterial = (path, index) => {
     setData((prev) => {
       const updated = structuredClone(prev);
@@ -190,7 +222,7 @@ export default function EditableMaterialTable({ initialData = mockData }) {
     });
   };
 
-  // hapus kategori
+  // ✅ Hapus kategori
   const handleDeleteCategory = (path, index) => {
     setData((prev) => {
       const updated = structuredClone(prev);
@@ -211,74 +243,98 @@ export default function EditableMaterialTable({ initialData = mockData }) {
     });
   };
 
-  const renderMaterials = (materials = [], pathPrefix) => (
-    <table className="w-full border border-gray-300 my-2 text-sm">
-      <thead className="bg-gray-100">
-        <tr>
-          <th className="p-2 border">Nama</th>
-          <th className="p-2 border">Qty</th>
-          <th className="p-2 border">Satuan</th>
-          <th className="p-2 border">Frekuensi</th>
-          <th className="p-2 border">Durasi</th>
-          <th className="p-2 border">Harga</th>
-          <th className="p-2 border w-20">Aksi</th>
+// ✅ Render tabel material
+const renderMaterials = (materials = [], pathPrefix) => (
+  <table className="w-full border border-gray-300 my-2 text-sm">
+    <thead className="bg-gray-100">
+      <tr>
+        <th className="p-2 border">Nama</th>
+        <th className="p-2 border">Qty</th>
+        <th className="p-2 border">Satuan</th>
+        <th className="p-2 border">Frekuensi</th>
+        <th className="p-2 border">Durasi</th>
+        <th className="p-2 border">Harga</th>
+        <th className="p-2 border w-20">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {materials.map((mat, idx) => (
+        <tr key={mat.id || `${pathPrefix.join("-")}-mat-${idx}`}>
+          {["name", "qty", "unit", "frequency", "duration", "harga"].map(
+            (field) => (
+              <td key={field} className="border p-1">
+                <input
+                  className="w-full border rounded p-1"
+                  value={mat[field] ?? ""}
+                  onChange={(e) =>
+                    handleMaterialChange(
+                      [...pathPrefix, idx],
+                      field,
+                      e.target.value
+                    )
+                  }
+                />
+              </td>
+            )
+          )}
+          <td className="border p-1 text-center">
+            <button
+              onClick={() => handleDeleteMaterial(pathPrefix, idx)}
+              className="bg-red-500 text-white px-2 py-1 rounded"
+            >
+              ✕
+            </button>
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        {materials.map((mat, idx) => (
-          <tr key={mat.id}>
-            {["name", "qty", "unit", "frequency", "duration", "harga"].map(
-              (field) => (
-                <td key={field} className="border p-1">
-                  <input
-                    className="w-full border rounded p-1"
-                    value={mat[field] ?? ""}
-                    onChange={(e) =>
-                      handleMaterialChange(
-                        [...pathPrefix, idx],
-                        field,
-                        e.target.value
-                      )
-                    }
-                  />
-                </td>
-              )
-            )}
-            <td className="border p-1 text-center">
-              <button
-                onClick={() => handleDeleteMaterial(pathPrefix, idx)}
-                className="bg-red-500 text-white px-2 py-1 rounded"
-              >
-                ✕
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+      ))}
+    </tbody>
+  </table>
+);
 
-  const renderCategories = (categories = [], pathPrefix = ["categories"]) =>
-    categories.map((cat, idx) => (
-      <div key={cat.id} className="ml-4 mt-4 border-l-2 pl-4 relative">
-        <div className="flex justify-between items-center mb-1">
-          <h3 className="font-semibold text-gray-700">{cat.kategori}</h3>
-          <button
-            onClick={() => handleDeleteCategory(pathPrefix, idx)}
-            className="text-sm text-red-600 hover:underline"
-          >
-            Hapus Kategori
-          </button>
-        </div>
-        {renderMaterials(cat.materials, [...pathPrefix, idx, "materials"])}
-        {cat.children?.length > 0 && (
-          <div className="ml-4">
-            {renderCategories(cat.children, [...pathPrefix, idx, "children"])}
-          </div>
-        )}
+// ✅ Render kategori & subkategori
+const renderCategories = (categories = [], pathPrefix = ["categories"]) =>
+  categories.map((cat, idx) => (
+    <div
+      key={cat.id || `${pathPrefix.join("-")}-cat-${idx}`}
+      className="ml-4 mt-4 border-l-2 pl-4 relative"
+    >
+      <div className="flex justify-between items-center mb-1">
+        <h3 className="font-semibold text-gray-700">{cat.kategori}</h3>
+        <button
+          onClick={() => handleDeleteCategory(pathPrefix, idx)}
+          className="text-sm text-red-600 hover:underline"
+        >
+          Hapus Kategori
+        </button>
       </div>
-    ));
 
+      {renderMaterials(cat.materials, [...pathPrefix, idx, "materials"])}
+
+      <div className="flex gap-3 mt-2">
+        <button
+          onClick={() => handleAddMaterial([...pathPrefix, idx, "materials"])}
+          className="text-blue-600 text-sm hover:underline"
+        >
+          + Tambah Material
+        </button>
+        <button
+          onClick={() => handleAddCategory([...pathPrefix, idx, "children"])}
+          className="text-green-600 text-sm hover:underline"
+        >
+          + Tambah Subkategori
+        </button>
+      </div>
+
+      {cat.children?.length > 0 && (
+        <div className="ml-4 mt-3">
+          {renderCategories(cat.children, [...pathPrefix, idx, "children"])}
+        </div>
+      )}
+    </div>
+  ));
+
+
+  // ✅ Simpan perubahan
   const handleSave = () => {
     const payload = {
       projectId: data.projectId,
@@ -292,26 +348,19 @@ export default function EditableMaterialTable({ initialData = mockData }) {
 
     console.log("📤 JSON dikirim ke backend:");
     console.log(JSON.stringify(payload, null, 2));
-
-    // contoh POST ke backend:
-    // fetch("/api/rab/update", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(payload),
-    // });
   };
 
   return (
     <div className="p-4">
       <div className="flex gap-2 mt-4">
         <button
-          // onClick={addCategory}
+          onClick={() => handleAddCategory(["categories"])}
           className="px-4 py-2 bg-blue-600 text-white rounded"
         >
           + Tambah Kategori
         </button>
         <button
-          // onClick={addUncategorizedMaterial}
+          onClick={() => handleAddMaterial(["uncategorizedMaterials"])}
           className="px-4 py-2 bg-blue-600 text-white rounded"
         >
           + Tambah Material
@@ -323,17 +372,24 @@ export default function EditableMaterialTable({ initialData = mockData }) {
           Simpan Perubahan
         </button>
       </div>
-      {/* MATERIAL TANPA KATEGORI */}
+
       <h2 className="text-xl font-semibold mt-6 mb-2 text-blue-700">
         Material Tanpa Kategori
       </h2>
       {renderMaterials(data.uncategorizedMaterials, ["uncategorizedMaterials"])}
-      
-      {/* KATEGORI + SUBKATEGORI */}
+
       <h2 className="text-xl font-semibold mb-2 text-blue-700">
         Daftar Material Berdasarkan Kategori
       </h2>
-      {renderCategories(data.categories)}
+      <div className="mt-4">
+        {renderCategories(data.categories)}
+        <button
+          onClick={() => handleAddCategory(["categories"])}
+          className="mt-3 text-blue-700 text-sm hover:underline"
+        >
+          + Tambah Kategori Utama
+        </button>
+      </div>
     </div>
   );
 }
