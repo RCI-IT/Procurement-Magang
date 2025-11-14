@@ -151,7 +151,7 @@ export default function EditableMaterialTable({ initialData = mockData }) {
     for (const p of path) target = target[p];
 
     target.push({
-      kategori: "Kategori Baru",
+      kategori: "",
       materials: [],
       children: [],
     });
@@ -166,12 +166,12 @@ export default function EditableMaterialTable({ initialData = mockData }) {
     for (const p of path) target = target[p];
 
     target.push({
-      name: "Material Baru",
-      qty: 1,
-      unit: "pcs",
+      name: "",
+      qty: null,
+      unit: "",
       frequency: "",
       duration: "",
-      harga: 0,
+      harga: null,
     });
 
     setData(newData);
@@ -193,6 +193,30 @@ export default function EditableMaterialTable({ initialData = mockData }) {
           materials: [
             ...prevChanges.updated.materials.filter((m) => m.id !== mat.id),
             mat,
+          ],
+        },
+      }));
+
+      return updated;
+    });
+  };
+
+  const handleCategoryChange = (path, field, value) => {
+    setData((prev) => {
+      const updated = structuredClone(prev);
+      let target = updated;
+      for (let i = 0; i < path.length - 1; i++) target = target[path[i]];
+      const cat = target[path.at(-1)];
+      cat[field] = value;
+
+      // Simpan perubahan kategori
+      setChanges((prevChanges) => ({
+        ...prevChanges,
+        updated: {
+          ...prevChanges.updated,
+          categories: [
+            ...prevChanges.updated.categories.filter((c) => c.id !== cat.id),
+            cat,
           ],
         },
       }));
@@ -243,100 +267,153 @@ export default function EditableMaterialTable({ initialData = mockData }) {
     });
   };
 
-// ✅ Render tabel material
-const renderMaterials = (materials = [], pathPrefix) => (
-  <table className="w-full border border-gray-300 my-2 text-sm">
-    <thead className="bg-gray-100">
-      <tr>
-        <th className="p-2 border">Nama</th>
-        <th className="p-2 border">Qty</th>
-        <th className="p-2 border">Satuan</th>
-        <th className="p-2 border">Frekuensi</th>
-        <th className="p-2 border">Durasi</th>
-        <th className="p-2 border">Harga</th>
-        <th className="p-2 border w-20">Aksi</th>
-      </tr>
-    </thead>
-    <tbody>
-      {materials.map((mat, idx) => (
-        <tr key={mat.id || `${pathPrefix.join("-")}-mat-${idx}`}>
-          {["name", "qty", "unit", "frequency", "duration", "harga"].map(
-            (field) => (
-              <td key={field} className="border p-1">
-                <input
-                  className="w-full border rounded p-1"
-                  value={mat[field] ?? ""}
-                  onChange={(e) =>
-                    handleMaterialChange(
-                      [...pathPrefix, idx],
-                      field,
-                      e.target.value
-                    )
-                  }
-                />
-              </td>
-            )
-          )}
-          <td className="border p-1 text-center">
-            <button
-              onClick={() => handleDeleteMaterial(pathPrefix, idx)}
-              className="bg-red-500 text-white px-2 py-1 rounded"
-            >
-              ✕
-            </button>
-          </td>
+  // ✅ Render tabel material
+  const renderMaterials = (materials = [], pathPrefix) => (
+    <table className="w-full border border-gray-300 my-2 text-sm">
+      <thead className="bg-gray-100">
+        <tr>
+          <th className="p-2 border">Nama</th>
+          <th className="p-2 border">Qty</th>
+          <th className="p-2 border">Satuan</th>
+          <th className="p-2 border">Frekuensi</th>
+          <th className="p-2 border">Durasi</th>
+          <th className="p-2 border">Harga</th>
+          <th className="p-2 border w-20">Aksi</th>
         </tr>
-      ))}
-    </tbody>
-  </table>
-);
+      </thead>
+      <tbody>
+        {materials.map((mat, idx) => (
+          <tr key={mat.id || `${pathPrefix.join("-")}-mat-${idx}`}>
+            {["name", "qty", "unit", "frequency", "duration", "harga"].map(
+              (field) => (
+                <td key={field} className="border p-1">
+                  <input
+                    className="w-full border rounded p-1"
+                    value={mat[field] ?? ""}
+                    onChange={(e) =>
+                      handleMaterialChange(
+                        [...pathPrefix, idx],
+                        field,
+                        e.target.value
+                      )
+                    }
+                  />
+                </td>
+              )
+            )}
+            <td className="border p-1 text-center">
+              <button
+                onClick={() => handleDeleteMaterial(pathPrefix, idx)}
+                className="bg-red-500 text-white px-2 py-1 rounded"
+              >
+                ✕
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
 
-// ✅ Render kategori & subkategori
-const renderCategories = (categories = [], pathPrefix = ["categories"]) =>
-  categories.map((cat, idx) => (
-    <div
-      key={cat.id || `${pathPrefix.join("-")}-cat-${idx}`}
-      className="ml-4 mt-4 border-l-2 pl-4 relative"
-    >
-      <div className="flex justify-between items-center mb-1">
-        <h3 className="font-semibold text-gray-700">{cat.kategori}</h3>
-        <button
-          onClick={() => handleDeleteCategory(pathPrefix, idx)}
-          className="text-sm text-red-600 hover:underline"
-        >
-          Hapus Kategori
-        </button>
-      </div>
-
-      {renderMaterials(cat.materials, [...pathPrefix, idx, "materials"])}
-
-      <div className="flex gap-3 mt-2">
-        <button
-          onClick={() => handleAddMaterial([...pathPrefix, idx, "materials"])}
-          className="text-blue-600 text-sm hover:underline"
-        >
-          + Tambah Material
-        </button>
-        <button
-          onClick={() => handleAddCategory([...pathPrefix, idx, "children"])}
-          className="text-green-600 text-sm hover:underline"
-        >
-          + Tambah Subkategori
-        </button>
-      </div>
-
-      {cat.children?.length > 0 && (
-        <div className="ml-4 mt-3">
-          {renderCategories(cat.children, [...pathPrefix, idx, "children"])}
+  // ✅ Render kategori & subkategori
+  const renderCategories = (categories = [], pathPrefix = ["categories"]) =>
+    categories.map((cat, idx) => (
+      <div
+        key={cat.id || `${pathPrefix.join("-")}-cat-${idx}`}
+        className="ml-4 mt-4 border-l-2 pl-4 relative"
+      >
+        <div className="flex justify-between items-center mb-1">
+          {/* <h3 className="font-semibold text-gray-700">{cat.kategori}</h3> */}
+          <div className="border p-1">
+            <input
+              className="w-full border rounded p-1"
+              value={cat.kategori ?? ""}
+              onChange={(e) =>
+                handleCategoryChange(
+                  [...pathPrefix, idx],
+                  "kategori",
+                  e.target.value
+                )
+              }
+            />
+          </div>
+          <button
+            onClick={() => handleDeleteCategory(pathPrefix, idx)}
+            className="text-sm text-red-600 hover:underline"
+          >
+            Hapus Kategori
+          </button>
         </div>
-      )}
-    </div>
-  ));
 
+        {renderMaterials(cat.materials, [...pathPrefix, idx, "materials"])}
+
+        <div className="flex gap-3 mt-2">
+          <button
+            onClick={() => handleAddMaterial([...pathPrefix, idx, "materials"])}
+            className="text-blue-600 text-sm hover:underline"
+          >
+            + Tambah Material
+          </button>
+          <button
+            onClick={() => handleAddCategory([...pathPrefix, idx, "children"])}
+            className="text-green-600 text-sm hover:underline"
+          >
+            + Tambah Subkategori
+          </button>
+        </div>
+
+        {cat.children?.length > 0 && (
+          <div className="ml-4 mt-3">
+            {renderCategories(cat.children, [...pathPrefix, idx, "children"])}
+          </div>
+        )}
+      </div>
+    ));
+
+  const cleanObject = (obj) => {
+    if (Array.isArray(obj)) {
+      const cleanedArray = obj
+        .map(cleanObject)
+        .filter(
+          (item) =>
+            item !== null &&
+            item !== undefined &&
+            (typeof item !== "object" ||
+              (Array.isArray(item)
+                ? item.length > 0
+                : Object.keys(item).length > 0))
+        );
+      return cleanedArray;
+    } else if (typeof obj === "object" && obj !== null) {
+      const cleanedObj = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (
+          value !== "" &&
+          value !== null &&
+          value !== undefined &&
+          !(Array.isArray(value) && value.length === 0)
+        ) {
+          const cleanedValue = cleanObject(value);
+          if (
+            cleanedValue !== null &&
+            cleanedValue !== undefined &&
+            (typeof cleanedValue !== "object" ||
+              (Array.isArray(cleanedValue)
+                ? cleanedValue.length > 0
+                : Object.keys(cleanedValue).length > 0))
+          ) {
+            cleanedObj[key] = cleanedValue;
+          }
+        }
+      }
+      return cleanedObj;
+    }
+    return obj;
+  };
 
   // ✅ Simpan perubahan
   const handleSave = () => {
-    const payload = {
+    const rawPayload = {
       projectId: data.projectId,
       updated: {
         categories: data.categories,
@@ -345,6 +422,8 @@ const renderCategories = (categories = [], pathPrefix = ["categories"]) =>
       added: changes.added,
       deleted: changes.deleted,
     };
+
+    const payload = cleanObject(rawPayload);
 
     console.log("📤 JSON dikirim ke backend:");
     console.log(JSON.stringify(payload, null, 2));
