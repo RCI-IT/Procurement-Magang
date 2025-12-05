@@ -7,20 +7,69 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  username           String               @unique
-  password           String
-  email              String               @unique
-  fullName           String
-  role               UserRole             @default(USER_LAPANGAN)
-  id                 Int                  @id @default(autoincrement())
+model AuthUser {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  username  String   @unique
+  password  String
+  email     String   @unique
+
+  role  UserRole       @default(USER_LAPANGAN)
+  roles AuthUserRole[]
+
+  employeeId String?
+  employee   HREmployee? @relation(fields: [employeeId], references: [id])
+
   confirmationOrders ConfirmationOrder[]
   permintaans        PermintaanLapangan[]
   PurchaseOrder      PurchaseOrder[]
   SignedBy           SignedBy[]
   SigningAuthority   SigningAuthority[]
+}
+
+model AuthRole {
+  id        String   @id @default(uuid())
+  roleName  String   @unique
+  createdAt DateTime @default(now())
+
+  users AuthUserRole[]
+}
+
+model AuthUserRole {
+  id     String @id @default(uuid())
+  userId String
+  roleId String
+
+  user AuthUser @relation(fields: [userId], references: [id])
+  role AuthRole @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  userAgent  String?  // device
+  ipAddress  String?  // optional
+  
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revoked   Boolean  @default(false)
+
+  user AuthUser @relation(fields: [userId], references: [id])
+
+  @@schema("auth")
+}
+
+enum UserRole {
+  ADMIN
+  USER_PURCHASE
+  USER_LAPANGAN
+}
+
+model HREmployee {
 }
 
 model Project {
@@ -262,12 +311,6 @@ enum Status {
   READ
   COMPLETED
   ACC // jika tetap dibutuhkan
-}
-
-enum UserRole {
-  ADMIN
-  USER_PURCHASE
-  USER_LAPANGAN
 }
 
 enum FileType {
