@@ -8,18 +8,16 @@ datasource db {
 }
 
 model AuthUser {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  username  String   @unique
+  id        Int            @id @default(autoincrement())
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  username  String         @unique
   password  String
-  email     String   @unique
-
-  role  UserRole       @default(USER_LAPANGAN)
-  roles AuthUserRole[]
+  email     String         @unique
+  roles     AuthUserRole[]
 
   employeeId String?
-  employee   HREmployee? @relation(fields: [employeeId], references: [id])
+  // employee   HREmployee? @relation(fields: [employeeId], references: [id])
 
   confirmationOrders ConfirmationOrder[]
   permintaans        PermintaanLapangan[]
@@ -48,12 +46,12 @@ model AuthUserRole {
 }
 
 model RefreshToken {
-  id        String   @id @default(uuid())
-  token     String   @unique
+  id        String  @id @default(uuid())
+  token     String  @unique
   userId    String
-  userAgent  String?  // device
-  ipAddress  String?  // optional
-  
+  userAgent String? // device
+  ipAddress String? // optional
+
   expiresAt DateTime
   createdAt DateTime @default(now())
   revoked   Boolean  @default(false)
@@ -61,15 +59,6 @@ model RefreshToken {
   user AuthUser @relation(fields: [userId], references: [id])
 
   @@schema("auth")
-}
-
-enum UserRole {
-  ADMIN
-  USER_PURCHASE
-  USER_LAPANGAN
-}
-
-model HREmployee {
 }
 
 model Project {
