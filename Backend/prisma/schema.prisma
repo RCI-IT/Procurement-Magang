@@ -100,6 +100,108 @@ model ProjectMember {
   roleId     String
   joinedAt   DateTime @default(now())
 
+  project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  role    ProjectRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId,roleId])
+}
+
+/////////////////////////////////////////////////////
+// BUDGET SERVICE (Replace Old RAB & BOQ with Prisma Version)
+/////////////////////////////////////////////////////
+
+model Rab {
+  id          String   @id @default(uuid())
+  projectId   String
+  category    String?
+  description String?
+  totalBudget Float?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  boqs    Boq[]
+}
+
+model Boq {
+  id          String  @id @default(cuid())
+  rabId       String
+  description String?
+  detail      String?
+  unit        String?
+  qty         Float?
+  unitPrice   Float?
+  total       Float?
+  costType    String?
+
+  rab      Rab               @relation(fields: [rabId], references: [id], onDelete: Cascade)
+  requests MaterialRequest[]
+}
+
+/////////////////////////////////////////////////////
+// PROCUREMENT SERVICE
+/////////////////////////////////////////////////////
+
+model MaterialRequest {
+  id                 String              @id @default(uuid())
+  boqId              String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  requestDate        DateTime
+  requested_qty      Decimal?
+  status             String?
+  // nomor              String              @unique
+  lokasi             String
+  picLapangan        String
+  isConfirmed        Boolean             @default(false)
+  isReceived         Boolean             @default(false)
+  keterangan         String?
+  userId             Int?
+  projectId          String?
+  confirmationOrders ConfirmationOrder[]
+  detail             PermintaanDetails[]
+  user               AuthUser?               @relation(fields: [userId], references: [id])
+  project            Project?            @relation(fields: [projectId], references: [id])
+}
+
+model Purchase {
+  id            Int       @id @default(autoincrement())
+  mr_id         Int
+  vendor_id     Int
+  purchase_date DateTime?
+  qty_purchased Decimal?
+  total_price   Decimal?
+  created_at    DateTime? @default(now())
+
+  mr     MaterialRequest @relation(fields: [mr_id], references: [id], onDelete: Cascade)
+  vendor Vendor          @relation(fields: [vendor_id], references: [id], onDelete: Cascade)
+}
+
+model Vendors {
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  id           String              @id @default(uuid())
+  name         String
+  address      String?
+  city         String?
+  phone        String?
+  materials    Materials[]
+  ConfirmOrder ConfirmationOrder[]
+}
+
+model ProjectAssignment {
+  id            String      @id @default(cuid())
+  employeeId    String // Foreign key dari backend karyawan
+  projectId     String
+  roleInProject ProjectRole
+
+model ProjectMember {
+  id         String   @id @default(uuid())
+  employeeId String
+  projectId  String
+  roleId     String
+  joinedAt   DateTime @default(now())
+
   project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   roleProject ProjectRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
