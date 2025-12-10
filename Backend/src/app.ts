@@ -33,6 +33,7 @@ const corsOptions = {
   origin: [
     "http://localhost:3000",
     "http://192.168.110.253:3000",
+    "http://192.168.100.110:3000",
     "http://procurement.rci:3000",
   ],
   methods: "GET,POST,PUT,DELETE,OPTIONS",
