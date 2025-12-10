@@ -5,19 +5,77 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
+model AuthUser {
+  id        Int            @id @default(autoincrement())
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  username  String         @unique
+  password  String
+  email     String         @unique
+  roles     AuthUserRole[]
+
+  employeeId String?
+  // employee   HREmployee? @relation(fields: [employeeId], references: [id])
+
+  confirmationOrders ConfirmationOrder[]
+  permintaans        PermintaanLapangan[]
+  PurchaseOrder      PurchaseOrder[]
+  SignedBy           SignedBy[]
+  SigningAuthority   SigningAuthority[]
+}
+
+model AuthRole {
+  id        String   @id @default(uuid())
+  roleName  String   @unique
+  createdAt DateTime @default(now())
+
+  users AuthUserRole[]
+}
+
+model AuthUserRole {
+  id     String @id @default(uuid())
+  userId String
+  roleId String
+
+  user AuthUser @relation(fields: [userId], references: [id])
+  role AuthRole @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+}
+
+model RefreshToken {
+  id        String  @id @default(uuid())
+  token     String  @unique
+  userId    String
+  userAgent String? // device
+  ipAddress String? // optional
+
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revoked   Boolean  @default(false)
+
+  user AuthUser @relation(fields: [userId], references: [id])
+
+  @@schema("auth")
+}
+
+/////////////////////////////////////////////////////
+// PROJECT SERVICE
+/////////////////////////////////////////////////////
+
 model Project {
-  id             String   @id @default(uuid())
-  name           String
-  code           String
-  location       String
-  owner          String
-  contractNo     String
-  startDate      DateTime @db.Date
-  endDate        DateTime @db.Date
-  projectManager String
+  id          String          @id @default(uuid())
+  projectName String
+  code        String
+  location    String
+  owner       String
+  contractNo  String
+  startDate   DateTime        @db.Date
+  endDate     DateTime        @db.Date
+  members     ProjectMember[]
+  // projectManager String
 
   status           ProjectStatus
   assignments      ProjectAssignment[]
@@ -29,16 +87,55 @@ model Project {
   updatedAt        DateTime             @updatedAt
 }
 
-model ProjectAssignment {
-  id            String      @id @default(cuid())
-  employeeId    String // Foreign key dari backend karyawan
-  projectId     String
-  roleInProject ProjectRole
+model ProjectRole {
+  id       String          @id @default(uuid())
+  roleName String?
+  members  ProjectMember[]
+}
 
-  project   Project  @relation(fields: [projectId], references: [id])
-  createdAt DateTime @default(now())
+model ProjectMember {
+  id         String   @id @default(uuid())
+  employeeId String
+  projectId  String
+  roleId     String
+  joinedAt   DateTime @default(now())
 
-  @@unique([employeeId, projectId])
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  roleProject ProjectRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, roleId])
+}
+
+/////////////////////////////////////////////////////
+// BUDGET SERVICE (Replace Old RAB & BOQ with Prisma Version)
+/////////////////////////////////////////////////////
+
+model Rab {
+  id          String   @id @default(uuid())
+  projectId   String
+  category    String? //Contoh: Struktur
+  description String? //
+  totalBudget Float?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  boqs    Boq[]
+}
+
+model Boq {
+  id          String  @id @default(cuid())
+  rabId       String
+  description String? // Contoh: Besi 12mm
+  detail      String? // Besi Beton Ulir
+  unit        String? //batang
+  qty         Float?
+  unitPrice   Float?
+  total       Float?
+  costType    String?
+
+  rab      Rab               @relation(fields: [rabId], references: [id], onDelete: Cascade)
+  requests MaterialRequest[]
 }
 
 model BudgetCategory {
@@ -71,24 +168,67 @@ model BudgetItem {
   @@unique([projectId, categoryId, description], name: "unique_item_per_project")
 }
 
-model PermintaanLapangan {
+/////////////////////////////////////////////////////
+// PROCUREMENT SERVICE
+/////////////////////////////////////////////////////
+
+model MaterialRequest {
+  id                 String              @id @default(uuid())
+  boqId              String
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
-  nomor              String              @unique
-  tanggal            DateTime
+  requestDate        DateTime
+  requested_qty      Decimal?
+  status             String?
+  // nomor              String              @unique
   lokasi             String
   picLapangan        String
-  status             Status              @default(PENDING)
   isConfirmed        Boolean             @default(false)
   isReceived         Boolean             @default(false)
   keterangan         String?
-  id                 Int                 @id @default(autoincrement())
   userId             Int?
   projectId          String?
   confirmationOrders ConfirmationOrder[]
   detail             PermintaanDetails[]
-  user               User?               @relation(fields: [userId], references: [id])
+  user               AuthUser?           @relation(fields: [userId], references: [id])
   project            Project?            @relation(fields: [projectId], references: [id])
+}
+
+model Purchase {
+  id            Int       @id @default(autoincrement())
+  mr_id         Int
+  vendor_id     Int
+  purchase_date DateTime?
+  qty_purchased Decimal?
+  total_price   Decimal?
+  created_at    DateTime? @default(now())
+
+  mr     MaterialRequest @relation(fields: [mr_id], references: [id], onDelete: Cascade)
+  vendor Vendor          @relation(fields: [vendor_id], references: [id], onDelete: Cascade)
+}
+
+model Vendors {
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  id           String              @id @default(uuid())
+  name         String
+  address      String?
+  city         String?
+  phone        String?
+  materials    Materials[]
+  ConfirmOrder ConfirmationOrder[]
+}
+
+model ProjectAssignment {
+  id            String      @id @default(cuid())
+  employeeId    String // Foreign key dari backend karyawan
+  projectId     String
+  roleInProject ProjectRole
+
+  project   Project  @relation(fields: [projectId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([employeeId, projectId])
 }
 
 model ConfirmationOrder {
@@ -193,34 +333,6 @@ model Categories {
   materials Materials[]
 }
 
-model Vendors {
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-  name         String
-  address      String?
-  city         String?
-  phone        String?
-  id           Int                 @id @default(autoincrement())
-  materials    Materials[]
-  ConfirmOrder ConfirmationOrder[]
-}
-
-model User {
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  username           String               @unique
-  password           String
-  email              String               @unique
-  fullName           String
-  role               UserRole             @default(USER_LAPANGAN)
-  id                 Int                  @id @default(autoincrement())
-  confirmationOrders ConfirmationOrder[]
-  permintaans        PermintaanLapangan[]
-  PurchaseOrder      PurchaseOrder[]
-  SignedBy           SignedBy[]
-  SigningAuthority   SigningAuthority[]
-}
-
 model SignedBy {
   id           String     @id @default(uuid())
   signedFileId String
@@ -265,12 +377,6 @@ enum Status {
   ACC // jika tetap dibutuhkan
 }
 
-enum UserRole {
-  ADMIN
-  USER_PURCHASE
-  USER_LAPANGAN
-}
-
 enum FileType {
   PERMINTAAN_LAPANGAN
   CONFIRMATION_ORDER
@@ -296,8 +402,4 @@ enum ProjectStatus {
   ONGOING
 }
 
-enum ProjectRole {
-  PM
-  PROCUREMENT
-  STAFF
-}
+
