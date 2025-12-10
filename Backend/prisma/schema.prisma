@@ -204,7 +204,7 @@ model Purchase {
   created_at    DateTime? @default(now())
 
   mr     MaterialRequest @relation(fields: [mr_id], references: [id], onDelete: Cascade)
-  vendor Vendor          @relation(fields: [vendor_id], references: [id], onDelete: Cascade)
+  // vendor Vendor          @relation(fields: [vendor_id], references: [id], onDelete: Cascade)
 }
 
 model Vendors {
@@ -291,7 +291,7 @@ model PermintaanDetails {
   id           Int                @id @default(autoincrement())
   permintaanId Int
   materialName String
-  permintaan   PermintaanLapangan @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
+  // permintaan   PermintaanLapangan @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
 }
 
 model PurchaseDetails {
