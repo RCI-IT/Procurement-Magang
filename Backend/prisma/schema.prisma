@@ -5,10 +5,48 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["enum","public", "auth", "project", "material", "procurement"]
 }
 
+/////////////////////////
+// ENUM
+/////////////////////////
+
+enum ProjectStatus {
+  PLANNING
+  ONGOING
+  HOLD
+  COMPLETED
+  CANCELLED
+
+  @@schema("enum")
+}
+
+enum MRStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+
+  @@schema("enum")
+}
+
+enum BoqType {
+  MATERIAL
+  LABOR
+  EQUIPMENT
+  OTHER
+
+  @@schema("enum")
+}
+
+/////////////////////////
+// Authentifikasi
+/////////////////////////
+
 model AuthUser {
-  id        Int            @id @default(autoincrement())
+  id        String         @id @default(uuid())
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   username  String         @unique
@@ -19,11 +57,14 @@ model AuthUser {
   employeeId String?
   // employee   HREmployee? @relation(fields: [employeeId], references: [id])
 
-  confirmationOrders ConfirmationOrder[]
-  permintaans        PermintaanLapangan[]
-  PurchaseOrder      PurchaseOrder[]
-  SignedBy           SignedBy[]
-  SigningAuthority   SigningAuthority[]
+  // confirmationOrders ConfirmationOrder[]
+  // PurchaseOrder      PurchaseOrder[]
+  // SignedBy           SignedBy[]
+  // SigningAuthority   SigningAuthority[]
+  refreshTokens    RefreshToken[]
+  materialRequests MaterialRequest[]
+
+  @@schema("auth")
 }
 
 model AuthRole {
@@ -32,6 +73,8 @@ model AuthRole {
   createdAt DateTime @default(now())
 
   users AuthUserRole[]
+
+  @@schema("auth")
 }
 
 model AuthUserRole {
@@ -43,6 +86,8 @@ model AuthUserRole {
   role AuthRole @relation(fields: [roleId], references: [id])
 
   @@unique([userId, roleId])
+
+  @@schema("auth")
 }
 
 model RefreshToken {
@@ -77,20 +122,25 @@ model Project {
   members     ProjectMember[]
   // projectManager String
 
-  status           ProjectStatus
-  assignments      ProjectAssignment[]
-  budgetItem       BudgetItem[]
-  budgetCategories BudgetCategory[]
-  fieldRequests    PermintaanLapangan[]
-  purchaseOrders   PurchaseOrder[]
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
+  // status         ProjectStatus
+  // assignments    ProjectAssignment[]
+  // purchaseOrders PurchaseOrder[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  rabs               Rab[]
+  materialRequests   MaterialRequest[]
+  projectAssignments ProjectAssignment[]
+
+  @@schema("project")
 }
 
 model ProjectRole {
-  id       String          @id @default(uuid())
-  roleName String?
-  members  ProjectMember[]
+  id                 String              @id @default(uuid())
+  roleName           String?
+  members            ProjectMember[]
+  projectAssignments ProjectAssignment[]
+
+  @@schema("project")
 }
 
 model ProjectMember {
@@ -104,68 +154,94 @@ model ProjectMember {
   roleProject ProjectRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, roleId])
+
+  @@schema("project")
 }
 
-/////////////////////////////////////////////////////
-// BUDGET SERVICE (Replace Old RAB & BOQ with Prisma Version)
-/////////////////////////////////////////////////////
+/////////////////////////
+// RAB (Budget) + BUDGET ITEMS (BOQ)
+/////////////////////////
 
+/// RAB as Budget header
 model Rab {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   projectId   String
-  category    String? //Contoh: Struktur
-  description String? //
-  totalBudget Float?
+  name        String? // contoh: "RAB Pekerjaan Pondasi"
+  description String?
+  totalBudget Decimal? @db.Decimal(18, 2) // dihitung dari BOQ
   createdBy   String?
   createdAt   DateTime @default(now())
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   boqs    Boq[]
+
+  @@schema("project")
 }
 
 model Boq {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   rabId       String
-  description String? // Contoh: Besi 12mm
-  detail      String? // Besi Beton Ulir
-  unit        String? //batang
-  qty         Float?
-  unitPrice   Float?
-  total       Float?
-  costType    String?
+  materialId  String? // opsional jika item berupa pekerjaan non-material
+  description String // contoh: "Pekerjaan galian tanah" atau "Semen"
+  unit        String?
+  quantity    Float?
+  price       Decimal? @db.Decimal(18, 2)
+  // total       Decimal?    @db.Decimal(18,2) // quantity * price
+  type        String
 
-  rab      Rab               @relation(fields: [rabId], references: [id], onDelete: Cascade)
-  requests MaterialRequest[]
+  rab      Rab                   @relation(fields: [rabId], references: [id], onDelete: Cascade)
+  material Materials?            @relation(fields: [materialId], references: [id])
+  mrItems  MaterialRequestItem[]
+
+  @@schema("project")
 }
 
-model BudgetCategory {
-  id        String           @id @default(uuid())
+/////////////////////////
+// MATERIAL CATALOG
+/////////////////////////
+
+model Vendors {
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  id        String      @id @default(uuid())
   name      String
-  parentId  String?
-  projectId String?
-  parent    BudgetCategory?  @relation("CategoryParent", fields: [parentId], references: [id])
-  children  BudgetCategory[] @relation("CategoryParent")
+  address   String?
+  city      String?
+  phone     String?
+  materials Materials[]
 
-  items   BudgetItem[]
-  Project Project?     @relation(fields: [projectId], references: [id])
+  @@schema("material")
 }
 
-model BudgetItem {
-  id          String  @id @default(cuid())
-  projectId   String
-  categoryId  String?
-  // budgetCode  String  @unique
-  description String // Contoh: Rental Mobil Operasional
-  unit        String? // Contoh: Unit, Org, Lot, Bln
-  quantity    Float? // Contoh: 2
-  frequency   Int? // Contoh: 2 Bln
-  duration    Int? // Contoh: 4 Bln (lama waktu)
-  price       Int?
+model Categories {
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  name      String      @unique
+  id        String      @id @default(uuid())
+  materials Materials[]
 
-  project        Project         @relation(fields: [projectId], references: [id])
-  budgetCategory BudgetCategory? @relation(fields: [categoryId], references: [id])
+  @@schema("material")
+}
 
-  @@unique([projectId, categoryId, description], name: "unique_item_per_project")
+model Materials {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  image       String?
+  name        String
+  unit        String   @default("pcs")
+  description String
+  price       Decimal
+  categoryId  String
+  vendorId    String
+  code        String   @unique
+
+  category             Categories            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  vendor               Vendors               @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  boqs                 Boq[]
+  materialRequestItems MaterialRequestItem[]
+
+  @@schema("material")
 }
 
 /////////////////////////////////////////////////////
@@ -173,25 +249,53 @@ model BudgetItem {
 /////////////////////////////////////////////////////
 
 model MaterialRequest {
-  id                 String              @id @default(uuid())
-  boqId              String
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  requestDate        DateTime
-  requested_qty      Decimal?
-  status             String?
-  // nomor              String              @unique
-  lokasi             String
-  picLapangan        String
-  isConfirmed        Boolean             @default(false)
-  isReceived         Boolean             @default(false)
-  keterangan         String?
-  userId             Int?
-  projectId          String?
-  confirmationOrders ConfirmationOrder[]
-  detail             PermintaanDetails[]
-  user               AuthUser?           @relation(fields: [userId], references: [id])
-  project            Project?            @relation(fields: [projectId], references: [id])
+  id String @id @default(uuid())
+
+  projectId String
+  userId    String? // pembuat MR dari AuthUser
+
+  requestDate DateTime
+  status      String   @default("PENDING")
+  lokasi      String?
+  picLapangan String?
+  note        String?
+  keterangan  String?
+  isConfirmed Boolean  @default(false)
+  isReceived  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
+  user      AuthUser?             @relation(fields: [userId], references: [id])
+  project   Project               @relation(fields: [projectId], references: [id])
+  detail    MaterialRequestItem[]
+  purchases Purchase[]
+
+  @@schema("procurement")
+}
+
+model MaterialRequestItem {
+  id         String @id @default(uuid())
+  mRequestId String
+
+  // material yang diminta (WAJIB dari database)
+  materialId String
+
+  // harus berasal dari BOQ yang terkait
+  boqId String
+
+  qtyRequested Decimal
+  // unit String
+  // code
+  status       String
+  notes        String?
+
+  mr       MaterialRequest @relation(fields: [mRequestId], references: [id], onDelete: Cascade)
+  material Materials       @relation(fields: [materialId], references: [id])
+  boq      Boq             @relation(fields: [boqId], references: [id], onDelete: Cascade)
+
+  @@schema("procurement")
 }
 
 model Purchase {
@@ -203,203 +307,149 @@ model Purchase {
   total_price   Decimal?
   created_at    DateTime? @default(now())
 
-  mr     MaterialRequest @relation(fields: [mr_id], references: [id], onDelete: Cascade)
+  mr MaterialRequest @relation(fields: [mr_id], references: [id], onDelete: Cascade)
   // vendor Vendor          @relation(fields: [vendor_id], references: [id], onDelete: Cascade)
-}
-
-model Vendors {
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-  id           String              @id @default(uuid())
-  name         String
-  address      String?
-  city         String?
-  phone        String?
-  materials    Materials[]
-  ConfirmOrder ConfirmationOrder[]
 }
 
 model ProjectAssignment {
   id            String      @id @default(cuid())
   employeeId    String // Foreign key dari backend karyawan
   projectId     String
-  roleInProject ProjectRole
+  roleInProject ProjectRole @relation(fields: [projectRoleId], references: [id])
 
-  project   Project  @relation(fields: [projectId], references: [id])
-  createdAt DateTime @default(now())
+  project       Project  @relation(fields: [projectId], references: [id])
+  createdAt     DateTime @default(now())
+  projectRoleId String
 
   @@unique([employeeId, projectId])
 }
 
-model ConfirmationOrder {
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  nomorCO             String                @unique
-  tanggalCO           DateTime
-  keterangan          String?
-  status              Status                @default(PENDING)
-  id                  Int                   @id @default(autoincrement())
-  userId              Int?
-  permintaanId        Int?
-  vendorId            Int?
-  confirmationDetails ConfirmationDetails[]
-  permintaan          PermintaanLapangan?   @relation(fields: [permintaanId], references: [id])
-  user                User?                 @relation(fields: [userId], references: [id])
-  purchaseOrder       PurchaseOrder?        @relation("COToPO")
-  vendor              Vendors?              @relation(fields: [vendorId], references: [id]) // ✅ Tambahan  
-}
+// model ConfirmationOrder {
+//   createdAt           DateTime              @default(now())
+//   updatedAt           DateTime              @updatedAt
+//   nomorCO             String                @unique
+//   tanggalCO           DateTime
+//   keterangan          String?
+//   status              Status                @default(PENDING)
+//   id                  Int                   @id @default(autoincrement())
+//   userId              Int?
+//   permintaanId        Int?
+//   vendorId            Int?
+//   confirmationDetails ConfirmationDetails[]
+//   permintaan          PermintaanLapangan?   @relation(fields: [permintaanId], references: [id])
+//   user                User?                 @relation(fields: [userId], references: [id])
+//   purchaseOrder       PurchaseOrder?        @relation("COToPO")
+//   vendor              Vendors?              @relation(fields: [vendorId], references: [id]) // ✅ Tambahan  
+// }
 
-model PurchaseOrder {
-  id                  Int               @id @default(autoincrement())
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  nomorPO             String            @unique
-  tanggalPO           DateTime
-  keterangan          String?
-  confirmationOrderId Int               @unique
-  userId              Int? // ✅ Tambahan
-  purchaseDetails     PurchaseDetails[]
-  confirmationOrder   ConfirmationOrder @relation("COToPO", fields: [confirmationOrderId], references: [id], onDelete: Cascade)
-  user                User?             @relation(fields: [userId], references: [id])
-  projectId           String?
-  Project             Project?          @relation(fields: [projectId], references: [id])
-}
+// model PurchaseOrder {
+//   id                  Int               @id @default(autoincrement())
+//   createdAt           DateTime          @default(now())
+//   updatedAt           DateTime          @updatedAt
+//   nomorPO             String            @unique
+//   tanggalPO           DateTime
+//   keterangan          String?
+//   confirmationOrderId Int               @unique
+//   userId              Int? // ✅ Tambahan
+//   purchaseDetails     PurchaseDetails[]
+//   confirmationOrder   ConfirmationOrder @relation("COToPO", fields: [confirmationOrderId], references: [id], onDelete: Cascade)
+//   user                User?             @relation(fields: [userId], references: [id])
+//   projectId           String?
+//   Project             Project?          @relation(fields: [projectId], references: [id])
+// }
 
-model ConfirmationDetails {
-  qty                 Int
-  code                String
-  keterangan          String?
-  satuan              String
-  status              Status            @default(PENDING)
-  mention             String?
-  id                  Int               @id @default(autoincrement())
-  confirmationOrderId Int
-  materialId          Int
-  confirmationOrder   ConfirmationOrder @relation(fields: [confirmationOrderId], references: [id], onDelete: Cascade)
-  material            Materials         @relation(fields: [materialId], references: [id], onDelete: Cascade)
-}
+// model ConfirmationDetails {
+//   qty                 Int
+//   code                String
+//   keterangan          String?
+//   satuan              String
+//   status              Status            @default(PENDING)
+//   mention             String?
+//   id                  Int               @id @default(autoincrement())
+//   confirmationOrderId Int
+//   materialId          Int
+//   confirmationOrder   ConfirmationOrder @relation(fields: [confirmationOrderId], references: [id], onDelete: Cascade)
+//   material            Materials         @relation(fields: [materialId], references: [id], onDelete: Cascade)
+// }
 
-model PermintaanDetails {
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  qty          Int
-  satuan       String
-  mention      String?
-  code         String
-  keterangan   String?
-  status       Status             @default(PENDING)
-  id           Int                @id @default(autoincrement())
-  permintaanId Int
-  materialName String
-  // permintaan   PermintaanLapangan @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
-}
+// model PurchaseDetails {
+//   qty             Int
+//   code            String
+//   satuan          String
+//   keterangan      String?
+//   status          Status        @default(IN_PROGRESS)
+//   id              Int           @id @default(autoincrement())
+//   purchaseOrderId Int
+//   materialId      Int
+//   material        Materials     @relation(fields: [materialId], references: [id], onDelete: Cascade)
+//   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+// }
 
-model PurchaseDetails {
-  qty             Int
-  code            String
-  satuan          String
-  keterangan      String?
-  status          Status        @default(IN_PROGRESS)
-  id              Int           @id @default(autoincrement())
-  purchaseOrderId Int
-  materialId      Int
-  material        Materials     @relation(fields: [materialId], references: [id], onDelete: Cascade)
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
-}
+// model SignedBy {
+//   id           String     @id @default(uuid())
+//   signedFileId String
+//   userId       Int
+//   role         String
+//   signature    String
+//   createdAt    DateTime   @default(now())
+//   SignedFile   SignedFile @relation(fields: [signedFileId], references: [id])
+//   User         User       @relation(fields: [userId], references: [id])
+// }
 
-model Materials {
-  id                  Int                   @id @default(autoincrement())
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  image               String?
-  name                String
-  unit                String                @default("pcs")
-  description         String
-  price               Int
-  categoryId          Int
-  vendorId            Int
-  code                String                @unique
-  confirmationDetails ConfirmationDetails[]
-  category            Categories            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  vendor              Vendors               @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  PurchaseDetails     PurchaseDetails[]
-}
+// model SignedFile {
+//   id        String     @id @default(uuid())
+//   type      FileType
+//   relatedId Int
+//   createdAt DateTime   @default(now())
+//   SignedBy  SignedBy[]
 
-model Categories {
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  name      String      @unique
-  id        Int         @id @default(autoincrement())
-  materials Materials[]
-}
+//   @@unique([type, relatedId])
+// }
 
-model SignedBy {
-  id           String     @id @default(uuid())
-  signedFileId String
-  userId       Int
-  role         String
-  signature    String
-  createdAt    DateTime   @default(now())
-  SignedFile   SignedFile @relation(fields: [signedFileId], references: [id])
-  User         User       @relation(fields: [userId], references: [id])
-}
+// model SigningAuthority {
+//   id       String      @id @default(uuid())
+//   userId   Int
+//   fileType FileType
+//   role     SigningRole
+//   User     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-model SignedFile {
-  id        String     @id @default(uuid())
-  type      FileType
-  relatedId Int
-  createdAt DateTime   @default(now())
-  SignedBy  SignedBy[]
+//   @@unique([userId, fileType, role])
+// }
 
-  @@unique([type, relatedId])
-}
+// enum Status {
+//   ACTIVE
+//   PENDING
+//   APPROVED
+//   REJECTED
+//   IN_PROGRESS // gunakan ini, hindari "PROCESSING" supaya tidak ambigu
+//   CLOSED
+//   CANCELLED
+//   READ
+//   COMPLETED
+//   ACC // jika tetap dibutuhkan
+// }
 
-model SigningAuthority {
-  id       String      @id @default(uuid())
-  userId   Int
-  fileType FileType
-  role     SigningRole
-  User     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+// enum FileType {
+//   PERMINTAAN_LAPANGAN
+//   CONFIRMATION_ORDER
+//   PURCHASE_ORDER
+// }
 
-  @@unique([userId, fileType, role])
-}
+// enum SigningRole {
+//   ENGINEER_REQUESTER
+//   ENGINEER_CHECKER
+//   LOGISTIC
+//   PIC_LAPANGAN
+//   PURCHASING
+//   SITE_MANAGER
+//   VENDOR
+//   FINANCE
+//   DIREKSI
+// }
 
-enum Status {
-  ACTIVE
-  PENDING
-  APPROVED
-  REJECTED
-  IN_PROGRESS // gunakan ini, hindari "PROCESSING" supaya tidak ambigu
-  CLOSED
-  CANCELLED
-  READ
-  COMPLETED
-  ACC // jika tetap dibutuhkan
-}
-
-enum FileType {
-  PERMINTAAN_LAPANGAN
-  CONFIRMATION_ORDER
-  PURCHASE_ORDER
-}
-
-enum SigningRole {
-  ENGINEER_REQUESTER
-  ENGINEER_CHECKER
-  LOGISTIC
-  PIC_LAPANGAN
-  PURCHASING
-  SITE_MANAGER
-  VENDOR
-  FINANCE
-  DIREKSI
-}
-
-enum ProjectStatus {
-  BERJALAN
-  SELESAI
-  TERTUNDA
-  ONGOING
-}
-
-
+// enum ProjectStatus {
+//   BERJALAN
+//   SELESAI
+//   TERTUNDA
+//   ONGOING
+// }
