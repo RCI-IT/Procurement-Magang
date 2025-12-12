@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["enum","public", "auth", "project", "material", "procurement"]
+  schemas  = ["enum", "public", "auth", "project", "material", "procurement"]
 }
 
 /////////////////////////
@@ -63,6 +63,7 @@ model AuthUser {
   // SigningAuthority   SigningAuthority[]
   refreshTokens    RefreshToken[]
   materialRequests MaterialRequest[]
+  approvals        Approval[]
 
   @@schema("auth")
 }
@@ -86,7 +87,6 @@ model AuthUserRole {
   role AuthRole @relation(fields: [roleId], references: [id])
 
   @@unique([userId, roleId])
-
   @@schema("auth")
 }
 
@@ -154,7 +154,6 @@ model ProjectMember {
   roleProject ProjectRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, roleId])
-
   @@schema("project")
 }
 
@@ -249,28 +248,38 @@ model Materials {
 /////////////////////////////////////////////////////
 
 model MaterialRequest {
-  id String @id @default(uuid())
-
+  id        String  @id @default(uuid())
   projectId String
-  userId    String? // pembuat MR dari AuthUser
+  userId    String? // pembuat MR (AuthUser)
 
   requestDate DateTime
-  status      String   @default("PENDING")
+
+  // STATUS FLOW:
+  // PENDING -> APPROVED -> PROCESSING -> DELIVERED -> RECEIVED -> COMPLETED
+  // status      String  @default("PENDING")
   lokasi      String?
   picLapangan String?
   note        String?
-  keterangan  String?
-  isConfirmed Boolean  @default(false)
-  isReceived  Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // relations
-  user      AuthUser?             @relation(fields: [userId], references: [id])
+  // Relations
+  creator   AuthUser?             @relation(fields: [userId], references: [id])
   project   Project               @relation(fields: [projectId], references: [id])
   detail    MaterialRequestItem[]
   purchases Purchase[]
+
+  // TIMESTAMPS FOR FLOW
+  approvedAt DateTime?
+  // approval universaI (MR → Approval by documentId/documentType)
+  approvals Approval[] @relation("MR_approvals")
+
+  // proses item (partial processing)
+  processing MRProcessing[]
+
+  // pengiriman barang
+  deliveries MRDelivery[]
 
   @@schema("procurement")
 }
@@ -286,21 +295,62 @@ model MaterialRequestItem {
   boqId String
 
   qtyRequested Decimal
-  // unit String
+  unit         String
   // code
-  status       String
   notes        String?
 
   mr       MaterialRequest @relation(fields: [mRequestId], references: [id], onDelete: Cascade)
   material Materials       @relation(fields: [materialId], references: [id])
   boq      Boq             @relation(fields: [boqId], references: [id], onDelete: Cascade)
 
+  processsing MRProcessingItem[]
+
   @@schema("procurement")
+}
+
+model Approval {
+  id String @id @default(uuid())
+
+  documentId   String // ID dokumen yang di-approve
+  documentType String // MR, PO, GRN, PAYMENT, dll.
+
+  approverId String //User yang memutuskan 
+  level      Int // level approval (1, 2, 3, ...)
+  status     String // APPROVED / REJECTED / PENDING
+
+  note      String?
+  decidedAt DateTime? @default(now())
+
+  approver AuthUser @relation(fields: [approverId], references: [id])
+
+  @@schema("procurement")
+}
+
+model MRProcessing {
+  id         String @id @default(uuid())
+  mRequestId String
+  processedBy String //Id employee atau user
+  processedAt DateTime @default(now())
+
+  mr MaterialRequest @relation(fields: [mRequestId], references: [id])
+  items MRProcessingItem[]
+
+  @@schema("procurement")
+}
+
+model MRProcessingItem {
+  id        String @id @default(uuid())
+  processingId String
+  mrItemId     String
+  qtyProcessed Float
+
+  processing MRProcessing @relation(fields: [processingId], references: [id])
+  mrItem     MaterialRequestItem @relation(fields: [mrItemId], references: [id])
 }
 
 model Purchase {
   id            Int       @id @default(autoincrement())
-  mr_id         Int
+  mr_id         String
   vendor_id     Int
   purchase_date DateTime?
   qty_purchased Decimal?
@@ -309,6 +359,8 @@ model Purchase {
 
   mr MaterialRequest @relation(fields: [mr_id], references: [id], onDelete: Cascade)
   // vendor Vendor          @relation(fields: [vendor_id], references: [id], onDelete: Cascade)
+
+  @@schema("procurement")
 }
 
 model ProjectAssignment {
@@ -322,6 +374,7 @@ model ProjectAssignment {
   projectRoleId String
 
   @@unique([employeeId, projectId])
+  @@schema("procurement")
 }
 
 // model ConfirmationOrder {
