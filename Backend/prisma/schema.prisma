@@ -265,21 +265,21 @@ model MaterialRequest {
   updatedAt DateTime @updatedAt
 
   // Relations
-  creator   AuthUser?             @relation(fields: [userId], references: [id])
-  project   Project               @relation(fields: [projectId], references: [id])
-  detail    MaterialRequestItem[]
-  purchases Purchase[]
+  creator AuthUser?             @relation(fields: [userId], references: [id])
+  project Project               @relation(fields: [projectId], references: [id])
+  detail  MaterialRequestItem[]
 
   // TIMESTAMPS FOR FLOW
   approvedAt DateTime?
   // approval universaI (MR → Approval by documentId/documentType)
-  approvals Approval[] @relation("MR_approvals")
+  approvals  Approval[] @relation("MR_approvals")
+  purchases  Purchase[]
 
   // proses item (partial processing)
-  processing MRProcessing[]
+  // processing MRProcessing[]
 
   // pengiriman barang
-  deliveries MRDelivery[]
+  // deliveries MRDelivery[]
 
   @@schema("procurement")
 }
@@ -287,12 +287,10 @@ model MaterialRequest {
 model MaterialRequestItem {
   id         String @id @default(uuid())
   mRequestId String
-
   // material yang diminta (WAJIB dari database)
   materialId String
-
   // harus berasal dari BOQ yang terkait
-  boqId String
+  boqId      String
 
   qtyRequested Decimal
   unit         String
@@ -303,7 +301,9 @@ model MaterialRequestItem {
   material Materials       @relation(fields: [materialId], references: [id])
   boq      Boq             @relation(fields: [boqId], references: [id], onDelete: Cascade)
 
-  processsing MRProcessingItem[]
+  poLinks    MRItemPO[]
+  deliveries DeliveryItem[]
+  receipts   GRItem[]
 
   @@schema("procurement")
 }
@@ -327,24 +327,24 @@ model Approval {
 }
 
 model MRProcessing {
-  id         String @id @default(uuid())
-  mRequestId String
+  id          String   @id @default(uuid())
+  mRequestId  String
   processedBy String //Id employee atau user
   processedAt DateTime @default(now())
 
-  mr MaterialRequest @relation(fields: [mRequestId], references: [id])
+  mr    MaterialRequest    @relation(fields: [mRequestId], references: [id])
   items MRProcessingItem[]
 
   @@schema("procurement")
 }
 
 model MRProcessingItem {
-  id        String @id @default(uuid())
+  id           String @id @default(uuid())
   processingId String
   mrItemId     String
   qtyProcessed Float
 
-  processing MRProcessing @relation(fields: [processingId], references: [id])
+  processing MRProcessing        @relation(fields: [processingId], references: [id])
   mrItem     MaterialRequestItem @relation(fields: [mrItemId], references: [id])
 }
 
