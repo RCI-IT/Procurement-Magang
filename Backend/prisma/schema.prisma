@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["enum", "public", "auth", "project", "material", "procurement"]
+  schemas  = ["enum", "public", "auth", "project", "material", "procurement", "approval"]
 }
 
 /////////////////////////
@@ -22,9 +22,24 @@ enum ProjectStatus {
   @@schema("enum")
 }
 
+
+// enum Status {
+//   ACTIVE
+//   PENDING
+//   APPROVED
+//   REJECTED
+//   IN_PROGRESS // gunakan ini, hindari "PROCESSING" supaya tidak ambigu
+//   CLOSED
+//   CANCELLED
+//   READ
+//   COMPLETED
+//   ACC // jika tetap dibutuhkan
+// }
+
 enum MRStatus {
   DRAFT
   PENDING
+  PARTIAL
   APPROVED
   REJECTED
   COMPLETED
@@ -56,14 +71,14 @@ model AuthUser {
 
   employeeId String?
   // employee   HREmployee? @relation(fields: [employeeId], references: [id])
-
-  // confirmationOrders ConfirmationOrder[]
-  // PurchaseOrder      PurchaseOrder[]
   // SignedBy           SignedBy[]
   // SigningAuthority   SigningAuthority[]
   refreshTokens    RefreshToken[]
   materialRequests MaterialRequest[]
-  approvals        Approval[]
+  purchase         Purchase[]
+  approvalRecords  ApprovalRecord[]
+  deliveries       Delivery[]
+  goodsReceipts    GoodsReceipt[]
 
   @@schema("auth")
 }
@@ -125,20 +140,20 @@ model Project {
   // status         ProjectStatus
   // assignments    ProjectAssignment[]
   // purchaseOrders PurchaseOrder[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  rabs               Rab[]
-  materialRequests   MaterialRequest[]
-  projectAssignments ProjectAssignment[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  rabs             Rab[]
+  materialRequests MaterialRequest[]
+  purchase         Purchase[]
 
   @@schema("project")
 }
 
 model ProjectRole {
-  id                 String              @id @default(uuid())
-  roleName           String?
-  members            ProjectMember[]
-  projectAssignments ProjectAssignment[]
+  id       String          @id @default(uuid())
+  roleName String?
+  members  ProjectMember[]
+  approval ApprovalFlow[]
 
   @@schema("project")
 }
@@ -153,7 +168,7 @@ model ProjectMember {
   project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   roleProject ProjectRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
-  @@unique([projectId, roleId])
+  @@unique([projectId, employeeId])
   @@schema("project")
 }
 
@@ -182,15 +197,25 @@ model Boq {
   rabId       String
   materialId  String? // opsional jika item berupa pekerjaan non-material
   description String // contoh: "Pekerjaan galian tanah" atau "Semen"
-  unit        String?
-  quantity    Float?
+  // unit        String?
+  quantity    Decimal?
   price       Decimal? @db.Decimal(18, 2)
   // total       Decimal?    @db.Decimal(18,2) // quantity * price
   type        String
 
   rab      Rab                   @relation(fields: [rabId], references: [id], onDelete: Cascade)
-  material Materials?            @relation(fields: [materialId], references: [id])
+  material Material?             @relation(fields: [materialId], references: [id])
+  boqType  boqType               @relation(fields: [type], references: [id], onDelete: Cascade)
   mrItems  MaterialRequestItem[]
+
+  @@schema("project")
+}
+
+model boqType {
+  id   String @id @default(uuid())
+  type String
+
+  boqType Boq[]
 
   @@schema("project")
 }
@@ -198,48 +223,62 @@ model Boq {
 /////////////////////////
 // MATERIAL CATALOG
 /////////////////////////
+model Categories {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  materials Material[]
 
-model Vendors {
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  id        String      @id @default(uuid())
+  @@schema("material")
+}
+
+model Material {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  unit        String   @default("pcs")
+  image       String?
+  code        String   @unique
+  categoryId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category             Categories            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  materialVendors      MaterialVendors[]
+  materialRequestItems MaterialRequestItem[]
+  boqs                 Boq[]
+
+  @@schema("material")
+}
+
+model Vendor {
+  id        String   @id @default(uuid())
   name      String
   address   String?
   city      String?
   phone     String?
-  materials Materials[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  materialVendors MaterialVendors[]
+  purchases       Purchase[]
 
   @@schema("material")
 }
 
-model Categories {
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  name      String      @unique
-  id        String      @id @default(uuid())
-  materials Materials[]
+model MaterialVendors {
+  id         String   @id @default(uuid())
+  price      Decimal  @db.Decimal(12, 2)
+  materialId String
+  vendorId   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  @@schema("material")
-}
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  vendor   Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
-model Materials {
-  id          String   @id @default(uuid())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  image       String?
-  name        String
-  unit        String   @default("pcs")
-  description String
-  price       Decimal
-  categoryId  String
-  vendorId    String
-  code        String   @unique
-
-  category             Categories            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  vendor               Vendors               @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  boqs                 Boq[]
-  materialRequestItems MaterialRequestItem[]
-
+  @@unique([materialId, vendorId]) // satu vendor hanya boleh punya satu harga untuk 1 material
   @@schema("material")
 }
 
@@ -256,7 +295,7 @@ model MaterialRequest {
 
   // STATUS FLOW:
   // PENDING -> APPROVED -> PROCESSING -> DELIVERED -> RECEIVED -> COMPLETED
-  // status      String  @default("PENDING")
+  status      String  @default("PENDING")
   lokasi      String?
   picLapangan String?
   note        String?
@@ -267,16 +306,12 @@ model MaterialRequest {
   // Relations
   creator AuthUser?             @relation(fields: [userId], references: [id])
   project Project               @relation(fields: [projectId], references: [id])
-  detail  MaterialRequestItem[]
+  items   MaterialRequestItem[]
 
   // TIMESTAMPS FOR FLOW
   approvedAt DateTime?
   // approval universaI (MR → Approval by documentId/documentType)
-  approvals  Approval[] @relation("MR_approvals")
-  purchases  Purchase[]
-
-  // proses item (partial processing)
-  // processing MRProcessing[]
+  // approvals  ApprovalRecord[] @relation("MR_approvals")
 
   // pengiriman barang
   // deliveries MRDelivery[]
@@ -293,89 +328,162 @@ model MaterialRequestItem {
   boqId      String
 
   qtyRequested Decimal
-  unit         String
+  // unit         String
   // code
   notes        String?
 
   mr       MaterialRequest @relation(fields: [mRequestId], references: [id], onDelete: Cascade)
-  material Materials       @relation(fields: [materialId], references: [id])
-  boq      Boq             @relation(fields: [boqId], references: [id], onDelete: Cascade)
+  material Material        @relation(fields: [materialId], references: [id])
+  boq      Boq             @relation(fields: [boqId], references: [id], onDelete: Restrict)
 
-  poLinks    MRItemPO[]
+  poLinks    PurchaseItem[]
   deliveries DeliveryItem[]
   receipts   GRItem[]
 
   @@schema("procurement")
 }
 
-model Approval {
+model Purchase {
+  id        String @id @default(uuid())
+  createdBy String
+  vendorId  String
+  projectId String
+
+  poDate DateTime
+  note   String?
+
+  createdAt DateTime @default(now())
+
+  creator AuthUser @relation(fields: [createdBy], references: [id])
+  vendor  Vendor   @relation(fields: [vendorId], references: [id])
+  project Project  @relation(fields: [projectId], references: [id])
+
+  items      PurchaseItem[]
+  deliveries Delivery[]
+
+  @@schema("procurement")
+}
+
+model PurchaseItem {
+  id       String  @id @default(uuid())
+  mrItemId String
+  poId     String
+  qty      Decimal
+  price    Decimal @db.Decimal(18, 2)
+
+  mrItem MaterialRequestItem @relation(fields: [mrItemId], references: [id])
+  po     Purchase            @relation(fields: [poId], references: [id])
+
+  @@schema("procurement")
+}
+
+/////////////////////////////////////////////////////
+// DELIVERY
+/////////////////////////////////////////////////////
+
+model Delivery {
+  id           String   @id @default(uuid())
+  poId         String
+  deliveredBy  String? // AuthUser
+  deliveryDate DateTime
+  note         String?
+
+  po           Purchase  @relation(fields: [poId], references: [id])
+  deliveryUser AuthUser? @relation(fields: [deliveredBy], references: [id])
+
+  items         DeliveryItem[]
+  goodsReceipts GoodsReceipt[]
+
+  @@schema("procurement")
+}
+
+model DeliveryItem {
+  id         String  @id @default(uuid())
+  deliveryId String
+  mrItemId   String
+  qty        Decimal
+
+  delivery Delivery            @relation(fields: [deliveryId], references: [id])
+  mrItem   MaterialRequestItem @relation(fields: [mrItemId], references: [id])
+
+  @@schema("procurement")
+}
+
+model GoodsReceipt {
+  id         String   @id @default(uuid())
+  deliveryId String
+  receivedBy String?
+  receivedAt DateTime
+
+  delivery Delivery  @relation(fields: [deliveryId], references: [id])
+  receiver AuthUser? @relation(fields: [receivedBy], references: [id])
+
+  items GRItem[]
+
+  @@schema("procurement")
+}
+
+model GRItem {
+  id       String  @id @default(uuid())
+  grId     String
+  mrItemId String
+  qty      Decimal
+
+  gr     GoodsReceipt        @relation(fields: [grId], references: [id])
+  mrItem MaterialRequestItem @relation(fields: [mrItemId], references: [id])
+
+  @@schema("procurement")
+}
+
+/////////////////////////////////////////////////////
+// APPROVAL
+/////////////////////////////////////////////////////
+
+model ApprovalFlow {
+  id            String @id @default(uuid())
+  module        String // "MR", "ITEM", "PO", "GR", etc.
+  level         Int // urutan approval
+  projectRoleId String
+  // approverRole String // role yang berhak approve
+
+  projectRole ProjectRole      @relation(fields: [projectRoleId], references: [id])
+  records     ApprovalRecord[]
+
+  @@schema("approval")
+}
+
+model ApprovalRecord {
   id String @id @default(uuid())
 
-  documentId   String // ID dokumen yang di-approve
-  documentType String // MR, PO, GRN, PAYMENT, dll.
+  module String // MR, MR_ITEM, PO, GR, etc.
+  refId  String // id MR, id MRItem, id PO, dll
 
-  approverId String //User yang memutuskan 
-  level      Int // level approval (1, 2, 3, ...)
-  status     String // APPROVED / REJECTED / PENDING
+  approvalFlowId String?
+  approvedBy     String? // AuthUser
+  approvedAt     DateTime?
+  status         String    @default("PENDING")
+  // PENDING, APPROVED, REJECTED
 
-  note      String?
-  decidedAt DateTime? @default(now())
+  flow     ApprovalFlow? @relation(fields: [approvalFlowId], references: [id])
+  approver AuthUser?     @relation(fields: [approvedBy], references: [id])
 
-  approver AuthUser @relation(fields: [approverId], references: [id])
-
-  @@schema("procurement")
+  @@index([module, refId])
+  @@schema("approval")
 }
 
-model MRProcessing {
-  id          String   @id @default(uuid())
-  mRequestId  String
-  processedBy String //Id employee atau user
-  processedAt DateTime @default(now())
+// model ProjectAssignment {
+//   id            String      @id @default(cuid())
+//   employeeId    String // Foreign key dari backend karyawan
+//   projectId     String
+//   roleInProject ProjectRole @relation(fields: [projectRoleId], references: [id])
 
-  mr    MaterialRequest    @relation(fields: [mRequestId], references: [id])
-  items MRProcessingItem[]
+//   project       Project  @relation(fields: [projectId], references: [id])
+//   createdAt     DateTime @default(now())
+//   projectRoleId String
 
-  @@schema("procurement")
-}
-
-model MRProcessingItem {
-  id           String @id @default(uuid())
-  processingId String
-  mrItemId     String
-  qtyProcessed Float
-
-  processing MRProcessing        @relation(fields: [processingId], references: [id])
-  mrItem     MaterialRequestItem @relation(fields: [mrItemId], references: [id])
-}
-
-model Purchase {
-  id            Int       @id @default(autoincrement())
-  mr_id         String
-  vendor_id     Int
-  purchase_date DateTime?
-  qty_purchased Decimal?
-  total_price   Decimal?
-  created_at    DateTime? @default(now())
-
-  mr MaterialRequest @relation(fields: [mr_id], references: [id], onDelete: Cascade)
-  // vendor Vendor          @relation(fields: [vendor_id], references: [id], onDelete: Cascade)
-
-  @@schema("procurement")
-}
-
-model ProjectAssignment {
-  id            String      @id @default(cuid())
-  employeeId    String // Foreign key dari backend karyawan
-  projectId     String
-  roleInProject ProjectRole @relation(fields: [projectRoleId], references: [id])
-
-  project       Project  @relation(fields: [projectId], references: [id])
-  createdAt     DateTime @default(now())
-  projectRoleId String
-
-  @@unique([employeeId, projectId])
-  @@schema("procurement")
-}
+//   @@unique([employeeId, projectId])
+//   @@schema("procurement")
+// }
 
 // model ConfirmationOrder {
 //   createdAt           DateTime              @default(now())
@@ -469,19 +577,6 @@ model ProjectAssignment {
 //   @@unique([userId, fileType, role])
 // }
 
-// enum Status {
-//   ACTIVE
-//   PENDING
-//   APPROVED
-//   REJECTED
-//   IN_PROGRESS // gunakan ini, hindari "PROCESSING" supaya tidak ambigu
-//   CLOSED
-//   CANCELLED
-//   READ
-//   COMPLETED
-//   ACC // jika tetap dibutuhkan
-// }
-
 // enum FileType {
 //   PERMINTAAN_LAPANGAN
 //   CONFIRMATION_ORDER
@@ -500,9 +595,3 @@ model ProjectAssignment {
 //   DIREKSI
 // }
 
-// enum ProjectStatus {
-//   BERJALAN
-//   SELESAI
-//   TERTUNDA
-//   ONGOING
-// }
