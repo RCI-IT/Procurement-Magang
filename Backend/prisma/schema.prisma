@@ -1,10 +1,12 @@
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
   schemas  = ["enum", "public", "auth", "project", "material", "procurement", "approval"]
 }
 
@@ -24,11 +26,14 @@ enum ProjectStatus {
 
 
 // enum Status {
+//   PLANNING
 //   ACTIVE
 //   PENDING
+//   HOLD
 //   APPROVED
 //   REJECTED
 //   IN_PROGRESS // gunakan ini, hindari "PROCESSING" supaya tidak ambigu
+//   ONGOING
 //   CLOSED
 //   CANCELLED
 //   READ

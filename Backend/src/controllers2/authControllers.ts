@@ -12,7 +12,7 @@ interface User {
   password: string;
   role: string;
 }
-const prisma = new PrismaClient();
+
 // REGISTER
 // export const register = async (req: Request, res: Response): Promise<void> => {
 //   const { username, password, role } = req.body;
@@ -87,6 +87,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       {expiresIn: "1d"}
     );
 
+    // REFRESH TOKEN
     const refreshToken = jwt.sign(
       { userId: user.id },
       process.env.JWT_REFRESH_SECRET!,
