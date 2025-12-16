@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
 import * as bcrypt from "bcryptjs";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import crypto from "crypto";
 import { generateToken } from "@/utils/generateToken";
 
 const prisma = new PrismaClient();
@@ -50,6 +50,9 @@ export const login = async (req: Request, res: Response) => {
     // 2️⃣ cari user
     const user = await prisma.authUser.findUnique({
       where: { username },
+      include: {
+        roles: { include: { role: true } },
+      },
     });
 
     if (!user) {
@@ -66,7 +69,7 @@ export const login = async (req: Request, res: Response) => {
 
     // 4️⃣ generate JWT
     const token = generateToken({ id: user.id, username: user.username });
-    const roleNames = user.roles.map(r => r.role.roleName);
+    const roleNames = user.roles.map((r) => r.role.roleName);
 
     // REFRESH TOKEN (random string)
     const refreshToken = crypto.randomBytes(64).toString("hex");
@@ -81,7 +84,8 @@ export const login = async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(200)
+    res
+      .status(200)
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: false, // true di production
@@ -96,7 +100,6 @@ export const login = async (req: Request, res: Response) => {
           roles: roleNames,
         },
       });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
@@ -113,7 +116,5 @@ export const logout = async (req: Request, res: Response) => {
     });
   }
 
-  res
-    .clearCookie("refreshToken")
-    .json({ message: "Logout berhasil" });
+  res.clearCookie("refreshToken").json({ message: "Logout berhasil" });
 };

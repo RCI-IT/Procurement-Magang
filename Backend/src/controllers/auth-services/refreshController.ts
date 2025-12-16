@@ -9,7 +9,8 @@ export const refreshToken = async (req: Request, res: Response) => {
   const tokenFromCookie = req.cookies.refreshToken;
 
   if (!tokenFromCookie) {
-    return res.status(401).json({ message: "Refresh token tidak ada" });
+    res.status(401).json({ message: "Refresh token tidak ada" });
+    return;
   }
 
   const storedToken = await prisma.refreshToken.findUnique({
@@ -28,10 +29,11 @@ export const refreshToken = async (req: Request, res: Response) => {
     storedToken.revoked ||
     storedToken.expiresAt < new Date()
   ) {
-    return res.status(403).json({ message: "Refresh token tidak valid" });
+    res.status(403).json({ message: "Refresh token tidak valid" });
+    return;
   }
 
-  const roles = storedToken.user.roles.map(r => r.role.roleName);
+  const roles = storedToken.user.roles.map((r) => r.role.roleName);
 
   const newAccessToken = generateToken({
     userId: storedToken.user.id,

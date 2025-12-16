@@ -1,69 +1,26 @@
-// 🔧 Core Modules
-import path from "path";
-import fs from "fs";
-
-// 📦 Third-party Modules
 import express from "express";
 import cors from "cors";
-import cookieParser from "cookie-parser";
-// 📁 Routes
+
 import auth from "./routes/auth";
-import permintaanRoutes from "./routes/permintaan";
-import vendorsRoutes from "./routes/vendors";
-import materialsRoutes from "./routes/materials";
-import categoriesRoutes from "./routes/categories";
-import usersRoutes from "./routes/users";
-import confirmationRoutes from "./routes/confirmation";
-import purchaseRoutes from "./routes/purchase";
-import sign from "./routes/sign";
-import { Project } from "./routes/project";
-import { Budget } from "./routes/budgetPlan"
-
-// 🔒 Middleware
-import authMiddleware from "./middleware/authMiddleware";
-
-// 🗂️ Ensure Upload Directory Exists
-const uploadDir = path.join(__dirname, "../uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+import { authMiddleware } from "./middleware/auth.middleware";
 
 const app = express();
+const PORT = process.env.PORT;
 const corsOptions = {
-  origin: [
-    "http://localhost:3000",
-    "http://192.168.110.253:3000",
-    "http://192.168.100.110:3000",
-    "http://procurement.rci:3000",
-  ],
+  origin: "http://localhost:3000",
   methods: "GET,POST,PUT,DELETE,OPTIONS",
   allowedHeaders: "Content-Type,Authorization",
   credentials: true,
 };
 
 app.use(cors(corsOptions));
-app.use(cookieParser());
-
-app.use("/uploads", express.static(path.join(uploadDir)));
 app.use(express.json());
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
 
-// Public routes
 app.use("/auth", auth);
-app.use(authMiddleware);
-
-// Protected routes (hanya bisa diakses setelah login)
-app.use("/permintaan", permintaanRoutes);
-app.use("/vendors", vendorsRoutes);
-app.use("/materials", materialsRoutes);
-app.use("/categories", categoriesRoutes);
-app.use("/users", usersRoutes);
-app.use("/confirmation", confirmationRoutes);
-app.use("/purchase", purchaseRoutes);
-app.use("/signing", sign);
-app.use("/projects", Project)
-app.use("/budget-plan", Budget)
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
 app.use(
   (
     err: any,
@@ -78,5 +35,7 @@ app.use(
     next();
   }
 );
+
+app.use(authMiddleware);
 
 export default app;
