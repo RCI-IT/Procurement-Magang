@@ -48,8 +48,10 @@ export const login = async (req: Request, res: Response) => {
     }
 
     // 2️⃣ cari user
-    const user = await prisma.authUser.findUnique({
-      where: { username },
+    const user = await prisma.authUser.findFirst({
+      where: {
+        OR: [{ username }, { email : username }],
+      },
       include: {
         roles: { include: { role: true } },
       },
@@ -117,4 +119,42 @@ export const logout = async (req: Request, res: Response) => {
   }
 
   res.clearCookie("refreshToken").json({ message: "Logout berhasil" });
+};
+
+export const regist = async (req: Request, res: Response) => {
+  const { username, password, email } = req.body;
+
+  if (!username || !password || !email) {
+    res.status(400).json({ error: "All fields are required." });
+    return;
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await prisma.authUser.create({
+      data: { username, email, password: hashedPassword },
+    });
+  } catch (error: any) {
+    // Cek apakah username dan email sudah ada, karena UNIQUE constraint Prisma + DB
+    if (error.code === "P2002") {
+      const target = error.meta?.target?.[0];
+
+      if (target === "username") {
+        return res.status(409).json({ message: "Username sudah digunakan" });
+      }
+
+      if (target === "email") {
+        return res.status(409).json({ message: "Email sudah digunakan" });
+      }
+
+      return res.status(409).json({
+        message: "Username atau email sudah digunakan",
+      });
+    }
+    throw error;
+  }
+};
+
+export const updateRole = async (req: Request, res: Response) => {
+  const data = req.body;
 };

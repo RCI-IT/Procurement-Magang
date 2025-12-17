@@ -3,9 +3,18 @@ import { AuthRequest } from "@/types/authInterface";
 
 export function roleMiddleware(allowedRoles: string[]) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
-    const userRoles = req.user.roles;
+    // 🔐 pastikan authMiddleware / authProxy sudah jalan
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Unauthorized - user belum terautentikasi",
+      });
+    }
 
-    const hasAccess = userRoles.some((r: string) => allowedRoles.includes(r));
+    const userRoles = req.user.roles || [];
+
+    const hasAccess = userRoles.some((role) =>
+      allowedRoles.includes(role)
+    );
 
     if (!hasAccess) {
       return res.status(403).json({

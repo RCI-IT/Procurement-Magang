@@ -1,11 +1,11 @@
 // middleware/auth.middleware.ts
 import { Response, NextFunction } from "express";
-import { AuthRequest } from "@/types/authInterface";
+import { AuthReq } from "@/types/authInterface";
 import jwt from "jsonwebtoken";
 
 
 export const authMiddleware = (
-  req: AuthRequest,
+  req: AuthReq,
   res: Response,
   next: NextFunction
 ) => {

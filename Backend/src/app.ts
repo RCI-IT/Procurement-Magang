@@ -7,7 +7,7 @@ import { authMiddleware } from "./middleware/auth.middleware";
 const app = express();
 const PORT = process.env.PORT;
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: "http://localhost:4000",
   methods: "GET,POST,PUT,DELETE,OPTIONS",
   allowedHeaders: "Content-Type,Authorization",
   credentials: true,
