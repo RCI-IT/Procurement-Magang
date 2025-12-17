@@ -5,6 +5,7 @@ import { StatusCodes } from "http-status-codes"; // Untuk error handling
 // import userRoutes from "./routes/UserRoutes"
 import { Employee } from "./routes/EmployeeRoutes";
 import { Certification } from "./routes/CertificationRoutes";
+import { authProxy } from "./middleware/auth.proxy.middleware";
 import path from "path";
 const fs = require('fs');
 
@@ -30,7 +31,7 @@ app.use(express.json());
 app.use(cors(corsOptions));
 
 // app.use("/v1", userRoutes);
-app.use('/api/employees', Employee);
+app.use('/api/employees', authProxy, Employee);
 app.use('/api/certification', Certification);
 
 
