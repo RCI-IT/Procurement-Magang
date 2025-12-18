@@ -7,45 +7,26 @@ import {
   handleServerError,
   handleUnprocessableEntityResponse,
 } from "@/handle/error";
-import * as bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-export const userController = {
-  // Create User dapat diganti dengan registrasi juga
+export const projectController = {
   create: async (req: Request, res: Response) => {
     const data = req.body;
-    // Validasi: pastikan data adalah object
-    if (!data || typeof data !== "object" || Array.isArray(data)) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: "Invalid or missing request body.",
-        providedData: data,
-      });
-      return;
-    }
-
     try {
-      const existUser = await prisma.authUser.findFirst({
+      const existProject = await prisma.project.findFirst({
         where: {
-          OR: [{ username: data.username }, { email: data.email }],
+          OR: [{ projectName: data.projectName }, { code: data.code }],
         },
       });
-      if (existUser) {
+      if (existProject) {
         res.status(StatusCodes.CONFLICT).json({
           message: `Project with code "${data.username}" already exists.`,
         });
         return;
       }
-      const hashedPassword = await bcrypt.hash(data.password, 10);
-      const newUser = await prisma.authUser.create({
-        data: {
-          ...data,
-          password: hashedPassword,
-        },
-      });
-
-      res.status(StatusCodes.CREATED).json(newUser);
-      return;
+      const newProject = await prisma.project.create({ data });
+      res.status(StatusCodes.OK).json(newProject);
     } catch (error) {
       console.error("Error creating project:", error);
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -55,24 +36,24 @@ export const userController = {
   },
   getAll: async (req: Request, res: Response) => {
     try {
-      const data = await prisma.authUser.findMany();
-      if (data.length > 0) {
-        res.status(StatusCodes.OK).json(data);
+      const allProject = await prisma.project.findMany();
+      if (allProject.length > 0) {
+        res.status(StatusCodes.OK).json(allProject);
       } else {
         handleNotFoundResponse(res, "No data was found.");
       }
     } catch (error) {
-      handleServerError(res, "An error occured while fetching data.");
+      console.error("Error creating project:", error);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Failed to create project. Please try again.",
+      });
     }
   },
   getById: async (req: Request, res: Response) => {
     const id = req.params.id;
     try {
-      const data = await prisma.authUser.findUnique({
+      const data = await prisma.project.findUnique({
         where: { id: id },
-        include: {
-          roles: { include: { role: true } },
-        },
       });
       if (data) {
         res.status(StatusCodes.OK).json(data);
@@ -86,17 +67,31 @@ export const userController = {
       );
     }
   },
+  delete: async (req: Request, res: Response) => {
+    const id = req.params.id;
+    try {
+      const deleteData = await prisma.project.delete({
+        where: { id: id },
+      });
+      res
+        .status(200)
+        .json({ data: deleteData, message: "User berhasil dihapus." });
+    } catch (error) {
+      return handleBadRequestResponse(
+        res,
+        "An error occured while fetching data."
+      );
+    }
+  },
   put: async (req: Request, res: Response) => {
     const id = req.params.id;
     const updatedData = req.body;
     try {
-      const data = await prisma.authUser.findUnique({ where: { id } });
-
+      const data = await prisma.project.findUnique({ where: { id } });
       if (!data) {
         handleNotFoundResponse(res, `${id} does not exist.`);
         return;
       }
-
       if (
         !updatedData ||
         typeof updatedData !== "object" ||
@@ -108,11 +103,9 @@ export const userController = {
         });
         return;
       }
-
-      const hashedPassword = await bcrypt.hash(updatedData.password, 10);
-      const updateData = await prisma.authUser.update({
+      const updateData = await prisma.project.update({
         where: { id },
-        data: { ...updatedData, password: hashedPassword },
+        data: updatedData,
       });
 
       res.status(StatusCodes.OK).json(updateData);
@@ -136,22 +129,6 @@ export const userController = {
       return handleBadRequestResponse(
         res,
         "An error occurred while processing the request."
-      );
-    }
-  },
-  delete: async (req: Request, res: Response) => {
-    const id = req.params.id;
-    try {
-      const deleteData = await prisma.authUser.delete({
-        where: { id: id },
-      });
-      res
-        .status(200)
-        .json({ data: deleteData, message: "User berhasil dihapus." });
-    } catch (error) {
-      return handleBadRequestResponse(
-        res,
-        "An error occured while fetching data."
       );
     }
   },
