@@ -50,7 +50,7 @@ export const login = async (req: Request, res: Response) => {
     // 2️⃣ cari user
     const user = await prisma.authUser.findFirst({
       where: {
-        OR: [{ username }, { email : username }],
+        OR: [{ username }, { email: username }],
       },
       include: {
         roles: { include: { role: true } },
@@ -156,5 +156,38 @@ export const regist = async (req: Request, res: Response) => {
 };
 
 export const updateRole = async (req: Request, res: Response) => {
-  const data = req.body;
+  const userId = req.params.userId;
+  const { rolesAdd = [], rolesRemove = [] } = req.body;
+
+  try {
+    await prisma.$transaction([
+      // ➕ Tambah role baru (jika ada)
+      prisma.authUserRole.createMany({
+        data: rolesAdd.map((roleId: string) => ({
+          userId,
+          roleId,
+        })),
+        skipDuplicates: true, // aman dari duplicate
+      }),
+
+      // ➖ Hapus role
+      prisma.authUserRole.deleteMany({
+        where: {
+          userId,
+          roleId: { in: rolesRemove },
+        },
+      }),
+    ]);
+
+    res.json({
+      message: "Role user berhasil diperbarui",
+    });
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Gagal memperbarui role user",
+    });
+    return;
+  }
 };

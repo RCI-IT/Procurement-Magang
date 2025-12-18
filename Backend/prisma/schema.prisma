@@ -103,8 +103,8 @@ model AuthUserRole {
   userId String
   roleId String
 
-  user AuthUser @relation(fields: [userId], references: [id])
-  role AuthRole @relation(fields: [roleId], references: [id])
+  user AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role AuthRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@unique([userId, roleId])
   @@schema("auth")
