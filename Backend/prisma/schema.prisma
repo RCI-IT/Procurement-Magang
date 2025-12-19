@@ -1,6 +1,6 @@
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
   previewFeatures = ["multiSchema"]
 }
 
@@ -23,7 +23,6 @@ enum ProjectStatus {
 
   @@schema("enum")
 }
-
 
 // enum Status {
 //   PLANNING
@@ -74,7 +73,7 @@ model AuthUser {
   email     String         @unique
   roles     AuthUserRole[]
 
-  employeeId String?
+  employeeId       String?
   // employee   HREmployee? @relation(fields: [employeeId], references: [id])
   // SignedBy           SignedBy[]
   // SigningAuthority   SigningAuthority[]
@@ -156,7 +155,7 @@ model Project {
 
 model ProjectRole {
   id       String          @id @default(uuid())
-  roleName String?
+  roleName String? @unique
   members  ProjectMember[]
   approval ApprovalFlow[]
 
@@ -599,4 +598,3 @@ model ApprovalRecord {
 //   FINANCE
 //   DIREKSI
 // }
-
