@@ -51,7 +51,7 @@ export const roleController = {
     } catch (error) {
       return handleServerError(
         res,
-        "An error occured while fetching employees"
+        "An error occured while fetching role"
       );
     }
   },

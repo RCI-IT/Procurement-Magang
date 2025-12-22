@@ -14,36 +14,17 @@ export const memberController = {
   create: async (req: Request, res: Response) => {
     const employee = req.body;
     try {
-      const memberCount = await prisma.projectMember.count();
-      if (memberCount === 0) {
-        console.log(
-          "⚠️ Tidak ada role member, membuat role project default..."
-        );
-        const projectRole = await prisma.projectRole.upsert({
-          where: { roleName: "WORKER" },
-          update: {},
-          create: { roleName: "WORKER" },
-        });
-      }
-      // Member tersebut sudah ada dalam project dan punya role
-      const existMember = await prisma.projectMember.findFirst({
-        where: {
-          employeeId: employee.employeeId,
-          projectId: employee.projectId,
-        },
+      // 1️⃣ Validasi project
+      const project = await prisma.project.findUnique({
+        where: { id: employee.projectId },
       });
-      if (existMember) {
-        return res.status(StatusCodes.CONFLICT).json({
-          message: "Member already exists in this project",
+      if (!project) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          message: "Project not found",
         });
+
+        
       }
-      const newEmployee = await prisma.projectMember.create({
-        data: {
-            ...employee,
-            roleId: {employee.roleId}
-        },
-      });
-      res.status(StatusCodes.CREATED).json(newEmployee);
     } catch (error) {
       console.error("Error creating member: ", error);
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
