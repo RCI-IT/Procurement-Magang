@@ -11,8 +11,10 @@ const router = Router();
 router.post("/login", login);
 router.post("/refresh", refreshToken);
 router.get("/logout", logout);
+
 router.put("/updateRole/:userId", updateRole)
 router.get("/verify", verifyToken);
+
 router.post("/user", userController.create)
 router.get("/user", userController.getAll)
 router.get("/user/:id", userController.getById)

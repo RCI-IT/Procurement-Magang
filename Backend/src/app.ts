@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 
 import auth from "./routes/auth";
+import project from "./routes/project"
 import { authMiddleware } from "./middleware/auth.middleware";
 
 const app = express();
@@ -37,5 +38,7 @@ app.use(
 );
 
 app.use(authMiddleware);
+// app.use("/user", )
+app.use("/project", project)
 
 export default app;

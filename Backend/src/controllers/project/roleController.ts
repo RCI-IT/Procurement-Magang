@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-
-//Handling error
 import { StatusCodes } from "http-status-codes";
+import { parseDateOnly } from "@/utils/parseDate";
+
 import {
   handleBadRequestResponse,
   handleNotFoundResponse,
@@ -17,7 +17,7 @@ export const roleController = {
     // 🔹 Normalisasi input
     const roleName = String(req.body.roleName).toUpperCase();
     try {
-      const existRole = await prisma.authRole.findFirst({
+      const existRole = await prisma.projectRole.findFirst({
         where: {
           roleName,
         },
@@ -27,7 +27,7 @@ export const roleController = {
           message: `Role is already exist.`,
         });
       }
-      const newData = await prisma.authRole.create({
+      const newData = await prisma.projectRole.create({
         data: { roleName },
       });
       res.status(StatusCodes.CREATED).json({ newData });
@@ -41,26 +41,23 @@ export const roleController = {
   },
   getAll: async (req: Request, res: Response) => {
     try {
-      const data = await prisma.authRole.findMany();
+      const data = await prisma.projectRole.findMany();
       if (data.length > 0) {
         res.status(StatusCodes.OK).json(data);
       } else {
         return handleNotFoundResponse(res, "No data was found.");
       }
     } catch (error) {
-      return handleServerError(
-        res,
-        "An error occured while fetching role"
-      );
+      return handleServerError(res, "An error occured while fetching role");
     }
   },
   edit: async (req: Request, res: Response) => {
     const id = req.params.id;
     const roleName = String(req.body.roleName).toUpperCase();
     try {
-      const updateData = await prisma.authRole.update({
+      const updateData = await prisma.projectRole.update({
         where: { id },
-        data: {roleName: roleName},
+        data: { roleName: roleName },
       });
       res
         .status(StatusCodes.OK)
@@ -90,7 +87,7 @@ export const roleController = {
   },
   delete: async (req: Request, res: Response) => {
     try {
-      const data = await prisma.authRole.delete({
+      const data = await prisma.projectRole.delete({
         where: { id: req.params.id },
       });
 

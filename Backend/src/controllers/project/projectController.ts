@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { StatusCodes } from "http-status-codes";
+import { parseDateOnly } from "@/utils/parseDate";
+
 import {
   handleBadRequestResponse,
   handleNotFoundResponse,
@@ -21,11 +23,17 @@ export const projectController = {
       });
       if (existProject) {
         res.status(StatusCodes.CONFLICT).json({
-          message: `Project with code "${data.username}" already exists.`,
+          message: `Project with code "${data.code}" or "${data.projectName}" already exists.`,
         });
         return;
       }
-      const newProject = await prisma.project.create({ data });
+      const newProject = await prisma.project.create({
+        data: {
+          ...data,
+          startDate: parseDateOnly(data.startDate),
+          endDate: parseDateOnly(data.endDate),
+        },
+      });
       res.status(StatusCodes.OK).json(newProject);
     } catch (error) {
       console.error("Error creating project:", error);
@@ -101,14 +109,25 @@ export const projectController = {
           message: "Invalid or missing request body.",
           providedData: updatedData,
         });
-        return;
       }
-      const updateData = await prisma.project.update({
+
+      const payload: any = { ...updatedData };
+
+      // ✅ Parse date ONLY if provided
+      if (updatedData.startDate !== undefined) {
+        payload.startDate = parseDateOnly(updatedData.startDate)
+      }
+
+      if (updatedData.endDate !== undefined) {
+        payload.endDate = parseDateOnly(updatedData.endDate)
+      }
+
+      const result = await prisma.project.update({
         where: { id },
-        data: updatedData,
+        data: payload,
       });
 
-      res.status(StatusCodes.OK).json(updateData);
+      res.status(StatusCodes.OK).json(result);
     } catch (error: any) {
       if (error.code === "P1000" && error.message.includes("5432")) {
         return handleServerError(
