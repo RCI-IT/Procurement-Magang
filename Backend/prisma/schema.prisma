@@ -155,7 +155,7 @@ model Project {
 
 model ProjectRole {
   id       String          @id @default(uuid())
-  roleName String?         @unique
+  roleName String          @unique
   members  ProjectMember[]
   approval ApprovalFlow[]
 
@@ -171,6 +171,7 @@ model ProjectMember {
 
   project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   role    ProjectRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  rab     Rab[]
 
   @@unique([projectId, employeeId, roleId])
   @@schema("project")
@@ -187,10 +188,11 @@ model Rab {
   name        String? // contoh: "RAB Pekerjaan Pondasi"
   description String?
   totalBudget Decimal? @db.Decimal(18, 2) // dihitung dari BOQ
-  createdBy   String?
+  createdBy   String
   createdAt   DateTime @default(now())
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  created ProjectMember @relation(fields: [createdBy], references: [id], onDelete: Cascade)
   boqs    Boq[]
 
   @@schema("project")

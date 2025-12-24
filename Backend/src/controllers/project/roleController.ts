@@ -5,6 +5,7 @@ import { parseDateOnly } from "@/utils/parseDate";
 
 import {
   handleBadRequestResponse,
+  handleConflictResponse,
   handleNotFoundResponse,
   handleServerError,
   handleUnprocessableEntityResponse,
@@ -14,29 +15,41 @@ const prisma = new PrismaClient();
 
 export const roleController = {
   create: async (req: Request, res: Response) => {
-    // 🔹 Normalisasi input
-    const roleName = String(req.body.roleName).toUpperCase();
-    try {
-      const existRole = await prisma.projectRole.findFirst({
-        where: {
-          roleName,
-        },
+    if (!req.body.roleName || typeof req.body.roleName !== "string") {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        message: "roleName is required",
       });
-      if (existRole) {
-        res.status(StatusCodes.CONFLICT).json({
-          message: `Role is already exist.`,
-        });
+      return;
+    }
+
+    const roleName = req.body.roleName.trim().toUpperCase();
+
+    try {
+      const exist = await prisma.projectRole.findFirst({
+        where: { roleName },
+      });
+      if (exist) {
+        return handleConflictResponse(res, "Role already exists");
       }
       const newData = await prisma.projectRole.create({
         data: { roleName },
       });
-      res.status(StatusCodes.CREATED).json({ newData });
-    } catch (error) {
-      console.error("Error creating project:", error);
+
+      res.status(StatusCodes.CREATED).json(newData);
+      return;
+    } catch (error: any) {
+      // ✅ Duplicate key error
+      if (error.code === "P2002") {
+        res.status(StatusCodes.CONFLICT).json({
+          message: "Role already exists",
+        });
+        return;
+      }
 
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Failed to create project. Please try again.",
+        message: "Failed to create role",
       });
+      return;
     }
   },
   getAll: async (req: Request, res: Response) => {
@@ -44,6 +57,7 @@ export const roleController = {
       const data = await prisma.projectRole.findMany();
       if (data.length > 0) {
         res.status(StatusCodes.OK).json(data);
+        return;
       } else {
         return handleNotFoundResponse(res, "No data was found.");
       }
@@ -55,6 +69,12 @@ export const roleController = {
     const id = req.params.id;
     const roleName = String(req.body.roleName).toUpperCase();
     try {
+      const exist = await prisma.projectRole.findFirst({
+        where: {roleName}
+      })
+      if(exist){
+        return handleConflictResponse(res, "Role already exists")
+      }
       const updateData = await prisma.projectRole.update({
         where: { id },
         data: { roleName: roleName },
@@ -62,6 +82,7 @@ export const roleController = {
       res
         .status(StatusCodes.OK)
         .json({ message: `Update has succesful.`, updateData });
+      return;
     } catch (error: any) {
       if (error.code === "P1000" && error.message.includes("5432")) {
         return handleServerError(
@@ -92,6 +113,7 @@ export const roleController = {
       });
 
       res.status(200).json({ message: "Proyek berhasil dihapus.", data: data });
+      return;
     } catch (error) {
       return handleBadRequestResponse(
         res,
