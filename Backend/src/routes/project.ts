@@ -1,8 +1,9 @@
 import { projectController } from "@/controllers/project/projectController";
 import { rabController } from "@/controllers/project/rabController";
-import { roleController } from "@/controllers/project/roleController";
+import { roleController } from "@/controllers/project/roleProjectController";
 import { memberController } from "@/controllers/project/memberController";
 import { Router } from "express";
+import { boqController } from "@/controllers/project/boqController";
 
 const router = Router();
 
@@ -14,6 +15,8 @@ const router = Router();
 router.post("/rab", rabController.create);
 router.get("/rab", rabController.getAll);
 router.get("/rab/:id", rabController.getById);
+
+router.post("/boq", boqController.create)
 
 router.post("/role", roleController.create);
 router.get("/role", roleController.getAll);

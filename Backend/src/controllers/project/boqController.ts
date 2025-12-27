@@ -7,54 +7,54 @@ import {
   handleServerError,
   handleUnprocessableEntityResponse,
 } from "@/handle/error";
+import { parseDateOnly } from "@/utils/parseDate";
 
 const prisma = new PrismaClient();
 
-export const rabController = {
+export const boqController = {
   create: async (req: Request, res: Response) => {
     try {
-      const { employeeId, projectId, roleId, joinedAt } = req.body;
+      const { rabId, materialId, description, quantity, price, type } =
+        req.body;
 
       // 0️⃣ Validasi body wajib
-      if (!employeeId || !projectId || !roleId) {
+      if (!rabId || !materialId || !description) {
         res.status(StatusCodes.BAD_REQUEST).json({
           message: "employeeId, projectId, and roleId are required",
         });
         return;
       }
 
-      // 1️⃣ Validasi project
-      const project = await prisma.project.findUnique({
-        where: { id: projectId },
+      // 1️⃣ Validasi RAB
+      const rab = await prisma.rab.findUnique({
+        where: { id: rabId },
       });
-      if (!project) {
+      if (!rab) {
         res.status(StatusCodes.NOT_FOUND).json({
-          message: "Project not found",
+          message: "RAB not found",
         });
         return;
       }
 
-      // 2️⃣ Validasi role
-      const role = await prisma.projectRole.findUnique({
-        where: { id: roleId },
+      // 2️⃣ Validasi boqType
+      const boqType = await prisma.boqType.findUnique({
+        where: { id: type },
       });
-      if (!role) {
+      if (!type) {
         res.status(StatusCodes.NOT_FOUND).json({
-          message: "Project role not found",
+          message: "BOQ type not found",
         });
         return;
       }
 
       // 3️⃣ Cek duplikasi (sesuai @@unique)
-      const existingMember = await prisma.projectMember.findFirst({
+      const existingBoq = await prisma.boq.findFirst({
         where: {
-          employeeId,
-          projectId,
-          roleId,
+          AND: { rabId, materialId },
         },
       });
 
-      if (existingMember) {
+      if (existingBoq) {
         res.status(StatusCodes.CONFLICT).json({
           message: "Employee already has this role in the project",
         });
@@ -62,22 +62,23 @@ export const rabController = {
       }
 
       // 4️⃣ Create member
-      const member = await prisma.projectMember.create({
+      const boq = await prisma.boq.create({
         data: {
-          employeeId,
-          projectId,
-          roleId,
-          joinedAt: joinedAt ? parseDateOnly(joinedAt) : undefined,
+          rabId,
+          materialId,
+          description,
+          quantity,
+          price,
+          type,
         },
         include: {
-          role: true,
-          project: true,
+          material: true,
         },
       });
 
       res.status(StatusCodes.CREATED).json({
         message: "Project member created successfully",
-        data: member,
+        data: boq,
       });
       return;
     } catch (error: any) {
@@ -96,7 +97,21 @@ export const rabController = {
       return;
     }
   },
-  getAll: async (req: Request, res: Response) => {},
+  getAll: async (req: Request, res: Response) => {
+    try {
+      const allboq = await prisma.boq.findMany();
+      if (allboq.length > 0) {
+        res.status(StatusCodes.OK).json(allboq);
+      } else {
+        handleNotFoundResponse(res, "No data was found.");
+      }
+    } catch (error) {
+      console.error("Error creating project:", error);
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: "Failed to create project. Please try again.",
+      });
+    }
+  },
   getById: async (req: Request, res: Response) => {},
   put: async (req: Request, res: Response) => {},
   delete: async (req: Request, res: Response) => {},

@@ -242,18 +242,29 @@ model Categories {
 model Material {
   id          String   @id @default(uuid())
   name        String
-  description String
+  description String?
   unit        String   @default("pcs")
-  image       String?
   code        String   @unique
   categoryId  String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  image                MaterialImage[]
   category             Categories            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   materialVendors      MaterialVendors[]
   materialRequestItems MaterialRequestItem[]
   boqs                 Boq[]
+
+  @@schema("material")
+}
+
+model MaterialImage {
+  id         String   @id @default(uuid())
+  materialId String
+  filename   String
+  createdAt  DateTime @default(now())
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
 
   @@schema("material")
 }
